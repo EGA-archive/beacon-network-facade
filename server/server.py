@@ -97,6 +97,9 @@ async def ws_server(websocket):
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
             response = json.loads(response)
+            beaconId=response["meta"]["beaconId"]
+            for response1 in response["response"]["resultSets"]:
+                response1["beaconId"]=beaconId
             if final_response == {}:
                 final_response = response
                 await websocket.send(f"{final_response}")
