@@ -7,6 +7,7 @@ import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import yaml
 
 
 LOG = logging.getLogger(__name__)
@@ -44,6 +45,20 @@ async def requesting2(websocket):
         return json.dumps(response_obj)
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
+async def registry(websocket, burl):
+    data={}
+    my_timeout = aiohttp.ClientTimeout(
+    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+)
+    async with aiohttp.ClientSession(timeout=my_timeout) as session:
+        url = burl + '/info'
+        response_obj = await beacon_request(session, url, data)
+        #LOG.warning(json.dumps(response_obj))
+        return json.dumps(response_obj)
+        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+
 async def returning(websocket):
     await asyncio.sleep(10)
     response_obj = {'timeout': 'more than 10 seconds'}
@@ -73,40 +88,72 @@ async def ws_server(websocket):
 
         firstitem = await websocket.recv()
         token = await websocket.recv()
-
         # Prompt message when any of the field is missing
         if firstitem == "" or token == "":
             LOG.warning("Not accepted.")
+        elif firstitem == '"/registries"':
+            start_time = perf_counter()
+            loop=asyncio.get_running_loop()
+            tasks=[]
+            LOG.warning(f"First: {firstitem}")
+            LOG.warning(f"Token: {token}")
+            with open('registry.yml', 'r') as f:
+                data = yaml.load(f, Loader=yaml.SafeLoader)
+
+            for beacon in data["Beacons"]:
+                with ThreadPoolExecutor() as pool:
+                    task = await loop.run_in_executor(pool, registry, websocket, beacon)
+                    tasks.append(task)
+            list_of_beacons=[]
+            
+            for task in itertools.islice(asyncio.as_completed(tasks), 2):
+                finalinforesponse={}
+                inforesponse = await task
+                inforesponse = json.loads(inforesponse)
+                beaconInfoId=inforesponse["meta"]["beaconId"]
+                beaconName=inforesponse["response"]["name"]
+                beaconMaturity=inforesponse["response"]["environment"]
+                beaconURL=inforesponse["response"]["alternativeUrl"]
+                beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+                finalinforesponse["beaconId"]=beaconInfoId
+                finalinforesponse["beaconName"]=beaconName
+                finalinforesponse["beaconMaturity"]=beaconMaturity
+                finalinforesponse["beaconURL"]=beaconURL
+                finalinforesponse["beaconLogo"]=beaconLogo
+                list_of_beacons.append(finalinforesponse)
+                await websocket.send(f"{list_of_beacons}")
+        
+        else:
 
 
-        LOG.warning(f"First: {firstitem}")
-        LOG.warning(f"Token: {token}")
+            LOG.warning(f"First: {firstitem}")
+            LOG.warning(f"Token: {token}")
 
-        list_of_sockets=[]
+            list_of_sockets=[]
 
-        start_time = perf_counter()
-        loop=asyncio.get_running_loop()
-        tasks=[]
-        final_response = {}
-        with ThreadPoolExecutor() as pool:
-            task = await loop.run_in_executor(pool, requesting, websocket)
-            tasks.append(task)
-        with ThreadPoolExecutor() as pool:
-            task = await loop.run_in_executor(pool, requesting2, websocket)
-            tasks.append(task)
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-            for response1 in response["response"]["resultSets"]:
-                response1["beaconId"]=beaconId
-            if final_response == {}:
-                final_response = response
-                await websocket.send(f"{final_response}")
-            else:
-                for responsed in response["response"]["resultSets"]:
-                    final_response["response"]["resultSets"].append(responsed)
-                await websocket.send(f"{final_response}")
+            start_time = perf_counter()
+            loop=asyncio.get_running_loop()
+            tasks=[]
+            final_response = {}
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, requesting, websocket)
+                tasks.append(task)
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, requesting2, websocket)
+                tasks.append(task)
+            for task in itertools.islice(asyncio.as_completed(tasks), 2):
+                response = await task
+                response = json.loads(response)
+                beaconId=response["meta"]["beaconId"]
+                for response1 in response["response"]["resultSets"]:
+                    response1["beaconId"]=beaconId
+                if final_response == {}:
+                    final_response = response
+                    await websocket.send(f"{final_response}")
+                else:
+                    for responsed in response["response"]["resultSets"]:
+                        final_response["response"]["resultSets"].append(responsed)
+                    await websocket.send(f"{final_response}")
             
  
     except websockets.ConnectionClosedError as e:
