@@ -1,0 +1,30 @@
+version: '3.1'
+
+networks:
+  gbn:
+
+services:
+ 
+ beacon-network-facade:
+    build:
+      context: .
+    container_name: bnfacade
+    ports:
+      - "5700:5700"
+    entrypoint: ['python','server.py']
+    networks:
+      - gbn
+
+ client:
+    build:
+      context: ./client
+    command: node /opt/yarn-v1.22.19/bin/yarn.js start
+    container_name: globalbn
+    depends_on:
+      - beacon-network-facade
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client:/usr/src/app
+    networks:
+      - gbn
