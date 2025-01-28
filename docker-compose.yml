@@ -7,7 +7,7 @@ services:
  
  beacon-network-facade:
     build:
-      context: .
+      context: ./server
     container_name: bnfacade
     ports:
       - "5700:5700"
