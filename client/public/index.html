@@ -24,44 +24,37 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Global Beacon Network</title>
   </head>
   <body>
-    <h1>WebSocket Client</h1>
-    <input type="text" 
-           id="messageInput" 
-           placeholder="Type a message..." />
-    <button id="sendButton">
-       Send
-    </button>
-    <div id="messages">
+    <div id="root">
+      <h1>WebSocket Client</h1>
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button id="sendButton">Send</button>
+      <div id="messages"></div>
+
+      <script>
+        const socket = new WebSocket("ws://localhost:5700");
+
+        socket.addEventListener("open", () => {
+          console.log("Connected to server");
+        });
+
+        socket.addEventListener("message", (event) => {
+          const messageDiv = document.createElement("div");
+          messageDiv.textContent = event.data;
+          document.getElementById("messages").appendChild(messageDiv);
+        });
+
+        document.getElementById("sendButton").addEventListener("click", () => {
+          const messageInput = document.getElementById("messageInput");
+          const message = messageInput.value;
+
+          socket.send(JSON.stringify(message));
+          socket.send(JSON.stringify("nothing"));
+          messageInput.value = "";
+        });
+      </script>
     </div>
- 
-    <script>
-       const socket = new WebSocket('ws://localhost:5700');
- 
-       socket.addEventListener('open', 
-       () => {
-       console.log('Connected to server');
-       });
- 
-       socket.addEventListener('message', 
-       (event) => {
-       const messageDiv = document.createElement('div');
-       messageDiv.textContent = event.data;
-       document.getElementById('messages').appendChild(messageDiv);
-       });
- 
-       document.getElementById('sendButton').addEventListener('click', 
-       () => {
-       const messageInput = document.getElementById('messageInput');
-       const message = messageInput.value;
-    
-     
-       socket.send(JSON.stringify(message));
-       socket.send(JSON.stringify("nothing"));
-       messageInput.value = '';
-       });
-    </script>
- </body>
+  </body>
 </html>
