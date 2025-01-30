@@ -12,7 +12,7 @@ import yaml
 LOG = logging.getLogger(__name__)
 
 async def beacon_request(session, url, data):
-    async with session.post(url, json=data) as response:
+    async with session.get(url) as response:
         response_obj = await response.json()
         return response_obj
 
@@ -79,6 +79,7 @@ async def ws_server(websocket):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
+                LOG.warning(inforesponse)
                 beaconInfoId=inforesponse["meta"]["beaconId"]
                 beaconName=inforesponse["response"]["name"]
                 beaconMaturity=inforesponse["response"]["environment"]
@@ -90,7 +91,10 @@ async def ws_server(websocket):
                 finalinforesponse["beaconURL"]=beaconURL
                 finalinforesponse["beaconLogo"]=beaconLogo
                 list_of_beacons.append(finalinforesponse)
-                await websocket.send(f"{list_of_beacons}")
+                with open('/responses/registries.json') as registries_file:
+                    dict_registries = json.load(registries_file)
+                dict_registries["response"]["registries"]=list_of_beacons
+                await websocket.send(f"{dict_registries}")
         
         else:
             LOG.warning(f"First: {firstitem}")
@@ -105,7 +109,7 @@ async def ws_server(websocket):
                     task = await loop.run_in_executor(pool, requesting, websocket, beacon, firstitem)
                     tasks.append(task)
 
-            with open('response.json') as json_file:
+            with open('/responses/resultSets.json') as json_file:
                 dict_response = json.load(json_file)
 
             for task in itertools.islice(asyncio.as_completed(tasks), 2):
@@ -115,8 +119,15 @@ async def ws_server(websocket):
                 count=response["responseSummary"]["numTotalResults"]
                 dict_response["responseSummary"]["numTotalResults"]+=count
                 for response1 in response["response"]["resultSets"]:
-                    response1["beaconId"]=beaconId
-                    dict_response["response"]["resultSets"].append(response1)
+                    try:
+                        if response1["beaconId"]!=beaconId:
+                            response1["beaconNetworkId"]=beaconId
+                        else:
+                            response1["beaconId"]=beaconId
+                        dict_response["response"]["resultSets"].append(response1)
+                    except Exception:
+                        response1["beaconId"]=beaconId
+                        dict_response["response"]["resultSets"].append(response1)
                 if dict_response["responseSummary"]["numTotalResults"] > 0:
                     dict_response["responseSummary"]["exists"]=True
                 await websocket.send(f"{dict_response}")
