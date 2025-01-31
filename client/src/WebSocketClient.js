@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Button } from "react-bootstrap";
+import Tooltip from "@mui/material/Tooltip";
+import { Container, Button, Form } from "react-bootstrap";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import Grid from "@mui/material/Grid2";
+import CustomTheme from "./CustomTheme";
+import { ThemeProvider } from "@mui/material/styles";
+import { Formik } from "formik";
 
 const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 
@@ -76,51 +80,119 @@ function WebSocketClient() {
     setVariant("");
   };
 
+  const handlePaste = (event) => {
+    event.preventDefault();
+    const pastedData = event.clipboardData.getData("text");
+
+    // Apply text cleanup rules
+    const cleanedData = pastedData
+      .trim()
+      .replace(/\./g, "") // Remove all periods
+      .replace(/\s+/g, " ") // Replace multiple spaces with a single space
+      .replace(/\t/g, "-") // Replace tabs with a single hyphen
+      .replace(/\s/g, "-") // Replace remaining spaces with a single hyphen
+      .replace(/-+/g, "-"); // Replace multiple consecutive hyphens with a single hyphen
+
+    // Get input field selection range
+    const inputElement = event.target;
+    const start = inputElement.selectionStart;
+    const end = inputElement.selectionEnd;
+
+    if (start !== null && end !== null) {
+      // Preserve surrounding text and insert the cleaned pasted data
+      const newValue =
+        variant.substring(0, start) + cleanedData + variant.substring(end);
+
+      setVariant(newValue);
+
+      // Move cursor to the end of the pasted text
+      setTimeout(() => {
+        inputElement.setSelectionRange(
+          start + cleanedData.length,
+          start + cleanedData.length
+        );
+      }, 0);
+    }
+  };
+
   return (
-    <Container>
-      <h2>This is my input</h2>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            id="messageInput"
-            inputRef={messageInputRef}
-            fullWidth
-            placeholder="Insert your variant or type /registries"
-            size="small"
-            value={variant}
-            onChange={(e) => setVariant(e.target.value)}
-          />
-        </Grid>
+    <ThemeProvider theme={CustomTheme}>
+      <Container>
+        <Formik>
+          <Form>
+            <Form.Group>
+              <Grid container spacing={2} className="search-row">
+                <Grid item xs={12} sm={6}>
+                  <Form.Label>
+                    <b className="variant-query">Variant query</b>
+                    <Tooltip
+                      title={
+                        <ul className="tooltip-bullets">
+                          <li>
+                            Type your variant or copy from Excel with this
+                            specific structure: chr / position / ref. base /
+                            alt. base.
+                          </li>
+                          <li>Queries need to be in 0-based format.</li>
+                        </ul>
+                      }
+                      placement="top-start"
+                      arrow
+                    >
+                      <b className="infovariant">i</b>
+                    </Tooltip>
+                  </Form.Label>
+                  {/* Variant Field */}
+                  {/* <Autocomplete /> */}
+                  <TextField
+                    id="messageInput"
+                    inputRef={messageInputRef}
+                    fullWidth
+                    placeholder="Insert your variant"
+                    size="small"
+                    value={variant}
+                    onChange={(e) => setVariant(e.target.value)}
+                  />
+                </Grid>
 
-        <Grid item xs={12} sm={4}>
-          <Autocomplete
-            disablePortal
-            options={refGenome}
-            value={refGenome.find((option) => option.label === genome)}
-            onChange={(event, newValue) =>
-              setGenome(newValue ? newValue.label : "")
-            }
-            renderInput={(params) => (
-              <TextField {...params} size="small" placeholder="Select Genome" />
-            )}
-          />
-        </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Autocomplete
+                    disablePortal
+                    options={refGenome}
+                    value={refGenome.find((option) => option.label === genome)}
+                    onChange={(event, newValue) =>
+                      setGenome(newValue ? newValue.label : "")
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        placeholder="Select Genome"
+                      />
+                    )}
+                  />
+                </Grid>
 
-        <Grid item xs={12} sm={2}>
-          <Button id="sendButton" onClick={sendMessage} variant="primary">
-            Send
-          </Button>
-        </Grid>
-      </Grid>
+                <Grid item xs={12} sm={2}>
+                  <Button
+                    id="sendButton"
+                    onClick={sendMessage}
+                    variant="primary"
+                  >
+                    Send
+                  </Button>
+                </Grid>
+              </Grid>
+            </Form.Group>
 
-      <h3>Messages:</h3>
-      <ul>
-        {messages.map((msg, index) => (
-          <li key={index}>{msg}</li>
-        ))}
-      </ul>
+            <h3>Messages:</h3>
+            <ul>
+              {messages.map((msg, index) => (
+                <li key={index}>{msg}</li>
+              ))}
+            </ul>
 
-      {registries.length > 0 && (
+            {/* {registries.length > 0 && (
         <div>
           <h3>Registries:</h3>
           <ul>
@@ -146,8 +218,11 @@ function WebSocketClient() {
             ))}
           </ul>
         </div>
-      )}
-    </Container>
+      )} */}
+          </Form>
+        </Formik>
+      </Container>
+    </ThemeProvider>
   );
 }
 
