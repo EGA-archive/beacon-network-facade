@@ -69,7 +69,7 @@ async def requesting(burl, query, data):
         return json.dumps(response_obj)
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
-def combine_dicts(self, list1, list2):
+def combine_filtering_terms(self, list1, list2):
     definitive_list=[]
     ids_used=[]
     for dict1 in list1:
@@ -123,7 +123,7 @@ class FilteringTerms(EndpointView):
                     dict_response["response"]["filteringTerms"].append(response1)
                 LOG.warning(dict_response["response"]["filteringTerms"])
             else:
-                dict_response["response"]["filteringTerms"]=combine_dicts(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
+                dict_response["response"]["filteringTerms"]=combine_filtering_terms(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
                 LOG.warning(dict_response["response"]["filteringTerms"])
             for response2 in response["response"]["resources"]:
                 dict_response["response"]["resources"].append(response2)
@@ -162,10 +162,98 @@ class FilteringTerms(EndpointView):
                     dict_response["response"]["filteringTerms"].append(response1)
                 LOG.warning(dict_response["response"]["filteringTerms"])
             else:
-                dict_response["response"]["filteringTerms"]=get_cards_rarity_score(dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
+                dict_response["response"]["filteringTerms"]=combine_filtering_terms(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
                 LOG.warning(dict_response["response"]["filteringTerms"])
             for response2 in response["response"]["resources"]:
                 dict_response["response"]["resources"].append(response2)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+    
+class Configuration(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        with open('/responses/configuration.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        with open('/responses/configuration.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+    
+class EntryTypes(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        with open('/responses/entryTypes.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        with open('/responses/entryTypes.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+    
+class ServiceInfo(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        with open('/responses/service-info.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        with open('/responses/service-info.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+    
+class Info(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        with open('/responses/info.json') as json_file:
+            dict_response = json.load(json_file)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        with open('/responses/info.json') as json_file:
+            dict_response = json.load(json_file)
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -384,11 +472,11 @@ async def create_api():# pragma: no cover
     app.on_startup.append(initialize)
     app.cleanup_ctx.append(_graceful_shutdown_ctx)
 
-    #app.add_routes([web.post('/api', Info)])
-    #app.add_routes([web.post('/api/info', Info)])
-    #app.add_routes([web.post('/api/entry_types', EntryTypes)])
-    #app.add_routes([web.post('/api/service-info', ServiceInfo)])
-    #app.add_routes([web.post('/api/configuration', Configuration)])
+    app.add_routes([web.post('/api', Info)])
+    app.add_routes([web.post('/api/info', Info)])
+    app.add_routes([web.post('/api/entry_types', EntryTypes)])
+    app.add_routes([web.post('/api/service-info', ServiceInfo)])
+    app.add_routes([web.post('/api/configuration', Configuration)])
     #app.add_routes([web.post('/api/map', Map)])
     app.add_routes([web.post('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.post('/api/datasets', Collection)])
@@ -427,11 +515,11 @@ async def create_api():# pragma: no cover
     app.add_routes([web.post('/api/runs/{id}', Resultset)])
     app.add_routes([web.post('/api/runs/{id}/analyses', Resultset)])
     app.add_routes([web.post('/api/runs/{id}/g_variants', Resultset)])
-    #app.add_routes([web.get('/api', Info)])
-    #app.add_routes([web.get('/api/info', Info)])
-    #app.add_routes([web.get('/api/entry_types', EntryTypes)])
-    #app.add_routes([web.get('/api/service-info', ServiceInfo)])
-    #app.add_routes([web.get('/api/configuration', Configuration)])
+    app.add_routes([web.get('/api', Info)])
+    app.add_routes([web.get('/api/info', Info)])
+    app.add_routes([web.get('/api/entry_types', EntryTypes)])
+    app.add_routes([web.get('/api/service-info', ServiceInfo)])
+    app.add_routes([web.get('/api/configuration', Configuration)])
     #app.add_routes([web.get('/api/map', Map)])
     app.add_routes([web.get('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.get('/api/datasets', Collection)])
