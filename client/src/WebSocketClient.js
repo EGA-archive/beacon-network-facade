@@ -14,7 +14,7 @@ function WebSocketClient() {
   const [genome, setGenome] = useState("GRCh37");
   const messageInputRef = useRef(null);
 
-  useEffect(() => {
+  const connectWebSocket = () => {
     const ws = new WebSocket("ws://localhost:5700");
 
     ws.onopen = () => console.log("Connected to WebSocket");
@@ -22,9 +22,9 @@ function WebSocketClient() {
       try {
         const data = JSON.parse(event.data);
         if (Array.isArray(data) && data[0]?.beaconId) {
-          setRegistries(data); // If the response is registries, update registries state
+          setRegistries(data);
         } else {
-          setMessages((prevMessages) => [...prevMessages, event.data]); // Otherwise, treat as a normal message
+          setMessages((prevMessages) => [...prevMessages, event.data]);
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -32,40 +32,48 @@ function WebSocketClient() {
       }
     };
     ws.onclose = () => {
-      console.log("Disconnected - Reconnecting...");
+      console.log("Disconnected - Reconnecting Immediately...");
+      connectWebSocket(); // Reconnect immediately
     };
 
     setSocket(ws);
-    return () => ws.close();
+  };
+
+  useEffect(() => {
+    connectWebSocket();
+    return () => socket?.close();
   }, []);
 
   const sendMessage = () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      let message = "";
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("WebSocket not connected. Reconnecting...");
+      connectWebSocket();
+      return;
+    }
 
-      if (variant.trim().toLowerCase() === "/registries") {
-        message = JSON.stringify("/registries"); // ✅ Wrap in JSON like the plain JS version
-      } else {
-        if (!variant.includes("-")) {
-          console.error("Invalid variant format!");
-          return;
-        }
-
-        const arr = variant.split("-");
-        if (arr.length !== 4) {
-          console.error("Variant must have 4 parts: chr-position-ref-alt");
-          return;
-        }
-
-        message = JSON.stringify(
-          `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`
-        );
+    let message = "";
+    if (variant.trim().toLowerCase() === "/registries") {
+      message = JSON.stringify("/registries");
+    } else {
+      if (!variant.includes("-")) {
+        console.error("Invalid variant format!");
+        return;
       }
 
-      console.log("Sending to WebSocket:", message);
-      socket.send(message); // ✅ Send JSON-encoded string
-      setVariant("");
+      const arr = variant.split("-");
+      if (arr.length !== 4) {
+        console.error("Variant must have 4 parts: chr-position-ref-alt");
+        return;
+      }
+
+      message = JSON.stringify(
+        `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`
+      );
     }
+
+    console.log("Sending to WebSocket:", message);
+    socket.send(message);
+    setVariant("");
   };
 
   return (
