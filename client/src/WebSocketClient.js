@@ -7,6 +7,17 @@ import Grid from "@mui/material/Grid2";
 import CustomTheme from "./CustomTheme";
 import { ThemeProvider } from "@mui/material/styles";
 import { Formik } from "formik";
+import * as Yup from "yup";
+
+const SignupSchema = Yup.object().shape({
+  variant: Yup.string()
+    .matches(
+      /[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,X]-([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?-[A,C,G,T]+-[A,C,G,T]+$/,
+      "Incorrect variant information, please check the example below"
+    )
+    .required("Required"),
+  genome: Yup.string().required("Required"),
+});
 
 const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 
@@ -14,8 +25,6 @@ function WebSocketClient() {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [registries, setRegistries] = useState([]);
-  const [variant, setVariant] = useState("");
-  const [genome, setGenome] = useState("GRCh37");
   const messageInputRef = useRef(null);
 
   const connectWebSocket = () => {
@@ -37,7 +46,7 @@ function WebSocketClient() {
     };
     ws.onclose = () => {
       console.log("Disconnected - Reconnecting Immediately...");
-      connectWebSocket(); // Reconnect immediately
+      connectWebSocket();
     };
 
     setSocket(ws);
@@ -48,7 +57,7 @@ function WebSocketClient() {
     return () => socket?.close();
   }, []);
 
-  const sendMessage = () => {
+  const sendMessage = (values) => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.log("WebSocket not connected. Reconnecting...");
       connectWebSocket();
@@ -56,31 +65,30 @@ function WebSocketClient() {
     }
 
     let message = "";
-    if (variant.trim().toLowerCase() === "/registries") {
+    if (values.variant.trim().toLowerCase() === "/registries") {
       message = JSON.stringify("/registries");
     } else {
-      if (!variant.includes("-")) {
+      if (!values.variant.includes("-")) {
         console.error("Invalid variant format!");
         return;
       }
 
-      const arr = variant.split("-");
+      const arr = values.variant.split("-");
       if (arr.length !== 4) {
         console.error("Variant must have 4 parts: chr-position-ref-alt");
         return;
       }
 
       message = JSON.stringify(
-        `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`
+        `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${values.genome}`
       );
     }
 
     console.log("Sending to WebSocket:", message);
     socket.send(message);
-    setVariant("");
   };
 
-  const handlePaste = (event) => {
+  const handlePaste = (event, setFieldValue, values) => {
     event.preventDefault();
     const pastedData = event.clipboardData.getData("text");
 
@@ -93,19 +101,19 @@ function WebSocketClient() {
       .replace(/\s/g, "-") // Replace remaining spaces with a single hyphen
       .replace(/-+/g, "-"); // Replace multiple consecutive hyphens with a single hyphen
 
-    // Get input field selection range
+    // Preserve surrounding text and insert the cleaned pasted data
     const inputElement = event.target;
     const start = inputElement.selectionStart;
     const end = inputElement.selectionEnd;
 
     if (start !== null && end !== null) {
-      // Preserve surrounding text and insert the cleaned pasted data
       const newValue =
-        variant.substring(0, start) + cleanedData + variant.substring(end);
+        values.variant.substring(0, start) +
+        cleanedData +
+        values.variant.substring(end);
 
-      setVariant(newValue);
+      setFieldValue("variant", newValue);
 
-      // Move cursor to the end of the pasted text
       setTimeout(() => {
         inputElement.setSelectionRange(
           start + cleanedData.length,
@@ -118,108 +126,115 @@ function WebSocketClient() {
   return (
     <ThemeProvider theme={CustomTheme}>
       <Container>
-        <Formik>
-          <Form>
-            <Form.Group>
-              <Grid container spacing={2} className="search-row">
-                <Grid item xs={12} sm={6}>
-                  <Form.Label>
-                    <b className="variant-query">Variant query</b>
-                    <Tooltip
-                      title={
-                        <ul className="tooltip-bullets">
-                          <li>
-                            Type your variant or copy from Excel with this
-                            specific structure: chr / position / ref. base /
-                            alt. base.
-                          </li>
-                          <li>Queries need to be in 0-based format.</li>
-                        </ul>
-                      }
-                      placement="top-start"
-                      arrow
+        <Formik
+          initialValues={{
+            variant: "",
+            genome: "GRCh37",
+          }}
+          validationSchema={SignupSchema}
+          onSubmit={sendMessage}
+        >
+          {({
+            handleChange,
+            handleSubmit,
+            setFieldValue,
+            values,
+            errors,
+            touched,
+          }) => (
+            <Form noValidate onSubmit={handleSubmit}>
+              <Form.Group>
+                <Grid container spacing={2} className="search-row">
+                  <Grid item xs={12} sm={6}>
+                    <Form.Label>
+                      <b className="variant-query">Variant query</b>
+                      <Tooltip
+                        title={
+                          <ul className="tooltip-bullets">
+                            <li>
+                              Type your variant or copy from Excel with this
+                              specific structure: chr / position / ref. base /
+                              alt. base.
+                            </li>
+                            <li>Queries need to be in 0-based format.</li>
+                          </ul>
+                        }
+                        placement="top-start"
+                        arrow
+                      >
+                        <b className="infovariant">i</b>
+                      </Tooltip>
+                    </Form.Label>
+
+                    <Autocomplete
+                      fullWidth
+                      freeSolo
+                      options={[]}
+                      value={values.variant}
+                      onInputChange={(event, newValue) => {
+                        if (event && event.type !== "paste") {
+                          setFieldValue("variant", newValue);
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          fullWidth
+                          placeholder="Insert your variant"
+                          size="small"
+                          onPaste={(event) =>
+                            handlePaste(event, setFieldValue, values)
+                          }
+                          error={Boolean(touched.variant && errors.variant)}
+                          helperText={
+                            touched.variant && errors.variant
+                              ? errors.variant
+                              : ""
+                          }
+                          sx={{
+                            marginBottom: "20px",
+                            "& .MuiOutlinedInput-root": {
+                              borderColor:
+                                touched.variant && errors.variant ? "red" : "",
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <Form.Label
+                      htmlFor="ref-genome"
+                      className="ref-genome-label"
                     >
-                      <b className="infovariant">i</b>
-                    </Tooltip>
-                  </Form.Label>
-                  {/* Variant Field */}
-                  {/* <Autocomplete /> */}
-                  <TextField
-                    id="messageInput"
-                    inputRef={messageInputRef}
-                    fullWidth
-                    placeholder="Insert your variant"
-                    size="small"
-                    value={variant}
-                    onChange={(e) => setVariant(e.target.value)}
-                  />
+                      <b>Ref Genome</b>
+                    </Form.Label>
+                    <Autocomplete
+                      disablePortal
+                      options={refGenome}
+                      name="genome"
+                      value={refGenome.find(
+                        (option) => option.label === values.genome
+                      )}
+                      onChange={(event, newValue) => {
+                        setFieldValue("genome", newValue ? newValue.label : "");
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} size="small" />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={2}>
+                    <Button id="sendButton" type="submit" variant="primary">
+                      Send
+                    </Button>
+                  </Grid>
                 </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <Autocomplete
-                    disablePortal
-                    options={refGenome}
-                    value={refGenome.find((option) => option.label === genome)}
-                    onChange={(event, newValue) =>
-                      setGenome(newValue ? newValue.label : "")
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        placeholder="Select Genome"
-                      />
-                    )}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={2}>
-                  <Button
-                    id="sendButton"
-                    onClick={sendMessage}
-                    variant="primary"
-                  >
-                    Send
-                  </Button>
-                </Grid>
-              </Grid>
-            </Form.Group>
-
-            <h3>Messages:</h3>
-            <ul>
-              {messages.map((msg, index) => (
-                <li key={index}>{msg}</li>
-              ))}
-            </ul>
-
-            {/* {registries.length > 0 && (
-        <div>
-          <h3>Registries:</h3>
-          <ul>
-            {registries.map((registry, index) => (
-              <li key={index}>
-                <strong>{registry.beaconName}</strong> -{" "}
-                {registry.beaconMaturity}
-                <br />
-                <a
-                  href={registry.beaconURL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {registry.beaconURL}
-                </a>
-                <br />
-                <img
-                  src={registry.beaconLogo}
-                  alt={registry.beaconName}
-                  width={100}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )} */}
-          </Form>
+              </Form.Group>
+            </Form>
+          )}
         </Formik>
       </Container>
     </ThemeProvider>
