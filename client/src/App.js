@@ -2,6 +2,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import WebSocketClient from "./WebSocketClient";
 import CustomNavbar from "./CustomNavbar";
+import Footer from "./Footer";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <CustomNavbar />
         <WebSocketClient />
       </div>
+      <Footer />
     </div>
   );
 }
