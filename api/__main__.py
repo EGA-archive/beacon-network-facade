@@ -18,6 +18,10 @@ import json
 import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
+from collections import ChainMap
+from itertools import groupby
+from operator import itemgetter
+
 
 LOG = logging.getLogger(__name__)
 fmt = '%(levelname)s - %(asctime)s - %(message)s'
@@ -64,6 +68,103 @@ async def requesting(burl, query, data):
         #LOG.warning(json.dumps(response_obj))
         return json.dumps(response_obj)
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+
+def combine_dicts(self, list1, list2):
+    LOG.warning('holaaaa')
+    definitive_list=[]
+    for dict1 in list1:
+        for dict2 in list2:
+            dict1.update({key: [dict1[key][0], dict2[key][0]] if key in dict2 else dict1[key] for key in dict1 if key == "scopes"})
+            dict1.update({key: dict2[key] for key in dict2 if key not in dict1 and key == "scopes"})
+        definitive_list.append(dict1)
+    LOG.warning(definitive_list)
+
+    return definitive_list
+
+class FilteringTerms(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        request = await self.request.json() if self.request.has_body else {}
+        headers = self.request.headers
+        post_data = request
+        path_list = self.request.path.split('/')
+        endpoint=path_list[-1]
+        final_endpoint='/'+endpoint
+        LOG.warning(final_endpoint)
+        loop=asyncio.get_running_loop()
+        tasks=[]
+        with open('registry.yml', 'r') as f:
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+
+        for beacon in data["Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, get_requesting, beacon, final_endpoint)
+                tasks.append(task)
+
+        with open('/responses/filtering_terms.json') as json_file:
+            dict_response = json.load(json_file)
+
+        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            response = await task
+            response = json.loads(response)
+            beaconId=response["meta"]["beaconId"]
+            if dict_response["response"]["filteringTerms"] == []:
+                for response1 in response["response"]["filteringTerms"]:
+                    dict_response["response"]["filteringTerms"].append(response1)
+                LOG.warning(dict_response["response"]["filteringTerms"])
+            else:
+                dict_response["response"]["filteringTerms"]=combine_dicts(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
+                LOG.warning(dict_response["response"]["filteringTerms"])
+            for response2 in response["response"]["resources"]:
+                dict_response["response"]["resources"].append(response2)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        request = await self.request.json() if self.request.has_body else {}
+        headers = self.request.headers
+        post_data = request
+        path_list = self.request.path.split('/')
+        endpoint=path_list[-1]
+        final_endpoint='/'+endpoint
+        LOG.warning(final_endpoint)
+        loop=asyncio.get_running_loop()
+        tasks=[]
+        with open('registry.yml', 'r') as f:
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+
+        for beacon in data["Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, requesting, beacon, final_endpoint, post_data)
+                tasks.append(task)
+
+
+        with open('/responses/filtering_terms.json') as json_file:
+            dict_response = json.load(json_file)
+
+        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            response = await task
+            response = json.loads(response)
+            beaconId=response["meta"]["beaconId"]
+            if dict_response["response"]["filteringTerms"] == []:
+                for response1 in response["response"]["filteringTerms"]:
+                    dict_response["response"]["filteringTerms"].append(response1)
+                LOG.warning(dict_response["response"]["filteringTerms"])
+            else:
+                dict_response["response"]["filteringTerms"]=get_cards_rarity_score(dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
+                LOG.warning(dict_response["response"]["filteringTerms"])
+            for response2 in response["response"]["resources"]:
+                dict_response["response"]["resources"].append(response2)
+        LOG.warning(dict_response)
+        
+        return await self.resultset(dict_response)
 
 class Collection(EndpointView):
     async def resultset(self, dict_response):
@@ -285,7 +386,7 @@ async def create_api():# pragma: no cover
     #app.add_routes([web.post('/api/service-info', ServiceInfo)])
     #app.add_routes([web.post('/api/configuration', Configuration)])
     #app.add_routes([web.post('/api/map', Map)])
-    #app.add_routes([web.post('/api/filtering_terms', FilteringTerms)])
+    app.add_routes([web.post('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.post('/api/datasets', Collection)])
     app.add_routes([web.post('/api/datasets/{id}', Collection)])
     app.add_routes([web.post('/api/datasets/{id}/g_variants', Resultset)])
@@ -328,7 +429,7 @@ async def create_api():# pragma: no cover
     #app.add_routes([web.get('/api/service-info', ServiceInfo)])
     #app.add_routes([web.get('/api/configuration', Configuration)])
     #app.add_routes([web.get('/api/map', Map)])
-    #app.add_routes([web.get('/api/filtering_terms', FilteringTerms)])
+    app.add_routes([web.get('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.get('/api/datasets', Collection)])
     app.add_routes([web.get('/api/datasets/{id}', Collection)])
     app.add_routes([web.get('/api/datasets/{id}/g_variants', Resultset)])
