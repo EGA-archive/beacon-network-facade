@@ -27,41 +27,43 @@
     <title>React App</title>
   </head>
   <body>
-    <h1>WebSocket Client</h1>
-    <input type="text" 
-           id="messageInput" 
-           placeholder="Type a message..." />
-    <button id="sendButton">
-       Send
-    </button>
-    <div id="messages">
-    </div>
- 
+    <div id="root"></div>
+    <!-- <h1>WebSocket Client</h1>
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button id="sendButton">Send</button>
+    <div id="messages"></div>
     <script>
-       const socket = new WebSocket('ws://localhost:5700');
- 
-       socket.addEventListener('open', 
-       () => {
-       console.log('Connected to server');
-       });
- 
-       socket.addEventListener('message', 
-       (event) => {
-       const messageDiv = document.createElement('div');
-       messageDiv.textContent = event.data;
-       document.getElementById('messages').appendChild(messageDiv);
-       });
- 
-       document.getElementById('sendButton').addEventListener('click', 
-       () => {
-       const messageInput = document.getElementById('messageInput');
-       const message = messageInput.value;
-    
-     
-       socket.send(JSON.stringify(message));
-       socket.send(JSON.stringify("nothing"));
-       messageInput.value = '';
-       });
-    </script>
- </body>
+      var mySocket;
+      const socketMessageListener = (event) => {
+        const messageDiv = document.createElement("div");
+        messageDiv.textContent = event.data;
+        document.getElementById("messages").appendChild(messageDiv);
+      };
+
+      // Open
+      const socketOpenListener = (event) => {
+        console.log("Connected to server");
+        document.getElementById("sendButton").addEventListener("click", () => {
+          const messageInput = document.getElementById("messageInput");
+          const message = messageInput.value;
+
+          mySocket.send(JSON.stringify(message));
+          mySocket.send(JSON.stringify("nothing"));
+          messageInput.value = "";
+        });
+      };
+
+      // Closed
+      const socketCloseListener = (event) => {
+        if (mySocket) {
+          console.error("Disconnected.");
+        }
+        mySocket = new WebSocket("ws://localhost:5700");
+        mySocket.addEventListener("open", socketOpenListener);
+        mySocket.addEventListener("message", socketMessageListener);
+        mySocket.addEventListener("close", socketCloseListener);
+      };
+      socketCloseListener();
+    </script> -->
+  </body>
 </html>
