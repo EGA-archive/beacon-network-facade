@@ -27,3 +27,11 @@ services:
       - ./client:/usr/src/app
     networks:
       - gbn
+
+ api:
+    build:
+      context: ./api
+    container_name: bn-api
+    ports:
+      - "7080:7080"
+    entrypoint: ['python','__main__.py']

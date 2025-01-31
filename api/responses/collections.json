@@ -1,0 +1,18 @@
+{
+    "meta": {
+    "apiVersion": "v2.0.0",
+    "beaconId": "es.crg.global-beacon-network",
+    "receivedRequestSummary": {
+    "apiVersion": "v2.0.0",
+    "pagination": {},
+    "requestedSchemas": []
+    }
+    },
+    "responseSummary": {
+    "exists": false,
+    "numTotalResults": 0
+    },
+    "response": {
+    "collections": []
+    }
+    }
