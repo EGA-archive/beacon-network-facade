@@ -70,13 +70,16 @@ async def requesting(burl, query, data):
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 def combine_dicts(self, list1, list2):
-    LOG.warning('holaaaa')
     definitive_list=[]
+    ids_used=[]
     for dict1 in list1:
+        ids_used.append(dict1["id"])
         for dict2 in list2:
-            dict1.update({key: [dict1[key][0], dict2[key][0]] if key in dict2 else dict1[key] for key in dict1 if key == "scopes"})
-            dict1.update({key: dict2[key] for key in dict2 if key not in dict1 and key == "scopes"})
+            dict1.update({key: dict1[key] + list(set(dict2[key]) - set(dict1[key])) if key in dict2 else dict1[key] for key in dict1 if key == "scopes" and dict1["id"]==dict2["id"]})
         definitive_list.append(dict1)
+    for dict2 in list2:
+        if dict2["id"] not in ids_used:
+            definitive_list.append(dict2)
     LOG.warning(definitive_list)
 
     return definitive_list
@@ -93,7 +96,8 @@ class FilteringTerms(EndpointView):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
