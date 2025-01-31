@@ -1,21 +1,20 @@
-version: '3.1'
+version: "3.1"
 
 networks:
   gbn:
 
 services:
- 
- beacon-network-facade:
+  beacon-network-facade:
     build:
       context: ./server
     container_name: bnfacade
     ports:
       - "5700:5700"
-    entrypoint: ['python','server.py']
+    entrypoint: ["python", "server.py"]
     networks:
       - gbn
 
- client:
+  client:
     build:
       context: ./client
     command: node /opt/yarn-v1.22.19/bin/yarn.js start
