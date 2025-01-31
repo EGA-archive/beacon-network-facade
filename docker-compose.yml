@@ -28,7 +28,7 @@ services:
     networks:
       - gbn
 
- api:
+  api:
     build:
       context: ./api
     container_name: bn-api

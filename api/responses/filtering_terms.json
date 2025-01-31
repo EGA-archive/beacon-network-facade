@@ -1,0 +1,25 @@
+{
+    "meta": {
+    "apiVersion": "v2.0.0",
+    "beaconId": "es.crg.global-beacon-network",
+    "isAggregated": true,
+    "returnedSchemas": [
+    {
+    "entityType": "boolean",
+    "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconBooleanResponse.json"
+    },
+    {
+    "entityType": "count",
+    "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconCountResponse.json"
+    },
+    {
+    "entityType": "record",
+    "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconResultsetsResponse.json"
+    }
+    ]
+    },
+    "response": {
+    "filteringTerms": [],
+    "resources": []
+    }
+    }
