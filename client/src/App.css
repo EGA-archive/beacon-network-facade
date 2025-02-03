@@ -119,22 +119,33 @@ body {
   white-space: nowrap;
 }
 
-.bsclogobn {
+.footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: 20px;
+}
+
+.footer-logo {
+  height: auto;
+}
+
+.footer-logo:nth-child(1) {
   width: 54px;
   height: 49.17px;
 }
 
-.elixirlogobn {
+.footer-logo:nth-child(2) {
   width: 51.82px;
   height: 40.31px;
 }
 
-.eulogo {
+.footer-logo:nth-child(3) {
   width: 46.07px;
   height: 30.95px;
 }
 
-.caixalogobn {
+.footer-logo:nth-child(4) {
   width: 147.61px;
   height: 20.15px;
 }
