@@ -198,7 +198,9 @@ function WebSocketClient() {
                       type="submit"
                       disabled={errors.variant || errors.genome}
                     >
-                      <div>Search</div>
+                      <div>
+                        <div className="lupared"></div>Search
+                      </div>
                     </button>
                   </Grid>
                 </Grid>
@@ -225,7 +227,6 @@ function WebSocketClient() {
                   borderRadius: "5px",
                 }}
               >
-                <h5>WebSocket Messages:</h5>
                 <pre
                   style={{
                     whiteSpace: "pre-wrap",
