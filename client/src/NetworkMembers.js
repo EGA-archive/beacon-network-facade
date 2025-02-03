@@ -2,6 +2,8 @@ import React from "react";
 import Grid from "@mui/material/Grid2";
 import { Container } from "react-bootstrap";
 
+// Here I need a connection to the websocket, automatict that queries /registries when the page first loads.
+// And the grabs the information to the logos and urls.
 function NetworkMembers() {
   return (
     <Container>

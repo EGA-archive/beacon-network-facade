@@ -99,6 +99,7 @@ function WebSocketClient() {
   // };
 
   const sendMessage = (values) => {
+    console.log("📤 Form values at submit:", values);
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.log("⚠️ WebSocket not connected. Retrying...");
       connectWebSocket();
@@ -193,7 +194,7 @@ function WebSocketClient() {
 
                   <Grid size={{ xs: 12, sm: 2 }}>
                     <button
-                      id="sendButton"
+                      // id="sendButton"
                       className="searchbutton"
                       type="submit"
                       disabled={errors.variant || errors.genome}
