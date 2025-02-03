@@ -1,4 +1,3 @@
-
 import asyncio
 import aiohttp
 import aiohttp.web as web
@@ -18,10 +17,7 @@ import json
 import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
-from collections import ChainMap
-from itertools import groupby
-from operator import itemgetter
-
+from map_entry_types import get_entry_types_map
 
 LOG = logging.getLogger(__name__)
 fmt = '%(levelname)s - %(asctime)s - %(message)s'
@@ -41,6 +37,20 @@ async def beacon_post_request(session, url, data):
     async with session.post(url, json=data) as response:
         response_obj = await response.json()
         return response_obj
+
+async def registry(burl):
+    data={}
+    my_timeout = aiohttp.ClientTimeout(
+    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+)
+    async with aiohttp.ClientSession(timeout=my_timeout) as session:
+        url = burl + '/info'
+        response_obj = await beacon_get_request(session, url, data)
+        #LOG.warning(json.dumps(response_obj))
+        return json.dumps(response_obj)
+        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
     
 async def get_requesting(burl, query):
     data={}
@@ -73,13 +83,15 @@ def combine_filtering_terms(self, list1, list2):
     definitive_list=[]
     ids_used=[]
     for dict1 in list1:
-        ids_used.append(dict1["id"])
+        match=False
         for dict2 in list2:
             dict1.update({key: dict1[key] + list(set(dict2[key]) - set(dict1[key])) if key in dict2 else dict1[key] for key in dict1 if key == "scopes" and dict1["id"]==dict2["id"]})
-        definitive_list.append(dict1)
-    for dict2 in list2:
-        if dict2["id"] not in ids_used:
+            if dict1["id"]==dict2["id"]:
+                match=True
+        if match == False:
             definitive_list.append(dict2)
+        definitive_list.append(dict1)
+
     LOG.warning(definitive_list)
 
     return definitive_list
@@ -168,6 +180,99 @@ class FilteringTerms(EndpointView):
                 dict_response["response"]["resources"].append(response2)
         LOG.warning(dict_response)
         
+        return await self.resultset(dict_response)
+    
+class Registries(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        loop=asyncio.get_running_loop()
+        tasks=[]
+        with open('registry.yml', 'r') as f:
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+
+        for beacon in data["Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, registry, beacon)
+                tasks.append(task)
+        list_of_beacons=[]
+        
+        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            finalinforesponse={}
+            inforesponse = await task
+            inforesponse = json.loads(inforesponse)
+            LOG.warning(inforesponse)
+            beaconInfoId=inforesponse["meta"]["beaconId"]
+            beaconName=inforesponse["response"]["name"]
+            beaconMaturity=inforesponse["response"]["environment"]
+            beaconURL=inforesponse["response"]["alternativeUrl"]
+            beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+            finalinforesponse["beaconId"]=beaconInfoId
+            finalinforesponse["beaconName"]=beaconName
+            finalinforesponse["beaconMaturity"]=beaconMaturity
+            finalinforesponse["beaconURL"]=beaconURL
+            finalinforesponse["beaconLogo"]=beaconLogo
+            list_of_beacons.append(finalinforesponse)
+            with open('/responses/registries.json') as registries_file:
+                dict_registries = json.load(registries_file)
+            dict_registries["response"]["registries"]=list_of_beacons
+        return await self.resultset(dict_registries)
+        
+
+    async def post(self):
+        loop=asyncio.get_running_loop()
+        tasks=[]
+        with open('registry.yml', 'r') as f:
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+
+        for beacon in data["Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, registry, beacon)
+                tasks.append(task)
+        list_of_beacons=[]
+        
+        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            finalinforesponse={}
+            inforesponse = await task
+            inforesponse = json.loads(inforesponse)
+            LOG.warning(inforesponse)
+            beaconInfoId=inforesponse["meta"]["beaconId"]
+            beaconName=inforesponse["response"]["name"]
+            beaconMaturity=inforesponse["response"]["environment"]
+            beaconURL=inforesponse["response"]["alternativeUrl"]
+            beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+            finalinforesponse["beaconId"]=beaconInfoId
+            finalinforesponse["beaconName"]=beaconName
+            finalinforesponse["beaconMaturity"]=beaconMaturity
+            finalinforesponse["beaconURL"]=beaconURL
+            finalinforesponse["beaconLogo"]=beaconLogo
+            list_of_beacons.append(finalinforesponse)
+            with open('/responses/registries.json') as registries_file:
+                dict_registries = json.load(registries_file)
+            dict_registries["response"]["registries"]=list_of_beacons
+        return await self.resultset(dict_registries)
+    
+class Map(EndpointView):
+    async def resultset(self, dict_response):
+        try:
+            response_obj = dict_response
+            return web.Response(text=json_util.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:# pragma: no cover
+            raise
+
+    async def get(self):
+        dict_response=get_entry_types_map()
+        
+        return await self.resultset(dict_response)
+
+    async def post(self):
+        dict_response=get_entry_types_map()
+        LOG.warning(dict_response)
         return await self.resultset(dict_response)
     
 class Configuration(EndpointView):
@@ -477,7 +582,8 @@ async def create_api():# pragma: no cover
     app.add_routes([web.post('/api/entry_types', EntryTypes)])
     app.add_routes([web.post('/api/service-info', ServiceInfo)])
     app.add_routes([web.post('/api/configuration', Configuration)])
-    #app.add_routes([web.post('/api/map', Map)])
+    app.add_routes([web.post('/api/map', Map)])
+    app.add_routes([web.post('/api/registries', Registries)])
     app.add_routes([web.post('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.post('/api/datasets', Collection)])
     app.add_routes([web.post('/api/datasets/{id}', Collection)])
@@ -520,7 +626,8 @@ async def create_api():# pragma: no cover
     app.add_routes([web.get('/api/entry_types', EntryTypes)])
     app.add_routes([web.get('/api/service-info', ServiceInfo)])
     app.add_routes([web.get('/api/configuration', Configuration)])
-    #app.add_routes([web.get('/api/map', Map)])
+    app.add_routes([web.get('/api/map', Map)])
+    app.add_routes([web.get('/api/registries', Registries)])
     app.add_routes([web.get('/api/filtering_terms', FilteringTerms)])
     app.add_routes([web.get('/api/datasets', Collection)])
     app.add_routes([web.get('/api/datasets/{id}', Collection)])
