@@ -96,9 +96,9 @@ async def ws_server(websocket):
 
                 
                 dict_registries["response"]["registries"]=list_of_beacons
-                dict_registries=f"{dict_registries}".replace("'",'"')
+                dict_registries=json.dumps(dict_registries)
                 LOG.warning(dict_registries)
-                await websocket.send(dict_registries)
+                await websocket.send(f"{dict_registries}")
         
         else:
             LOG.warning(f"First: {firstitem}")
@@ -134,6 +134,7 @@ async def ws_server(websocket):
                         dict_response["response"]["resultSets"].append(response1)
                 if dict_response["responseSummary"]["numTotalResults"] > 0:
                     dict_response["responseSummary"]["exists"]=True
+                dict_response = json.dumps(dict_response)
                 await websocket.send(f"{dict_response}")
             
  
