@@ -1,4 +1,5 @@
-import "../App.css";
+import React from "react";
+import "../src/App.css";
 import Navbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
 
@@ -6,27 +7,23 @@ function Footer() {
   return (
     <Navbar className="custom-footer">
       <Container className="container-footer d-flex justify-content-between">
-        <span className="project-collaborators">
-          <div className="project-collaborators-title">
-            Project Collaborators:
+        <div className="d-flex align-items-center">
+          <span className="project-collaborators">Project Collaborators:</span>
+          <div className="footer-logos d-flex align-items-center">
+            <img src="./bsclogobn.svg" alt="BSC Logo" className="footer-logo" />
+            <img
+              src="./elixirlogobn.svg"
+              alt="Elixir Logo"
+              className="footer-logo"
+            />
+            <img src="./eulogo.svg" alt="EU Logo" className="footer-logo" />
+            <img
+              src="./caixalogobn.svg"
+              alt="Caixa Logo"
+              className="footer-logo"
+            />
           </div>
-          <img
-            className="bsclogobn"
-            src="/bsclogobn.svg"
-            alt="Barcelona Computer Science logo"
-          />
-          <img
-            className="elixirlogobn"
-            src="/elixirlogobn.svg"
-            alt="Elixir logo"
-          />
-          <img className="eulogo" src="/eulogo.svg" alt="Europe flag" />
-          <img
-            className="caixalogobn"
-            src="/caixalogobn.svg"
-            alt="Fundacion la Caixa logo"
-          />
-        </span>
+        </div>
         <span className="footer-text">© Copyright Global Beacon Network</span>
       </Container>
     </Navbar>
