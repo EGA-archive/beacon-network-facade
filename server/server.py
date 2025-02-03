@@ -93,8 +93,12 @@ async def ws_server(websocket):
                 list_of_beacons.append(finalinforesponse)
                 with open('/responses/registries.json') as registries_file:
                     dict_registries = json.load(registries_file)
+
+                
                 dict_registries["response"]["registries"]=list_of_beacons
-                await websocket.send(f"{dict_registries}")
+                dict_registries=f"{dict_registries}".replace("'",'"')
+                LOG.warning(dict_registries)
+                await websocket.send(dict_registries)
         
         else:
             LOG.warning(f"First: {firstitem}")
