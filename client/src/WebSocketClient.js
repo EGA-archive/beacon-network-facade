@@ -92,16 +92,14 @@ function WebSocketClient() {
     event.preventDefault();
     const pastedData = event.clipboardData.getData("text");
 
-    // Apply text cleanup rules
     const cleanedData = pastedData
       .trim()
-      .replace(/\./g, "") // Remove all periods
-      .replace(/\s+/g, " ") // Replace multiple spaces with a single space
-      .replace(/\t/g, "-") // Replace tabs with a single hyphen
-      .replace(/\s/g, "-") // Replace remaining spaces with a single hyphen
-      .replace(/-+/g, "-"); // Replace multiple consecutive hyphens with a single hyphen
+      .replace(/\./g, "")
+      .replace(/\s+/g, " ")
+      .replace(/\t/g, "-")
+      .replace(/\s/g, "-")
+      .replace(/-+/g, "-");
 
-    // Preserve surrounding text and insert the cleaned pasted data
     const inputElement = event.target;
     const start = inputElement.selectionStart;
     const end = inputElement.selectionEnd;
@@ -125,7 +123,7 @@ function WebSocketClient() {
 
   return (
     <ThemeProvider theme={CustomTheme}>
-      <Container>
+      <Container className="preventover">
         <Formik
           initialValues={{
             variant: "",
@@ -134,18 +132,11 @@ function WebSocketClient() {
           validationSchema={SignupSchema}
           onSubmit={sendMessage}
         >
-          {({
-            handleChange,
-            handleSubmit,
-            setFieldValue,
-            values,
-            errors,
-            touched,
-          }) => (
+          {({ handleSubmit, setFieldValue, values, errors, touched }) => (
             <Form noValidate onSubmit={handleSubmit}>
               <Form.Group>
                 <Grid container spacing={2} className="search-row">
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 7 }}>
                     <Form.Label>
                       <b className="variant-query">Variant query</b>
                       <Tooltip
@@ -203,7 +194,8 @@ function WebSocketClient() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  {/* Ref Genome button */}
+                  <Grid size={{ xs: 12, sm: 3 }}>
                     <Form.Label
                       htmlFor="ref-genome"
                       className="ref-genome-label"
@@ -226,13 +218,36 @@ function WebSocketClient() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={2}>
-                    <Button id="sendButton" type="submit" variant="primary">
-                      Send
-                    </Button>
+                  {/* Search button */}
+                  <Grid size={{ xs: 12, sm: 2 }}>
+                    <button
+                      id="sendButton"
+                      className="searchbutton"
+                      type="submit"
+                      variant="primary"
+                      disabled={errors.variant || errors.genome}
+                    >
+                      <div>
+                        <div className="lupared"></div>Search
+                      </div>
+                    </button>
                   </Grid>
                 </Grid>
               </Form.Group>
+
+              {/* Example Section */}
+              <Grid container className="example-span">
+                <Grid xs={12} sm="auto">
+                  {" "}
+                  <span>Example: </span>
+                  <a
+                    type="reset"
+                    onClick={() => setFieldValue("variant", "21-19653341-AT-A")}
+                  >
+                    <u className="example">21-19653341-AT-A</u>
+                  </a>
+                </Grid>
+              </Grid>
             </Form>
           )}
         </Formik>
