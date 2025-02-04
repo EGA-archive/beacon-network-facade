@@ -232,14 +232,61 @@ function WebSocketClient() {
                         )}
                       />
                     </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                      <button
+                        // id="sendButton"
+                        className="searchbutton"
+                        type="submit"
+                        disabled={errors.variant || errors.genome}
+                      >
+                        <div>
+                          <div className="lupared"></div>Search
+                        </div>
+                      </button>
+                    </Grid>
                   </Grid>
                 </Form.Group>
+                <Grid container className="example-span">
+                  <Grid xs={12} sm="auto">
+                    <span>Example: </span>
+                    <a
+                      type="reset"
+                      onClick={() =>
+                        setFieldValue("variant", "21-19653341-AT-A")
+                      }
+                    >
+                      <u className="example">21-19653341-AT-A</u>
+                    </a>
+                  </Grid>
+                </Grid>
+                {/* Message Display */}
+                <div
+                  style={{
+                    marginTop: "20px",
+                    background: "#f4f4f4",
+                    padding: "10px",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordWrap: "break-word",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    {messages.length > 0
+                      ? messages.join("\n")
+                      : "No messages received yet"}
+                  </pre>
+                </div>
               </Form>
             );
           }}
         </Formik>
-        <NetworkMembers registries={registries} />
       </Container>
+      <NetworkMembers registries={registries} />
     </ThemeProvider>
   );
 }
