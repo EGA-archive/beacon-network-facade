@@ -25,48 +25,14 @@ function WebSocketClient() {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [registries, setRegistries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
 
   useEffect(() => {
     connectWebSocket();
     return () => socket?.close();
   }, []);
-
-  const connectWebSocket = () => {
-    if (socket?.readyState === WebSocket.OPEN) return;
-
-    const ws = new WebSocket("ws://localhost:5700");
-
-    ws.onopen = () => console.log("✅ Connected to WebSocket");
-
-    ws.onmessage = (event) => {
-      console.log("📩 Message received:", event.data);
-      try {
-        const data = JSON.parse(event.data);
-        if (Array.isArray(data) && data[0]?.beaconId) {
-          setRegistries(data);
-        } else {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            JSON.stringify(data, null, 2),
-          ]);
-        }
-      } catch (error) {
-        console.error("❌ Error parsing WebSocket message:", error);
-        setMessages((prevMessages) => [...prevMessages, event.data]);
-      }
-    };
-
-    ws.onerror = (error) => console.error("WebSocket error:", error);
-
-    ws.onclose = () => {
-      console.log("⚠️ Disconnected - Reconnecting in 2 seconds...");
-      clearTimeout(reconnectRef.current);
-      reconnectRef.current = setTimeout(connectWebSocket, 2000);
-    };
-
-    setSocket(ws);
-  };
 
   // const sendMessage = (values) => {
   //   if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -98,14 +64,55 @@ function WebSocketClient() {
   //   socket.send(message);
   // };
 
+  const connectWebSocket = () => {
+    if (socket?.readyState === WebSocket.OPEN) return;
+
+    const ws = new WebSocket("ws://localhost:5700");
+
+    ws.onopen = () => {
+      console.log("✅ Connected to WebSocket");
+      setConnected(true); // Mark as connected
+    };
+
+    ws.onmessage = (event) => {
+      console.log("📩 Message received:", event.data);
+      setLoading(false); // Re-enable button when response arrives
+      try {
+        const data = JSON.parse(event.data);
+        if (Array.isArray(data) && data[0]?.beaconId) {
+          setRegistries(data);
+        } else {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            JSON.stringify(data, null, 2),
+          ]);
+        }
+      } catch (error) {
+        console.error("❌ Error parsing WebSocket message:", error);
+        setMessages((prevMessages) => [...prevMessages, event.data]);
+      }
+    };
+
+    ws.onerror = (error) => console.error("WebSocket error:", error);
+
+    ws.onclose = () => {
+      console.log("⚠️ Disconnected - Reconnecting in 2 seconds...");
+      setConnected(false); // Mark as disconnected
+      clearTimeout(reconnectRef.current);
+      reconnectRef.current = setTimeout(connectWebSocket, 2000);
+    };
+
+    setSocket(ws);
+  };
+
   const sendMessage = (values) => {
-    console.log("📤 Form values at submit:", values);
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      console.log("⚠️ WebSocket not connected. Retrying...");
-      connectWebSocket();
+    console.log("WebSocket State:", socket?.readyState);
+    if (!connected) {
+      console.log("⚠️ WebSocket is not connected. Please wait...");
       return;
     }
 
+    setLoading(true);
     let message = "";
 
     if (
@@ -117,6 +124,7 @@ function WebSocketClient() {
       const arr = values.variant.split("-");
       if (arr.length !== 4) {
         console.error("❌ Variant must have 4 parts: chr-position-ref-alt");
+        setLoading(false); // Re-enable button if there's an error
         return;
       }
 
@@ -129,8 +137,13 @@ function WebSocketClient() {
       });
     }
 
-    console.log("📤 Sending to WebSocket:", message);
+    console.log("📤 Sending first request to WebSocket:", message);
     socket.send(message);
+
+    setTimeout(() => {
+      console.log("📤 Sending second request to WebSocket:", message);
+      socket.send(message);
+    }, 300);
   };
 
   return (
