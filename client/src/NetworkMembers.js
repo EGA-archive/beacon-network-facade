@@ -2,9 +2,7 @@ import React from "react";
 import Grid from "@mui/material/Grid2";
 import { Container } from "react-bootstrap";
 
-// Here I need a connection to the websocket, automatict that queries /registries when the page first loads.
-// And the grabs the information to the logos and urls.
-function NetworkMembers() {
+function NetworkMembers({ registries = [] }) {
   return (
     <Container>
       <div>
@@ -17,72 +15,35 @@ function NetworkMembers() {
           justifyContent="center"
           sx={{ marginBottom: "50px" }}
         >
-          <Grid
-            xs={12}
-            sm={4}
-            md={4}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            sx={{ maxWidth: "250px", width: "100%" }}
-          >
-            <div className="cell">
-              <a
-                href="https://ega-archive.org/"
-                target="_blank"
-                rel="noopener noreferrer"
+          {registries.length > 0 ? (
+            registries.map((registry) => (
+              <Grid
+                key={registry.beaconId}
+                xs={12}
+                sm={4}
+                md={4}
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
               >
-                <img
-                  src="./egalogocolor.png"
-                  alt="EGA Logo"
-                  className="logos"
-                />
-              </a>
-            </div>
-          </Grid>
-
-          <Grid
-            xs={12}
-            sm={4}
-            md={4}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            sx={{ maxWidth: "250px", width: "100%" }}
-          >
-            <div className="cell">
-              <a
-                href="https://elixir-europe.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src="./elixirlogo.svg" alt="CRG Logo" className="logos" />
-              </a>
-            </div>
-          </Grid>
-          <Grid
-            xs={12}
-            sm={4}
-            md={4}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            sx={{ maxWidth: "250px", width: "100%" }}
-          >
-            <div className="cell">
-              <a
-                href="https://gdi.onemilliongenomes.eu/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  src="./EGDI.svg"
-                  alt="European Genomic Data Infrastructure Logo"
-                  className="logos"
-                />
-              </a>
-            </div>
-          </Grid>
+                <div className="cell">
+                  <a
+                    href={registry.beaconURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={registry.beaconLogo}
+                      alt={registry.beaconName}
+                      className="logos"
+                    />
+                  </a>
+                </div>
+              </Grid>
+            ))
+          ) : (
+            <p>Loading network members...</p>
+          )}
         </Grid>
       </div>
     </Container>

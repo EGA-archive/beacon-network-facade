@@ -2,7 +2,6 @@ import "./App.css";
 import WebSocketClient from "./WebSocketClient";
 import CustomNavbar from "./CustomNavbar";
 import Footer from "./Footer";
-import NetworkMembers from "./NetworkMembers";
 
 function App() {
   return (
@@ -10,7 +9,6 @@ function App() {
       <div>
         <CustomNavbar />
         <WebSocketClient />
-        <NetworkMembers />
       </div>
       <Footer />
     </div>
