@@ -18,6 +18,7 @@ import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from map_entry_types import get_entry_types_map
+import conf
 
 LOG = logging.getLogger(__name__)
 fmt = '%(levelname)s - %(asctime)s - %(message)s'
@@ -61,6 +62,20 @@ async def get_requesting(burl, query):
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
+        response_obj = await beacon_get_request(session, url, data)
+        #LOG.warning(json.dumps(response_obj))
+        return json.dumps(response_obj)
+        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+
+async def get_resultSets_requesting(burl, query):
+    data={}
+    my_timeout = aiohttp.ClientTimeout(
+    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+)
+    async with aiohttp.ClientSession(timeout=my_timeout) as session:
+        url = burl + query + '&includeResultsetResponses=ALL'
         response_obj = await beacon_get_request(session, url, data)
         #LOG.warning(json.dumps(response_obj))
         return json.dumps(response_obj)
@@ -125,6 +140,7 @@ class FilteringTerms(EndpointView):
 
         with open('/responses/filtering_terms.json') as json_file:
             dict_response = json.load(json_file)
+        dict_response["meta"]["beaconId"]=conf.beaconId
 
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
@@ -147,7 +163,8 @@ class FilteringTerms(EndpointView):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
@@ -164,6 +181,7 @@ class FilteringTerms(EndpointView):
 
         with open('/responses/filtering_terms.json') as json_file:
             dict_response = json.load(json_file)
+        dict_response["meta"]["beaconId"]=conf.beaconId
 
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
@@ -220,6 +238,7 @@ class Registries(EndpointView):
             list_of_beacons.append(finalinforesponse)
             with open('/responses/registries.json') as registries_file:
                 dict_registries = json.load(registries_file)
+            dict_registries["meta"]["beaconId"]=conf.beaconId
             dict_registries["response"]["registries"]=list_of_beacons
         return await self.resultset(dict_registries)
         
@@ -254,6 +273,7 @@ class Registries(EndpointView):
             list_of_beacons.append(finalinforesponse)
             with open('/responses/registries.json') as registries_file:
                 dict_registries = json.load(registries_file)
+            dict_registries["meta"]["beaconId"]=conf.beaconId
             dict_registries["response"]["registries"]=list_of_beacons
         return await self.resultset(dict_registries)
     
@@ -267,11 +287,13 @@ class Map(EndpointView):
 
     async def get(self):
         dict_response=get_entry_types_map()
+        dict_response["meta"]["beaconId"]=conf.beaconId
         
         return await self.resultset(dict_response)
 
     async def post(self):
         dict_response=get_entry_types_map()
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         return await self.resultset(dict_response)
     
@@ -286,6 +308,8 @@ class Configuration(EndpointView):
     async def get(self):
         with open('/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
+
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -293,6 +317,8 @@ class Configuration(EndpointView):
     async def post(self):
         with open('/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
+        
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -308,6 +334,8 @@ class EntryTypes(EndpointView):
     async def get(self):
         with open('/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
+
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -315,6 +343,8 @@ class EntryTypes(EndpointView):
     async def post(self):
         with open('/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
+
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -330,6 +360,8 @@ class ServiceInfo(EndpointView):
     async def get(self):
         with open('/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
+        
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -337,6 +369,8 @@ class ServiceInfo(EndpointView):
     async def post(self):
         with open('/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
+        
+        dict_response["meta"]["beaconId"]=conf.beaconId
         LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -375,7 +409,8 @@ class Collection(EndpointView):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
@@ -392,14 +427,23 @@ class Collection(EndpointView):
         with open('/responses/collections.json') as json_file:
             dict_response = json.load(json_file)
 
+        dict_response["meta"]["beaconId"]=conf.beaconId
+
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
             response = json.loads(response)
+            LOG.warning(response)
             beaconId=response["meta"]["beaconId"]
-            count=response["responseSummary"]["numTotalResults"]
+            try:
+                count=response["responseSummary"]["numTotalResults"]
+            except Exception:
+                count=0
             dict_response["responseSummary"]["numTotalResults"]+=count
-            for response1 in response["response"]["collections"]:
-                dict_response["response"]["collections"].append(response1)
+            try:
+                for response1 in response["response"]["collections"]:
+                    dict_response["response"]["collections"].append(response1)
+            except Exception:
+                dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
         LOG.warning(dict_response)
@@ -410,7 +454,8 @@ class Collection(EndpointView):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
@@ -427,15 +472,23 @@ class Collection(EndpointView):
 
         with open('/responses/collections.json') as json_file:
             dict_response = json.load(json_file)
+        
+        dict_response["meta"]["beaconId"]=conf.beaconId
 
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
-            count=response["responseSummary"]["numTotalResults"]
+            try:
+                count=response["responseSummary"]["numTotalResults"]
+            except Exception:
+                count=0
             dict_response["responseSummary"]["numTotalResults"]+=count
-            for response1 in response["response"]["collections"]:
-                dict_response["response"]["collections"].append(response1)
+            try:
+                for response1 in response["response"]["collections"]:
+                    dict_response["response"]["collections"].append(response1)
+            except Exception:
+                dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
         LOG.warning(dict_response)
@@ -454,7 +507,8 @@ class Resultset(EndpointView):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
@@ -465,28 +519,36 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_requesting, beacon, final_endpoint)
+                task = await loop.run_in_executor(pool, get_resultSets_requesting, beacon, final_endpoint)
                 tasks.append(task)
 
         with open('/responses/resultSets.json') as json_file:
             dict_response = json.load(json_file)
 
+        dict_response["meta"]["beaconId"]=conf.beaconId
+
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
-            count=response["responseSummary"]["numTotalResults"]
+            try:
+                count=response["responseSummary"]["numTotalResults"]
+            except Exception:
+                count=0
             dict_response["responseSummary"]["numTotalResults"]+=count
-            for response1 in response["response"]["resultSets"]:
-                try:
-                    if response1["beaconId"]!=beaconId:
-                        response1["beaconNetworkId"]=beaconId
-                    else:
+            try:
+                for response1 in response["response"]["resultSets"]:
+                    try:
+                        if response1["beaconId"]!=beaconId:
+                            response1["beaconNetworkId"]=beaconId
+                        else:
+                            response1["beaconId"]=beaconId
+                        dict_response["response"]["resultSets"].append(response1)
+                    except Exception:
                         response1["beaconId"]=beaconId
-                    dict_response["response"]["resultSets"].append(response1)
-                except Exception:
-                    response1["beaconId"]=beaconId
-                    dict_response["response"]["resultSets"].append(response1)
+                        dict_response["response"]["resultSets"].append(response1)
+            except Exception:
+                dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
         LOG.warning(dict_response)
@@ -496,8 +558,13 @@ class Resultset(EndpointView):
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        try:
+            token = headers["Authorization"][7:]
+        except Exception:
+            token = 'nothing'
         post_data = request
-        path_list = self.request.path.split('/')
+        relative_url=str(self.request.rel_url)
+        path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
         LOG.warning(final_endpoint)
@@ -514,22 +581,30 @@ class Resultset(EndpointView):
         with open('/responses/resultSets.json') as json_file:
             dict_response = json.load(json_file)
 
+        dict_response["meta"]["beaconId"]=conf.beaconId
+
         for task in itertools.islice(asyncio.as_completed(tasks), 2):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
-            count=response["responseSummary"]["numTotalResults"]
+            try:
+                count=response["responseSummary"]["numTotalResults"]
+            except Exception:
+                count=0
             dict_response["responseSummary"]["numTotalResults"]+=count
-            for response1 in response["response"]["resultSets"]:
-                try:
-                    if response1["beaconId"]!=beaconId:
-                        response1["beaconNetworkId"]=beaconId
-                    else:
+            try:
+                for response1 in response["response"]["resultSets"]:
+                    try:
+                        if response1["beaconId"]!=beaconId:
+                            response1["beaconNetworkId"]=beaconId
+                        else:
+                            response1["beaconId"]=beaconId
+                        dict_response["response"]["resultSets"].append(response1)
+                    except Exception:
                         response1["beaconId"]=beaconId
-                    dict_response["response"]["resultSets"].append(response1)
-                except Exception:
-                    response1["beaconId"]=beaconId
-                    dict_response["response"]["resultSets"].append(response1)
+                        dict_response["response"]["resultSets"].append(response1)
+            except Exception:
+                dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
         LOG.warning(dict_response)
