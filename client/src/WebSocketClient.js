@@ -10,6 +10,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
 import BeaconQuery from "./BeaconQuery";
+import { useNavigate } from "react-router-dom";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
