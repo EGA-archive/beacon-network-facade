@@ -9,6 +9,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
+import BeaconQuery from "./BeaconQuery";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
@@ -29,7 +30,7 @@ function WebSocketClient() {
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
-  const hasRequestedRegistries = useRef(false); // To prevent duplicate requests
+  const hasRequestedRegistries = useRef(false);
 
   useEffect(() => {
     connectWebSocket();
@@ -44,7 +45,6 @@ function WebSocketClient() {
       console.log("✅ Connected to WebSocket");
       setConnected(true);
 
-      // Ensure we send /registries only twice on mount
       if (!hasRequestedRegistries.current) {
         ws.send(JSON.stringify("/registries"));
         setTimeout(() => {
@@ -85,7 +85,6 @@ function WebSocketClient() {
       console.log("⚠️ Disconnected - Reconnecting in 5 seconds...");
       setConnected(false);
 
-      // Prevent infinite reconnections
       if (!reconnectRef.current) {
         reconnectRef.current = setTimeout(() => {
           connectWebSocket();
@@ -259,28 +258,16 @@ function WebSocketClient() {
                     </a>
                   </Grid>
                 </Grid>
-                {/* Message Display */}
-                <div
-                  style={{
-                    marginTop: "20px",
-                    background: "#f4f4f4",
-                    padding: "10px",
-                    borderRadius: "5px",
-                  }}
-                >
-                  <pre
-                    style={{
-                      whiteSpace: "pre-wrap",
-                      wordWrap: "break-word",
-                      maxHeight: "200px",
-                      overflowY: "auto",
-                    }}
-                  >
-                    {messages.length > 0
-                      ? messages.join("\n")
-                      : "No messages received yet"}
-                  </pre>
-                </div>
+                {/* Beacon Queries for each registry */}
+                {registries.map((registry, index) => (
+                  <BeaconQuery
+                    key={index}
+                    beaconURL={registry.beaconURL}
+                    beaconName={registry.beaconName}
+                    variant={values.variant}
+                    genome={values.genome}
+                  />
+                ))}
               </Form>
             );
           }}
