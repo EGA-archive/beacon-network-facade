@@ -26,6 +26,10 @@ async def requesting(websocket, burl, query):
     query = query.replace('"', '')
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
+        if '?' in url:
+            url = url + '&includeResultsetResponses=ALL'
+        else:
+            url = url + '?includeResultsetResponses=ALL'
         response_obj = await beacon_request(session, url, data)
         #LOG.warning(json.dumps(response_obj))
         return json.dumps(response_obj)

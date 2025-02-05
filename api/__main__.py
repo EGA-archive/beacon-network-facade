@@ -558,6 +558,10 @@ class Resultset(EndpointView):
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        try:
+            token = headers["Authorization"][7:]
+        except Exception:
+            token = 'nothing'
         post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
