@@ -67,19 +67,44 @@ async def get_requesting(burl, query):
         return json.dumps(response_obj)
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
-async def get_resultSets_requesting(burl, query):
-    data={}
+async def returning(url):
+    await asyncio.sleep(0.1)
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        url = burl + query + '&includeResultsetResponses=ALL'
-        response_obj = await beacon_get_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
-        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        response_obj = await registry(url)
+        return response_obj
+
+async def get_resultSets_requesting(burl, query):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        data={}
+        my_timeout = aiohttp.ClientTimeout(
+        total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+        sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+        sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    )
+        async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            url = burl + query + '&includeResultsetResponses=ALL'
+            response_obj = await beacon_get_request(session, url, data)
+            LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+
+async def get_resultset_or_timeout(burl, query, loop):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, burl, query)
+        secondarytasks.append(secondarytask)
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytasks.append(secondarytask)
+    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
+        return await sectask
+    
 
 async def requesting(burl, query, data):
     my_timeout = aiohttp.ClientTimeout(
@@ -519,7 +544,7 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_resultSets_requesting, beacon, final_endpoint)
+                task = await loop.run_in_executor(pool, get_resultset_or_timeout, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         with open('/responses/resultSets.json') as json_file:
