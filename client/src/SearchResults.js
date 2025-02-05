@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
-import { Container } from "react-bootstrap";
+import { Container, Row } from "react-bootstrap";
+import Grid from "@mui/material/Grid2";
+import { margin } from "@mui/system";
 
 function SearchResults() {
   const { variant, genome } = useParams();
@@ -68,50 +70,53 @@ function SearchResults() {
 
   return (
     <Container>
-      <div>
-        <button onClick={() => navigate("/")}>🔙 Back to Search</button>
-        <h3>
-          Results for Variant: {variant} | Genome: {genome}
-        </h3>
-
-        {/* Display WebSocket messages */}
-        <div
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid
+          item
+          size={{ xs: 12, sm: 9 }}
           style={{
-            marginTop: "20px",
-            background: "#f4f4f4",
-            padding: "10px",
-            borderRadius: "5px",
+            marginTop: "30px",
           }}
         >
-          <pre
+          <p
+            className="d-flex"
             style={{
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
-              maxHeight: "200px",
-              overflowY: "auto",
+              marginTop: "36px",
             }}
           >
-            {messages.length > 0
-              ? messages.join("\n")
-              : "No messages received yet"}
-          </pre>
-        </div>
+            <b>Results</b>{" "}
+            <span className="ms-4">Queried Variant: {variant}</span>
+          </p>
+        </Grid>
 
-        {registries.length > 0 ? (
-          registries.map((registry, index) => (
-            <BeaconQuery
-              key={index}
-              beaconId={registry.beaconId}
-              beaconName={registry.beaconName}
-              beaconURL={registry.beaconURL}
-              variant={variant}
-              genome={genome}
-            />
-          ))
-        ) : (
-          <p>Loading registries...</p>
-        )}
-      </div>
+        <Grid size={{ xs: 12, sm: 3 }} className="d-flex justify-content-end">
+          <button className="searchbutton" onClick={() => navigate("/")}>
+            <div>
+              <div className="lupared"></div>New Search
+            </div>
+          </button>
+        </Grid>
+      </Grid>
+
+      {/* Beacon Queries */}
+      {registries.length > 0 ? (
+        registries.map((registry, index) => (
+          <BeaconQuery
+            beaconId={registry.beaconId}
+            beaconName={registry.beaconName}
+            beaconURL={registry.beaconURL}
+            variant={variant}
+            genome={genome}
+          />
+        ))
+      ) : (
+        <p>Loading registries...</p>
+      )}
     </Container>
   );
 }
