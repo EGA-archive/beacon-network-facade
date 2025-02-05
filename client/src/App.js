@@ -3,6 +3,7 @@ import WebSocketClient from "./WebSocketClient";
 import CustomNavbar from "./CustomNavbar";
 import Footer from "./Footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SearchResults from "./SearchResults";
 
 function App() {
   return (
@@ -12,10 +13,10 @@ function App() {
           <CustomNavbar />
           <Routes>
             <Route path="/" element={<WebSocketClient />} />
-            {/* <Route
+            <Route
               path="/search/:variant/:genome"
               element={<SearchResults />}
-            /> */}
+            />
           </Routes>
         </div>
         <Footer />

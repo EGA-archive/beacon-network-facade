@@ -32,6 +32,7 @@ function WebSocketClient() {
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     connectWebSocket();
@@ -97,44 +98,49 @@ function WebSocketClient() {
     setSocket(ws);
   };
 
-  const sendMessage = (values, { resetForm }) => {
-    if (!connected) {
-      console.log("⚠️ WebSocket is not connected. Please wait...");
-      return;
-    }
-
-    setLoading(true);
-    let message = "";
-
-    if (
-      values.variant.trim().toLowerCase() === "/registries" ||
-      values.variant.trim().toLowerCase() === "/individuals"
-    ) {
-      message = JSON.stringify(values.variant.trim().toLowerCase());
-    } else {
-      const arr = values.variant.split("-");
-      if (arr.length !== 4) {
-        console.error("❌ Variant must have 4 parts: chr-position-ref-alt");
-        setLoading(false);
-        return;
-      }
-
-      message = JSON.stringify({
-        start: arr[1],
-        alternateBases: arr[3],
-        referenceBases: arr[2],
-        referenceName: arr[0],
-        assemblyId: values.genome,
-      });
-    }
-
-    socket.send(message);
-    setTimeout(() => {
-      socket.send(message);
-    }, 300);
-
-    resetForm();
+  const handleSearch = (values) => {
+    const { variant, genome } = values;
+    navigate(`/search/${variant}/${genome}`);
   };
+
+  // const sendMessage = (values, { resetForm }) => {
+  //   if (!connected) {
+  //     console.log("⚠️ WebSocket is not connected. Please wait...");
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   let message = "";
+
+  //   if (
+  //     values.variant.trim().toLowerCase() === "/registries" ||
+  //     values.variant.trim().toLowerCase() === "/individuals"
+  //   ) {
+  //     message = JSON.stringify(values.variant.trim().toLowerCase());
+  //   } else {
+  //     const arr = values.variant.split("-");
+  //     if (arr.length !== 4) {
+  //       console.error("❌ Variant must have 4 parts: chr-position-ref-alt");
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     message = JSON.stringify({
+  //       start: arr[1],
+  //       alternateBases: arr[3],
+  //       referenceBases: arr[2],
+  //       referenceName: arr[0],
+  //       assemblyId: values.genome,
+  //     });
+  //   }
+
+  //   socket.send(message);
+  //   setTimeout(() => {
+  //     socket.send(message);
+  //   }, 300);
+
+  //   resetForm();
+  // };
 
   return (
     <ThemeProvider theme={CustomTheme}>
@@ -142,7 +148,8 @@ function WebSocketClient() {
         <Formik
           initialValues={{ variant: "", genome: "GRCh37" }}
           validationSchema={variantQueryValidationSchema}
-          onSubmit={sendMessage}
+          // onSubmit={sendMessage}
+          onSubmit={handleSearch}
         >
           {({ handleSubmit, setFieldValue, values, errors, touched }) => {
             const handlePaste = (event) => {
@@ -259,16 +266,6 @@ function WebSocketClient() {
                     </a>
                   </Grid>
                 </Grid>
-                {/* Beacon Queries for each registry */}
-                {registries.map((registry, index) => (
-                  <BeaconQuery
-                    key={index}
-                    beaconURL={registry.beaconURL}
-                    beaconName={registry.beaconName}
-                    variant={values.variant}
-                    genome={values.genome}
-                  />
-                ))}
               </Form>
             );
           }}
