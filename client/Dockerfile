@@ -1,6 +1,6 @@
 # client/Dockerfile
 
-FROM node:19.0-alpine
+FROM node:20.0-alpine
 
 # set working directory
 WORKDIR ./client
