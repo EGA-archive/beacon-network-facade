@@ -96,7 +96,10 @@ async def get_resultSets_requesting(burl, query):
         sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
-            url = burl + query + '&includeResultsetResponses=ALL'
+            if '?' in query:
+                url = burl + query + '&includeResultsetResponses=ALL'
+            else:
+                url = burl + query + '?includeResultsetResponses=ALL'
             try:
                 response_obj = await beacon_get_request(session, url, data)
                 #LOG.warning(json.dumps(response_obj))
@@ -147,6 +150,9 @@ async def requesting(burl, query, data):
         try:
             response_obj = await beacon_post_request(session, url, data)
             #LOG.warning(json.dumps(response_obj))
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         except Exception:
@@ -519,7 +525,7 @@ class Collection(EndpointView):
                 dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
@@ -564,7 +570,7 @@ class Collection(EndpointView):
                 dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
@@ -604,6 +610,7 @@ class Resultset(EndpointView):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
+
             try:
                 count=response["responseSummary"]["numTotalResults"]
             except Exception:
@@ -624,7 +631,7 @@ class Resultset(EndpointView):
                 dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
@@ -636,7 +643,7 @@ class Resultset(EndpointView):
         except Exception:
             token = 'nothing'
         post_data = request
-        relative_url=str(self.request.rel_url)
+        relative_url=str(self.request.path)
         path_list = relative_url.split('/')
         endpoint=path_list[-1]
         final_endpoint='/'+endpoint
@@ -647,6 +654,7 @@ class Resultset(EndpointView):
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
+            #LOG.warning(beacon)
             with ThreadPoolExecutor() as pool:
                 task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
                 tasks.append(task)
@@ -680,7 +688,7 @@ class Resultset(EndpointView):
                 dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
             if dict_response["responseSummary"]["numTotalResults"] > 0:
                 dict_response["responseSummary"]["exists"]=True
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
         
