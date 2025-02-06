@@ -54,6 +54,7 @@ async def registry(burl):
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
     
 async def get_requesting(burl, query):
+    start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
@@ -62,13 +63,20 @@ async def get_requesting(burl, query):
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
-        response_obj = await beacon_get_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
-        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        try:
+            response_obj = await beacon_get_request(session, url, data)
+            #LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:
+            response_obj = await registry(burl)
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
+            return response_obj
 
 async def returning(url):
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(60)
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
@@ -79,7 +87,7 @@ async def returning(url):
         return response_obj
 
 async def get_resultSets_requesting(burl, query):
-    secondarytasks=[]
+    start_time = perf_counter()
     with ThreadPoolExecutor() as pool:
         data={}
         my_timeout = aiohttp.ClientTimeout(
@@ -89,9 +97,19 @@ async def get_resultSets_requesting(burl, query):
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
             url = burl + query + '&includeResultsetResponses=ALL'
-            response_obj = await beacon_get_request(session, url, data)
-            LOG.warning(json.dumps(response_obj))
-            return json.dumps(response_obj)
+            try:
+                response_obj = await beacon_get_request(session, url, data)
+                #LOG.warning(json.dumps(response_obj))
+                end_time = perf_counter()
+                final_time=end_time-start_time
+                LOG.warning("{} response took {} seconds".format(burl, final_time))
+                return json.dumps(response_obj)
+            except Exception:
+                response_obj = await registry(burl)
+                end_time = perf_counter()
+                final_time=end_time-start_time
+                LOG.warning("{} response took {} seconds".format(burl, final_time))
+                return response_obj
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 async def get_resultset_or_timeout(burl, query, loop):
@@ -105,8 +123,20 @@ async def get_resultset_or_timeout(burl, query, loop):
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
     
+async def get_results_or_timeout(burl, query, loop):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, get_requesting, burl, query)
+        secondarytasks.append(secondarytask)
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytasks.append(secondarytask)
+    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
+        return await sectask
+    
 
 async def requesting(burl, query, data):
+    start_time = perf_counter()
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
@@ -114,10 +144,28 @@ async def requesting(burl, query, data):
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
-        response_obj = await beacon_post_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
-        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        try:
+            response_obj = await beacon_post_request(session, url, data)
+            #LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:
+            response_obj = await registry(burl)
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
+            return response_obj
+
+async def post_resultset_or_timeout(burl, query, loop, data):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, requesting, burl, query, data)
+        secondarytasks.append(secondarytask)
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytasks.append(secondarytask)
+    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
+        return await sectask
 
 def combine_filtering_terms(self, list1, list2):
     definitive_list=[]
@@ -160,14 +208,14 @@ class FilteringTerms(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_requesting, beacon, final_endpoint)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         with open('/responses/filtering_terms.json') as json_file:
             dict_response = json.load(json_file)
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
@@ -200,7 +248,7 @@ class FilteringTerms(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, requesting, beacon, final_endpoint, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
                 tasks.append(task)
 
 
@@ -208,7 +256,7 @@ class FilteringTerms(EndpointView):
             dict_response = json.load(json_file)
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
@@ -245,7 +293,7 @@ class Registries(EndpointView):
                 tasks.append(task)
         list_of_beacons=[]
         
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             finalinforesponse={}
             inforesponse = await task
             inforesponse = json.loads(inforesponse)
@@ -280,7 +328,7 @@ class Registries(EndpointView):
                 tasks.append(task)
         list_of_beacons=[]
         
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             finalinforesponse={}
             inforesponse = await task
             inforesponse = json.loads(inforesponse)
@@ -446,7 +494,7 @@ class Collection(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_requesting, beacon, final_endpoint)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         with open('/responses/collections.json') as json_file:
@@ -454,7 +502,7 @@ class Collection(EndpointView):
 
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             LOG.warning(response)
@@ -491,7 +539,7 @@ class Collection(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, requesting, beacon, final_endpoint, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
                 tasks.append(task)
 
 
@@ -500,7 +548,7 @@ class Collection(EndpointView):
         
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
@@ -552,7 +600,7 @@ class Resultset(EndpointView):
 
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
@@ -600,7 +648,7 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, requesting, beacon, final_endpoint, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
                 tasks.append(task)
 
         with open('/responses/resultSets.json') as json_file:
@@ -608,7 +656,7 @@ class Resultset(EndpointView):
 
         dict_response["meta"]["beaconId"]=conf.beaconId
 
-        for task in itertools.islice(asyncio.as_completed(tasks), 2):
+        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
             response = await task
             response = json.loads(response)
             beaconId=response["meta"]["beaconId"]
