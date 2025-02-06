@@ -42,7 +42,7 @@ async def beacon_post_request(session, url, data):
 async def registry(burl):
     data={}
     my_timeout = aiohttp.ClientTimeout(
-    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
@@ -57,7 +57,7 @@ async def get_requesting(burl, query):
     start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
-    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
@@ -76,9 +76,9 @@ async def get_requesting(burl, query):
             return response_obj
 
 async def returning(url):
-    await asyncio.sleep(60)
+    await asyncio.sleep(conf.timeout)
     my_timeout = aiohttp.ClientTimeout(
-    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
@@ -91,7 +91,7 @@ async def get_resultSets_requesting(burl, query):
     with ThreadPoolExecutor() as pool:
         data={}
         my_timeout = aiohttp.ClientTimeout(
-        total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+        total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
         sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
         sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
     )
@@ -141,7 +141,7 @@ async def get_results_or_timeout(burl, query, loop):
 async def requesting(burl, query, data):
     start_time = perf_counter()
     my_timeout = aiohttp.ClientTimeout(
-    total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
