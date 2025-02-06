@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
-import { Container, Row } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
-import { margin } from "@mui/system";
 
 function SearchResults() {
   const { variant, genome } = useParams();
@@ -14,31 +13,31 @@ function SearchResults() {
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
 
+  // Runs the code when the component mounts
   useEffect(() => {
     connectWebSocket();
   }, []);
 
+  // Creates and connects
   const connectWebSocket = () => {
     if (socket?.readyState === WebSocket.OPEN) return;
-
     const ws = new WebSocket("ws://localhost:5700");
 
     ws.onopen = () => {
-      console.log("✅ Connected to WebSocket");
+      console.log("✅Connected to WebSocket");
       setConnected(true);
-
-      // Request registries first
-      ws.send(JSON.stringify("/registries"));
+      //   ws.send(JSON.stringify("/registries"));
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 Message received:", event.data);
+      console.log("My event", event);
+      console.log("📩 Message received from search:", event.data);
       try {
         const data = JSON.parse(event.data);
 
         if (data.response?.registries) {
           console.log("✅ Updating registries with:", data.response.registries);
-          setRegistries(data.response.registries); // ✅ Save registries
+          setRegistries(data.response.registries);
         } else {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -76,13 +75,14 @@ function SearchResults() {
         alignItems="center"
         justifyContent="space-between"
       >
-        <Grid
+        {/* <Grid
           item
           size={{ xs: 12, sm: 9 }}
           style={{
             marginTop: "30px",
           }}
-        >
+        > */}
+        <Grid item xs={12} sm={9} style={{ marginTop: "30px" }}>
           <p
             className="d-flex"
             style={{
@@ -94,7 +94,8 @@ function SearchResults() {
           </p>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 3 }} className="d-flex justify-content-end">
+        {/* <Grid size={{ xs: 12, sm: 2 }} className="d-flex justify-content-end"> */}
+        <Grid item xs={12} sm={2} className="d-flex justify-content-end">
           <button className="searchbutton" onClick={() => navigate("/")}>
             <div>
               <div className="lupared"></div>New Search
@@ -107,6 +108,7 @@ function SearchResults() {
       {registries.length > 0 ? (
         registries.map((registry, index) => (
           <BeaconQuery
+            key={index}
             beaconId={registry.beaconId}
             beaconName={registry.beaconName}
             beaconURL={registry.beaconURL}

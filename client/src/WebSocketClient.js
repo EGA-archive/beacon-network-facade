@@ -12,15 +12,15 @@ import NetworkMembers from "./NetworkMembers";
 import BeaconQuery from "./BeaconQuery";
 import { useNavigate } from "react-router-dom";
 
-const variantQueryValidationSchema = Yup.object().shape({
-  variant: Yup.string()
-    .matches(
-      /[1-9XY]-\d+-[ACGT]+-[ACGT]+$/,
-      "Incorrect variant format, check the example"
-    )
-    .required("Required"),
-  genome: Yup.string().required("Required"),
-});
+// const variantQueryValidationSchema = Yup.object().shape({
+//   variant: Yup.string()
+//     .matches(
+//       /[1-9XY]-\d+-[ACGT]+-[ACGT]+$/,
+//       "Incorrect variant format, check the example"
+//     )
+//     .required("Required"),
+//   genome: Yup.string().required("Required"),
+// });
 
 const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 
@@ -53,11 +53,12 @@ function WebSocketClient() {
           ws.send(JSON.stringify("/registries"));
         }, 300);
         hasRequestedRegistries.current = true;
-        console.log("📤 Automatically requested /registries twice on mount");
+        // console.log("📤 Automatically requested /registries twice on mount");
       }
     };
 
     ws.onmessage = (event) => {
+      console.log("This my event", event);
       console.log("📩 Message received:", event.data);
       setLoading(false);
       try {
@@ -147,7 +148,7 @@ function WebSocketClient() {
       <Container>
         <Formik
           initialValues={{ variant: "", genome: "GRCh37" }}
-          validationSchema={variantQueryValidationSchema}
+          // validationSchema={variantQueryValidationSchema}
           // onSubmit={sendMessage}
           onSubmit={handleSearch}
         >
