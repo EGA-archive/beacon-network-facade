@@ -19,6 +19,7 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from map_entry_types import get_entry_types_map
 import conf
+from authorization.__main__ import get_token
 
 LOG = logging.getLogger(__name__)
 fmt = '%(levelname)s - %(asctime)s - %(message)s'
@@ -655,6 +656,10 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             #LOG.warning(beacon)
+            if token != 'nothing':
+                # go to beacon's endpoint
+                # call the get_token function to do the exchange token
+                pass
             with ThreadPoolExecutor() as pool:
                 task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
                 tasks.append(task)

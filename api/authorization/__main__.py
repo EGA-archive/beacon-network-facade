@@ -5,7 +5,7 @@ import json
 def get_token(self, idp_token):
     data = {'client_id': 'beacon',
             'subject_token': idp_token,
-            "subject_issuer": 'keycloak-oidc',
+            "subject_issuer": 'lifescience-oidc',
             'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
             'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange'}
 
