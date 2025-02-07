@@ -57,7 +57,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message:", event.data);
+      // console.log("📩 WebSocket Received Message:", event.data);
       setLoading(false);
       try {
         const data = JSON.parse(event.data);
@@ -83,8 +83,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
       console.log("⚠️ WebSocket Disconnected - Reconnecting in 5 seconds...");
       setConnected(false);
       reconnectRef.current = setTimeout(() => {
-        setSocket(null); // Reset socket
-        connectWebSocket(); // Reconnect
+        setSocket(null);
+        connectWebSocket();
         reconnectRef.current = null;
       }, 5000);
     };

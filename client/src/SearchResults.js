@@ -34,40 +34,34 @@ function SearchResults({ registries = [], socket }) {
           </button>
         </Grid>
       </Grid>
-
-      {/* Displaying Registries List */}
-      {/* <h3>Available Registries:</h3>
-      {registries.length > 0 ? (
-        <ul>
-          {registries.map((registry, index) => (
-            <li key={index}>
-              <b>Name:</b> {registry.beaconName} <br />
-              <b>ID:</b> {registry.beaconId}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Loading registries...</p>
-      )} */}
-
-      {/* Beacon Queries should only appear on this page */}
-      {registries.length > 0 ? (
+      <BeaconQuery
+        // key={index}
+        // beaconId={registry.beaconId}
+        // beaconName={registry.beaconName}
+        variant={variant}
+        genome={genome}
+        socket={socket}
+        registries={registries}
+      />
+      {/* TO DO: Take out the map. */}
+      {/* {registries.length > 0 ? (
         registries.map((registry, index) => {
-          console.log(`🟡 Rendering BeaconQuery for: ${registry.beaconName}`);
+          //   console.log(`🟡 Rendering BeaconQuery for: ${registry.beaconName}`);
           return (
             <BeaconQuery
               key={index}
               beaconId={registry.beaconId}
               beaconName={registry.beaconName}
-              variant={variant} // Dynamic from URL
-              genome={genome} // Dynamic from URL
-              socket={socket} // Pass WebSocket connection
+              variant={variant}
+              genome={genome}
+              socket={socket}
+              registries={registries}
             />
           );
         })
       ) : (
-        <p>Loading registries...</p>
-      )}
+        <p>Loading...</p>
+      )} */}
     </Container>
   );
 }

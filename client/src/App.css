@@ -598,7 +598,7 @@ table {
   overflow: hidden;
 }
 th {
-  background: #023452;
+  /* background: #023452; */
   color: white;
   padding: 0.5em 1em;
   text-align: left;
@@ -615,9 +615,9 @@ td {
 tbody tr {
   transition: background 0.25s ease;
 }
-tbody tr:hover {
-  background: #014055;
-}
+/* tbody tr:hover {
+ background: #014055; 
+} */
 
 /* Background-color of the odd rows */
 .restable tr:nth-child(odd) {
