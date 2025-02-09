@@ -25,7 +25,6 @@ function SearchResults({ registries = [], socket }) {
             <span className="ms-4">Queried Variant: {variant}</span>
           </p>
         </Grid>
-
         <Grid item xs={12} sm={2} className="d-flex justify-content-end">
           <button className="searchbutton" onClick={() => navigate("/")}>
             <div>
@@ -35,33 +34,11 @@ function SearchResults({ registries = [], socket }) {
         </Grid>
       </Grid>
       <BeaconQuery
-        // key={index}
-        // beaconId={registry.beaconId}
-        // beaconName={registry.beaconName}
         variant={variant}
         genome={genome}
         socket={socket}
         registries={registries}
       />
-      {/* TO DO: Take out the map. */}
-      {/* {registries.length > 0 ? (
-        registries.map((registry, index) => {
-          //   console.log(`🟡 Rendering BeaconQuery for: ${registry.beaconName}`);
-          return (
-            <BeaconQuery
-              key={index}
-              beaconId={registry.beaconId}
-              beaconName={registry.beaconName}
-              variant={variant}
-              genome={genome}
-              socket={socket}
-              registries={registries}
-            />
-          );
-        })
-      ) : (
-        <p>Loading...</p>
-      )} */}
     </Container>
   );
 }
