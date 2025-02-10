@@ -25,10 +25,18 @@ async def requesting(websocket, burl, query):
 )
     query = query.replace('"', '')
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        url = burl + query
-        response_obj = await beacon_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
+        try:
+            url = burl + query
+            if '?' in url:
+                url = url + '&includeResultsetResponses=ALL'
+            else:
+                url = url + '?includeResultsetResponses=ALL'
+            response_obj = await beacon_request(session, url, data)
+            #LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+        except Exception:
+            response_obj = await registry(burl)
+            return response_obj
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 async def registry(websocket, burl):
@@ -75,11 +83,11 @@ async def ws_server(websocket):
                     tasks.append(task)
             list_of_beacons=[]
             
-            for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
-                LOG.warning(inforesponse)
+                #LOG.warning(inforesponse)
                 beaconInfoId=inforesponse["meta"]["beaconId"]
                 beaconName=inforesponse["response"]["name"]
                 beaconMaturity=inforesponse["response"]["environment"]
@@ -96,9 +104,9 @@ async def ws_server(websocket):
 
                 
                 dict_registries["response"]["registries"]=list_of_beacons
-                dict_registries=f"{dict_registries}".replace("'",'"')
-                LOG.warning(dict_registries)
-                await websocket.send(dict_registries)
+                dict_registries=json.dumps(dict_registries)
+                #LOG.warning(dict_registries)
+                await websocket.send(f"{dict_registries}")
         
         else:
             LOG.warning(f"First: {firstitem}")
@@ -116,24 +124,36 @@ async def ws_server(websocket):
             with open('/responses/resultSets.json') as json_file:
                 dict_response = json.load(json_file)
 
-            for task in itertools.islice(asyncio.as_completed(tasks), 2):
+            for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
                 response = await task
                 response = json.loads(response)
                 beaconId=response["meta"]["beaconId"]
-                count=response["responseSummary"]["numTotalResults"]
+                LOG.warning(beaconId)
+                try:
+                    count=response["responseSummary"]["numTotalResults"]
+                except Exception:
+                    count=0
+                try:
+                    dict_response = json.loads(dict_response)
+                except Exception:
+                    pass
                 dict_response["responseSummary"]["numTotalResults"]+=count
-                for response1 in response["response"]["resultSets"]:
-                    try:
-                        if response1["beaconId"]!=beaconId:
-                            response1["beaconNetworkId"]=beaconId
-                        else:
+                try:
+                    for response1 in response["response"]["resultSets"]:
+                        try:
+                            if response1["beaconId"]!=beaconId:
+                                response1["beaconNetworkId"]=beaconId
+                            else:
+                                response1["beaconId"]=beaconId
+                            dict_response["response"]["resultSets"].append(response1)
+                        except Exception:
                             response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
-                    except Exception:
-                        response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
+                            dict_response["response"]["resultSets"].append(response1)
+                except Exception:
+                    dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
                 if dict_response["responseSummary"]["numTotalResults"] > 0:
                     dict_response["responseSummary"]["exists"]=True
+                dict_response = json.dumps(dict_response)
                 await websocket.send(f"{dict_response}")
             
  

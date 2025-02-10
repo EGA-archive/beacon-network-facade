@@ -294,7 +294,7 @@ def get_entry_types_map():
 
     meta = {
         '$schema': 'https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/sections/beaconInformationalResponseMeta.json',
-        'beaconId': conf.id,
+        'beaconId': conf.beaconId,
         'apiVersion': 'v2.0.0',
         'returnedSchemas': []
     }
