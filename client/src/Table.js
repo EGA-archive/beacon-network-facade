@@ -149,6 +149,16 @@ export default function CollapsibleTable({ data, registries }) {
   console.log("🏛 Individual Beacons:", individualBeacons);
   console.log("🌐 Network Beacons:", networkBeacons);
 
+  const uniqueIndividualBeacons = new Set();
+  const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+    const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+    if (uniqueIndividualBeacons.has(uniqueKey)) {
+      return false; // Ignore duplicates
+    }
+    uniqueIndividualBeacons.add(uniqueKey);
+    return true; // Keep unique individual beacons
+  });
+
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -180,18 +190,20 @@ export default function CollapsibleTable({ data, registries }) {
             <TableCell>AF Boolean</TableCell>
             <TableCell>Response</TableCell>
           </TableRow>
-          {individualBeacons.map((beacon) => (
-            <TableRow key={beacon.id}>
+          {filteredIndividualBeacons.map((individualBeacon) => (
+            <TableRow
+              key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+            >
               <TableCell />
               <TableCell></TableCell>
-              <TableCell>{beacon.beaconId}</TableCell>
+              <TableCell>{individualBeacon.beaconId}</TableCell>
               <TableCell>
-                <b>{beacon.id}</b>
+                <b>{individualBeacon.id}</b>
               </TableCell>{" "}
               {/* Dataset ID */}
-              <TableCell>AF Response</TableCell>
+              <TableCell></TableCell>
               <TableCell>
-                {beacon.exists ? "Found" : "Not Found"}
+                {individualBeacon.exists ? "Found" : "Not Found"}
               </TableCell>{" "}
               {/* Response */}
             </TableRow>
