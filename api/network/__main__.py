@@ -485,7 +485,7 @@ class ServiceInfo(EndpointView):
         with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
-        dict_response["meta"]["beaconId"]=conf.beaconId
+        dict_response["id"]=conf.beaconId
         #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
@@ -494,7 +494,7 @@ class ServiceInfo(EndpointView):
         with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
-        dict_response["meta"]["beaconId"]=conf.beaconId
+        dict_response["id"]=conf.beaconId
         #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)

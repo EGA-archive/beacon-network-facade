@@ -108,6 +108,249 @@ class TestMain(unittest.TestCase):
                 assert resp.status == 200
             loop.run_until_complete(test_check_slash_endpoint_is_working())
             loop.run_until_complete(client.close())
+    def test_main_check_post_slash_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_slash_endpoint_is_working():
+                resp = await client.post("/api")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_slash_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_info_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_info_endpoint_is_working():
+                resp = await client.get("/api/info")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_info_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_info_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_info_endpoint_is_working():
+                resp = await client.post("/api/info")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_info_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_service_info_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_service_info_endpoint_is_working():
+                resp = await client.get("/api/service-info")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_service_info_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_service_info_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_service_info_endpoint_is_working():
+                resp = await client.post("/api/service-info")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_service_info_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_entry_types_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_entry_types_endpoint_is_working():
+                resp = await client.get("/api/entry_types")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_entry_types_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_entry_types_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_entry_types_endpoint_is_working():
+                resp = await client.post("/api/entry_types")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_entry_types_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_configuration_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_configuration_endpoint_is_working():
+                resp = await client.get("/api/configuration")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_configuration_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_configuration_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_configuration_endpoint_is_working():
+                resp = await client.post("/api/configuration")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_configuration_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_map_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_map_endpoint_is_working():
+                resp = await client.get("/api/map")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_map_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_map_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_map_endpoint_is_working():
+                resp = await client.post("/api/map")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_map_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_filtering_terms_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_filtering_terms_endpoint_is_working():
+                resp = await client.get("/api/filtering_terms")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_filtering_terms_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_filtering_terms_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_filtering_terms_endpoint_is_working():
+                resp = await client.post("/api/filtering_terms")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_filtering_terms_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_datasets_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_datasets_endpoint_is_working():
+                resp = await client.get("/api/datasets")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_datasets_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_datasets_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_post_datasets_endpoint_is_working():
+                resp = await client.post("/api/datasets")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_post_datasets_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_individuals_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_individuals_endpoint_is_working():
+                resp = await client.post("/api/individuals")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_individuals_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_cohorts_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_cohorts_endpoint_is_working():
+                resp = await client.get("/api/cohorts")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_cohorts_endpoint_is_working())
+            loop.run_until_complete(client.close())
+
+    def test_main_check_datasets_with_limit_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_datasets_with_limit_endpoint_is_working():
+                resp = await client.get("/api/datasets?limit=200")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_datasets_with_limit_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_g_variants_with_limit_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_g_variants_with_limit_endpoint_is_working():
+                resp = await client.get("/api/g_variants?limit=200")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_g_variants_with_limit_endpoint_is_working())
+            loop.run_until_complete(client.close())
+
+    def test_main_check_g_variants_endpoint_ALL_resultSetResponse_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_g_variants_endpoint_ALL_resultSetResponse_is_working():
+                resp = await client.get("/api/g_variants?includeResultsetResponses=ALL")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_g_variants_endpoint_ALL_resultSetResponse_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_g_variants_sequence_query(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_g_variants_endpoint_with_parameters_is_working():
+                resp = await client.get("/api/g_variants?start=43045703&referenceName=17&assemblyId=GRCh38&referenceBases=G&alternateBases=A")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_g_variants_endpoint_with_parameters_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_g_variants_bracket_query(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_g_variants_endpoint_with_parameters_is_working():
+                resp = await client.get("/api/g_variants?start=43045703,43045704&end=43045704,43045705&referenceName=17&assemblyId=GRCh38")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_g_variants_endpoint_with_parameters_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_registries(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_registries_is_working():
+                resp = await client.get("/api/registries")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_registries_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_post_registries(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_registries_is_working():
+                resp = await client.post("/api/registries")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_registries_is_working())
+            loop.run_until_complete(client.close())
+
 
 if __name__ == '__main__':
     unittest.main()
