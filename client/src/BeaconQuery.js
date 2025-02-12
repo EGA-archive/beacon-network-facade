@@ -77,15 +77,14 @@ function BeaconQuery({
 
   return (
     <div>
-      {registries.map((registry, index) => {
+      {/* {registries.map((registry, index) => {
         return (
-          <h4>
-            Beacon Query -{" "}
-            <span style={{ color: "green" }}>{registry.beaconName}</span> (
-            <span style={{ color: "blue" }}>{registry.beaconId}</span>)
-          </h4>
+          <div>
+            <span>{registry.beaconName}</span>
+            <span>{registry.beaconId}</span>
+          </div>
         );
-      })}
+      })} */}
 
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
       {aggregatedData.length > 0 ? (
