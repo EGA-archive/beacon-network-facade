@@ -15,12 +15,12 @@ import json
 import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
-from conf.map_entry_types import get_entry_types_map
-from conf import conf
-from authorization.__main__ import get_token
-from utils.txid import generate_txid
-from logs.logs import log_with_args, LOG, log_with_args_initial
-from conf.conf import level
+from network.conf.map_entry_types import get_entry_types_map
+from network.conf import conf
+from network.authorization.__main__ import get_token
+from network.utils.txid import generate_txid
+from network.logs.logs import log_with_args, LOG, log_with_args_initial
+from network.conf.conf import level
 
 class EndpointView(web.View, CorsViewMixin):
     def __init__(self, request: Request):
@@ -190,7 +190,7 @@ def combine_filtering_terms(self, list1, list2):
 
 @log_with_args(level)
 async def manage_resultset_response(self, tasks):
-    with open('/responses/resultSets.json') as json_file:
+    with open('/network/responses/resultSets.json') as json_file:
         dict_response = json.load(json_file)
     dict_response["meta"]["beaconId"]=conf.beaconId
     for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
@@ -226,7 +226,7 @@ async def manage_resultset_response(self, tasks):
 
 @log_with_args(level)
 async def manage_collection_response(self, tasks):
-    with open('/responses/collections.json') as json_file:
+    with open('/network/responses/collections.json') as json_file:
         dict_response = json.load(json_file)
     dict_response["meta"]["beaconId"]=conf.beaconId
     for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
@@ -273,7 +273,7 @@ async def manage_registries_response(self, tasks):
             finalinforesponse["beaconURL"]=beaconURL
             finalinforesponse["beaconLogo"]=beaconLogo
             list_of_beacons.append(finalinforesponse)
-            with open('/responses/registries.json') as registries_file:
+            with open('/network/responses/registries.json') as registries_file:
                 dict_registries = json.load(registries_file)
             dict_registries["meta"]["beaconId"]=conf.beaconId
             dict_registries["response"]["registries"]=list_of_beacons
@@ -286,7 +286,7 @@ async def manage_registries_response(self, tasks):
     return dict_registries
 
 async def manage_filtering_terms_response(self, tasks):
-    with open('/responses/filtering_terms.json') as json_file:
+    with open('/network/responses/filtering_terms.json') as json_file:
         dict_response = json.load(json_file)
     dict_response["meta"]["beaconId"]=conf.beaconId
 
@@ -326,7 +326,7 @@ class FilteringTerms(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -349,7 +349,7 @@ class FilteringTerms(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -373,7 +373,7 @@ class Registries(EndpointView):
     async def get(self):
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -387,7 +387,7 @@ class Registries(EndpointView):
     async def post(self):
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -428,7 +428,7 @@ class Configuration(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/configuration.json') as json_file:
+        with open('/network/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -437,7 +437,7 @@ class Configuration(EndpointView):
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/configuration.json') as json_file:
+        with open('/network/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
         
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -455,7 +455,7 @@ class EntryTypes(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/entryTypes.json') as json_file:
+        with open('/network/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -464,7 +464,7 @@ class EntryTypes(EndpointView):
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/entryTypes.json') as json_file:
+        with open('/network/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -482,7 +482,7 @@ class ServiceInfo(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/service-info.json') as json_file:
+        with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -491,7 +491,7 @@ class ServiceInfo(EndpointView):
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/service-info.json') as json_file:
+        with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
         dict_response["meta"]["beaconId"]=conf.beaconId
@@ -509,14 +509,14 @@ class Info(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/info.json') as json_file:
+        with open('/network/responses/info.json') as json_file:
             dict_response = json.load(json_file)
         #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/info.json') as json_file:
+        with open('/network/responses/info.json') as json_file:
             dict_response = json.load(json_file)
         #LOG.warning(dict_response)
         
@@ -539,7 +539,7 @@ class Collection(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -562,7 +562,7 @@ class Collection(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -592,7 +592,7 @@ class Resultset(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
@@ -619,7 +619,7 @@ class Resultset(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:

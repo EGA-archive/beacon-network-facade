@@ -1,6 +1,6 @@
 from aiohttp.test_utils import TestClient, TestServer, loop_context
 from aiohttp import web
-from api.__main__ import Collection, Resultset, Info, ServiceInfo, Map, Configuration, FilteringTerms, EntryTypes, Registries
+from network.__main__ import Collection, Resultset, Info, ServiceInfo, Map, Configuration, FilteringTerms, EntryTypes, Registries
 import json
 import unittest
 

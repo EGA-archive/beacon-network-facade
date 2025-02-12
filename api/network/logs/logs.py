@@ -1,10 +1,10 @@
 import logging
 import time
-from conf.conf import level
-from conf.conf import log_file
+from network.conf.conf import level
+from network.conf.conf import log_file
 from typing import Optional
 import os
-from conf.conf import log_file
+from network.conf.conf import log_file
 
 LOG = logging.getLogger(__name__)
 fmt = '%(levelname)s - %(asctime)s - %(message)s'
