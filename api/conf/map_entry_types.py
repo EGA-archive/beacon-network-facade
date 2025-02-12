@@ -1,4 +1,4 @@
-import conf
+from . import conf
 
 def get_entry_types_map():
     map_analysis= {

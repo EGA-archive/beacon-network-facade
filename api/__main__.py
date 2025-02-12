@@ -15,8 +15,8 @@ import json
 import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
-from map_entry_types import get_entry_types_map
-import conf
+from conf.map_entry_types import get_entry_types_map
+from conf import conf
 from authorization.__main__ import get_token
 
 LOG = logging.getLogger(__name__)
@@ -42,8 +42,8 @@ async def registry(burl):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
     try:
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
@@ -60,8 +60,8 @@ async def get_requesting(burl, query):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
@@ -82,14 +82,7 @@ async def get_requesting(burl, query):
 
 async def returning(url):
     await asyncio.sleep(conf.timeout)
-    my_timeout = aiohttp.ClientTimeout(
-    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
-)
-    async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        response_obj = await registry(url)
-        return response_obj
+    return json.dumps({"beacon": url})
 
 async def get_resultSets_requesting(burl, query):
     start_time = perf_counter()
@@ -97,8 +90,8 @@ async def get_resultSets_requesting(burl, query):
         data={}
         my_timeout = aiohttp.ClientTimeout(
         total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-        sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-        sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+        sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+        sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
             if '?' in query:
@@ -147,8 +140,8 @@ async def requesting(burl, query, data):
     start_time = perf_counter()
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
