@@ -9,9 +9,9 @@ function BeaconQuery({
   socket,
   registries,
 }) {
-  const [data, setData] = useState(null); // ✅ Stores the latest response
+  const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [aggregatedData, setAggregatedData] = useState([]); // ✅ Stores all responses
+  const [aggregatedData, setAggregatedData] = useState([]);
 
   useEffect(() => {
     console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
@@ -48,12 +48,8 @@ function BeaconQuery({
       try {
         const response = JSON.parse(event.data);
         console.log(`✅ WebSocket JSON Response:`, response);
-
         setData(response);
-
-        // ✅ Aggregate responses (merge with previous state)
         setAggregatedData((prevData) => {
-          // Avoid duplicates
           const isDuplicate = prevData.some(
             (entry) => JSON.stringify(entry) === JSON.stringify(response)
           );
@@ -75,6 +71,10 @@ function BeaconQuery({
     console.log("📊 Aggregated Data:", aggregatedData);
   }, [aggregatedData]);
 
+  //   useEffect(() => {
+  //     console.log("📊 Aggregated Data:", JSON.stringify(aggregatedData, null, 2));
+  //   }, [aggregatedData]);
+
   return (
     <div>
       {registries.map((registry, index) => {
@@ -88,7 +88,6 @@ function BeaconQuery({
       })}
 
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
-      {/* ✅ Pass aggregatedData instead of data */}
       {aggregatedData.length > 0 ? (
         <CollapsibleTable data={aggregatedData} registries={registries} />
       ) : (

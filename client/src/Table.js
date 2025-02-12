@@ -37,6 +37,25 @@ function createData(name, calories, fat, carbs, protein, price) {
   };
 }
 
+function separateBeacons(data) {
+  const individualBeacons = [];
+  const networkBeacons = [];
+
+  data.forEach((entry) => {
+    if (entry.response && entry.response.resultSets) {
+      entry.response.resultSets.forEach((resultSet) => {
+        if (resultSet.beaconNetworkId) {
+          networkBeacons.push(resultSet);
+        } else {
+          individualBeacons.push(resultSet);
+        }
+      });
+    }
+  });
+
+  return { individualBeacons, networkBeacons };
+}
+
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
@@ -124,7 +143,12 @@ const rows = [
 
 export default function CollapsibleTable({ data, registries }) {
   console.log("📊 Data received in Table:", data);
-  //   console.log("🗂 Registries received in Table:", registries);
+  console.log("🗂 Registries received in Table:", registries);
+
+  const { individualBeacons, networkBeacons } = separateBeacons(data);
+  console.log("🏛 Individual Beacons:", individualBeacons);
+  console.log("🌐 Network Beacons:", networkBeacons);
+
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -156,14 +180,22 @@ export default function CollapsibleTable({ data, registries }) {
             <TableCell>AF Boolean</TableCell>
             <TableCell>Response</TableCell>
           </TableRow>
-          <TableRow>
-            <TableCell />
-            <TableCell></TableCell>
-            <TableCell>Dataset ID</TableCell>
-            <TableCell></TableCell>
-            <TableCell>AF Response</TableCell>
-            <TableCell>Response</TableCell>
-          </TableRow>
+          {individualBeacons.map((beacon) => (
+            <TableRow key={beacon.id}>
+              <TableCell />
+              <TableCell></TableCell>
+              <TableCell>{beacon.beaconId}</TableCell>
+              <TableCell>
+                <b>{beacon.id}</b>
+              </TableCell>{" "}
+              {/* Dataset ID */}
+              <TableCell>AF Response</TableCell>
+              <TableCell>
+                {beacon.exists ? "Found" : "Not Found"}
+              </TableCell>{" "}
+              {/* Response */}
+            </TableRow>
+          ))}
           <TableRow>
             <TableCell />
             <TableCell></TableCell>
