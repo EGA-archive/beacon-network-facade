@@ -18,15 +18,14 @@ from concurrent.futures import ThreadPoolExecutor
 from conf.map_entry_types import get_entry_types_map
 from conf import conf
 from authorization.__main__ import get_token
-
-LOG = logging.getLogger(__name__)
-fmt = '%(levelname)s - %(asctime)s - %(message)s'
-formatter = logging.Formatter(fmt)
-logging.basicConfig(format=fmt, level=logging.NOTSET)
+from utils.txid import generate_txid
+from logs.logs import log_with_args, LOG, log_with_args_initial
+from conf.conf import level
 
 class EndpointView(web.View, CorsViewMixin):
     def __init__(self, request: Request):
         self._request = request
+        self._id = generate_txid(self)
 
 async def beacon_get_request(session, url, data):
     async with session.get(url) as response:
@@ -171,6 +170,7 @@ async def post_resultset_or_timeout(burl, query, loop, data):
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
 
+@log_with_args(level)
 def combine_filtering_terms(self, list1, list2):
     definitive_list=[]
     ids_used=[]
@@ -188,6 +188,7 @@ def combine_filtering_terms(self, list1, list2):
 
     return definitive_list
 
+@log_with_args(level)
 async def manage_resultset_response(self, tasks):
     with open('/responses/resultSets.json') as json_file:
         dict_response = json.load(json_file)
@@ -198,7 +199,7 @@ async def manage_resultset_response(self, tasks):
         try:
             beaconId=response["meta"]["beaconId"]
         except Exception:
-            LOG.error('{} is not responding'.format(response["beacon"]))
+            LOG.warning('{} is not responding'.format(response["beacon"]))
             continue
         try:
             count=response["responseSummary"]["numTotalResults"]
@@ -223,6 +224,7 @@ async def manage_resultset_response(self, tasks):
     #LOG.warning(dict_response)
     return dict_response
 
+@log_with_args(level)
 async def manage_collection_response(self, tasks):
     with open('/responses/collections.json') as json_file:
         dict_response = json.load(json_file)
@@ -233,7 +235,7 @@ async def manage_collection_response(self, tasks):
         try:
             beaconId=response["meta"]["beaconId"]
         except Exception:
-            LOG.error('{} is not responding'.format(response["beacon"]))
+            LOG.warning('{} is not responding'.format(response["beacon"]))
             continue
         try:
             count=response["responseSummary"]["numTotalResults"]
@@ -250,6 +252,7 @@ async def manage_collection_response(self, tasks):
     #LOG.warning(dict_response)
     return dict_response
 
+@log_with_args(level)
 async def manage_registries_response(self, tasks):
     start_time = perf_counter()
     list_of_beacons=[]
@@ -278,7 +281,7 @@ async def manage_registries_response(self, tasks):
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(inforesponse["meta"]["beaconId"], final_time))
         except Exception:
-            LOG.error('{} is not responding'.format(inforesponse["beacon"]))
+            LOG.warning('{} is not responding'.format(inforesponse["beacon"]))
             continue
     return dict_registries
 
@@ -307,6 +310,7 @@ async def manage_filtering_terms_response(self, tasks):
     return dict_response
         
 class FilteringTerms(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -358,6 +362,7 @@ class FilteringTerms(EndpointView):
         return await self.resultset(dict_response)
     
 class Registries(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -393,6 +398,7 @@ class Registries(EndpointView):
         return await self.resultset(dict_registries)
     
 class Map(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -413,6 +419,7 @@ class Map(EndpointView):
         return await self.resultset(dict_response)
     
 class Configuration(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -439,6 +446,7 @@ class Configuration(EndpointView):
         return await self.resultset(dict_response)
     
 class EntryTypes(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -465,6 +473,7 @@ class EntryTypes(EndpointView):
         return await self.resultset(dict_response)
     
 class ServiceInfo(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -491,6 +500,7 @@ class ServiceInfo(EndpointView):
         return await self.resultset(dict_response)
     
 class Info(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -513,6 +523,7 @@ class Info(EndpointView):
         return await self.resultset(dict_response)
 
 class Collection(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -565,6 +576,7 @@ class Collection(EndpointView):
         return await self.resultset(dict_response)
 
 class Resultset(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -625,7 +637,7 @@ class Resultset(EndpointView):
         return await self.resultset(dict_response)
         
 async def initialize(app):# pragma: no cover
-    LOG.info("Initialization done.")
+    LOG.warning("Initialization done.")
 
 def _on_shutdown(pid):# pragma: no cover
     time.sleep(6)
@@ -633,7 +645,7 @@ def _on_shutdown(pid):# pragma: no cover
     #  Sending SIGINT to close server
     os.kill(pid, signal.SIGINT)
 
-    LOG.info('Shutting down beacon v2')
+    LOG.warning('Shutting down beacon v2')
 
 async def _graceful_shutdown_ctx(app):# pragma: no cover
     def graceful_shutdown_sigterm_handler():
