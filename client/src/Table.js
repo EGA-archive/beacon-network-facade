@@ -10,7 +10,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 
 function createData(name, relatedNetworkBeacons, maturity) {
   const hasFoundDataset = relatedNetworkBeacons.some((beacon) => beacon.exists);
@@ -64,7 +64,7 @@ function Row(props) {
             size="small"
             onClick={() => setOpen(!open)}
           >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row" colSpan={4}>
@@ -129,10 +129,10 @@ export default function CollapsibleTable({ data, registries }) {
   const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
     if (uniqueIndividualBeacons.has(uniqueKey)) {
-      return false; // Ignore duplicates
+      return false;
     }
     uniqueIndividualBeacons.add(uniqueKey);
-    return true; // Keep unique individual beacons
+    return true;
   });
 
   const rows = registries
@@ -154,28 +154,40 @@ export default function CollapsibleTable({ data, registries }) {
     });
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer
+      component={Paper}
+      sx={{ marginTop: "48px" }}
+      className="table-container"
+    >
       <Table aria-label="collapsible table">
         <TableHead>
-          <TableRow>
+          <TableRow className="title-row">
             <TableCell />
-            <TableCell>Beacon Network Beacon Name Dataset</TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-            <TableCell>Allele Frequency</TableCell>
-            <TableCell>Response</TableCell>
+            <TableCell colSpan={3}>
+              <b>Beacon Network</b> <KeyboardArrowRightIcon />
+              <b>Beacon Name</b> <KeyboardArrowRightIcon />
+              <b>Dataset</b>
+            </TableCell>
+
+            <TableCell colSpan={1}>
+              <b>Allele Frequency</b>
+            </TableCell>
+            <TableCell colSpan={1}>
+              <b>Response</b>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {filteredIndividualBeacons.length > 0 && (
             <>
               <TableRow>
-                <TableCell />
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell>Individual Beacons</TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
+                <TableCell
+                  colSpan={6}
+                  align="center"
+                  style={{ backgroundColor: "#3276b1", color: "white" }}
+                >
+                  <b>Individual Beacons</b>
+                </TableCell>
               </TableRow>
               {registries
                 .filter((registry) =>
@@ -201,7 +213,9 @@ export default function CollapsibleTable({ data, registries }) {
                     <TableRow key={registry.beaconId}>
                       <TableCell />
                       <TableCell>{registry.beaconMaturity || "N/A"}</TableCell>
-                      <TableCell>{registry.beaconName}</TableCell>
+                      <TableCell>
+                        <b>{registry.beaconName}</b>
+                      </TableCell>
                       <TableCell></TableCell>
                       <TableCell
                         style={{
@@ -225,7 +239,9 @@ export default function CollapsibleTable({ data, registries }) {
                   <TableCell />
                   <TableCell></TableCell>
                   <TableCell>
-                    <b>{individualBeacon.id}</b>
+                    <i>
+                      Dataset: <b> {individualBeacon.id}</b>
+                    </i>
                   </TableCell>
                   <TableCell />
 
@@ -241,16 +257,18 @@ export default function CollapsibleTable({ data, registries }) {
               ))}
             </>
           )}
+
+          <TableRow>
+            <TableCell
+              colSpan={6}
+              align="center"
+              style={{ backgroundColor: "#023452", color: "white" }}
+            >
+              <b>Beacon Networks</b>
+            </TableCell>
+          </TableRow>
           {networkBeacons.length > 0 && (
             <>
-              <TableRow>
-                <TableCell />
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-                <TableCell>Beacon Networks</TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-              </TableRow>
               {rows.map((row) => (
                 <Row key={row.name} row={row} />
               ))}

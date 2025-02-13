@@ -22,7 +22,9 @@ function SearchResults({ registries = [], socket }) {
         <Grid item xs={12} sm={9} style={{ marginTop: "30px" }}>
           <p className="d-flex" style={{ marginTop: "36px" }}>
             <b>Results</b>{" "}
-            <span className="ms-4">Queried Variant: {variant}</span>
+            <span className="ms-4">
+              Queried Variant: <b>{variant}</b>
+            </span>
           </p>
         </Grid>
         <Grid item xs={12} sm={2} className="d-flex justify-content-end">
