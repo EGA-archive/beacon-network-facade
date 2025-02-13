@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import { StatusButton, MaturityButton } from "./ButtonComponents";
 
 function createData(name, relatedNetworkBeacons, maturity) {
   const hasFoundDataset = relatedNetworkBeacons.some((beacon) => beacon.exists);
@@ -70,7 +71,9 @@ function Row(props) {
         <TableCell component="th" scope="row" colSpan={4}>
           <b>{row.name}</b>
         </TableCell>
-        <TableCell>{row.response}</TableCell>
+        <TableCell>
+          <StatusButton status={row.response} />
+        </TableCell>
       </TableRow>
 
       {/* Expanded Content */}
@@ -83,27 +86,38 @@ function Row(props) {
                 <TableBody>
                   {row.history.map((historyRow, index) => (
                     <React.Fragment key={index}>
-                      {/* Beacon Row */}
                       <TableRow>
-                        <TableCell>{historyRow.maturity}</TableCell>
-                        <TableCell>{historyRow.beaconId}</TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
+                        <TableCell colSpan={3} />
+
+                        <TableCell colSpan={2}>
+                          {historyRow.maturity && (
+                            <MaturityButton maturity={historyRow.maturity} />
+                          )}{" "}
+                          {historyRow.beaconId}
+                        </TableCell>
                       </TableRow>
-                      {/* Dataset Row (Indented under the Beacon) */}
+
                       <TableRow>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell>{historyRow.dataset.datasetId}</TableCell>
-                        <TableCell>
+                        <TableCell colSpan={1} />
+                        <TableCell colSpan={1} />
+                        <TableCell colSpan={1} />
+
+                        <TableCell colSpan={1}>
+                          <i>
+                            Dataset: <b> {historyRow.dataset.datasetId}</b>
+                          </i>
+                        </TableCell>
+                        <TableCell colSpan={3}>
                           {historyRow.dataset.alleleFrequency !== "N/A"
                             ? parseFloat(
                                 historyRow.dataset.alleleFrequency
                               ).toFixed(5)
                             : "N/A"}
                         </TableCell>
-                        <TableCell>{historyRow.dataset.response}</TableCell>
+                        <TableCell colSpan={1}>
+                          {/* {historyRow.dataset.response} */}
+                          <StatusButton status={historyRow.dataset.response} />
+                        </TableCell>
                       </TableRow>
                     </React.Fragment>
                   ))}
@@ -159,7 +173,10 @@ export default function CollapsibleTable({ data, registries }) {
       sx={{ marginTop: "48px" }}
       className="table-container"
     >
-      <Table aria-label="collapsible table">
+      <Table
+        aria-label="collapsible table"
+        sx={{ tableLayout: "fixed", width: "100%" }}
+      >
         <TableHead>
           <TableRow className="title-row">
             <TableCell />
@@ -212,11 +229,18 @@ export default function CollapsibleTable({ data, registries }) {
                   return (
                     <TableRow key={registry.beaconId}>
                       <TableCell />
-                      <TableCell>{registry.beaconMaturity || "N/A"}</TableCell>
                       <TableCell>
+                        {registry.beaconMaturity ? (
+                          <MaturityButton maturity={registry.beaconMaturity} />
+                        ) : (
+                          "N/A"
+                        )}
+                      </TableCell>
+
+                      <TableCell colSpan={2}>
                         <b>{registry.beaconName}</b>
                       </TableCell>
-                      <TableCell></TableCell>
+
                       <TableCell
                         style={{
                           backgroundColor: "yellow",
@@ -226,7 +250,9 @@ export default function CollapsibleTable({ data, registries }) {
                         AF Boolean
                       </TableCell>
                       <TableCell>
-                        {hasFoundDataset ? "Found" : "Not Found"}
+                        <StatusButton
+                          status={hasFoundDataset ? "Found" : "Not Found"}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -238,20 +264,20 @@ export default function CollapsibleTable({ data, registries }) {
                 >
                   <TableCell />
                   <TableCell></TableCell>
-                  <TableCell>
+                  <TableCell colSpan={2}>
                     <i>
                       Dataset: <b> {individualBeacon.id}</b>
                     </i>
                   </TableCell>
-                  <TableCell />
-
                   <TableCell
                     style={{ backgroundColor: "yellow", fontWeight: "bold" }}
                   >
                     AF Response
                   </TableCell>
                   <TableCell>
-                    {individualBeacon.exists ? "Found" : "Not Found"}
+                    <StatusButton
+                      status={individualBeacon.exists ? "Found" : "Not Found"}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
