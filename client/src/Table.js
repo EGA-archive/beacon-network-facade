@@ -13,14 +13,19 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 function createData(name, relatedNetworkBeacons, maturity) {
+  const hasFoundDataset = relatedNetworkBeacons.some((beacon) => beacon.exists);
   return {
     name,
+    response: hasFoundDataset ? "Found" : "Not Found",
     history: relatedNetworkBeacons.map((beacon) => ({
       beaconId: beacon.beaconId,
-      maturity: maturity, // Keep maturity info
+      maturity: maturity,
       dataset: {
-        datasetId: beacon.id, // The dataset ID
-        response: beacon.exists ? "Found" : "Not Found", // Response status
+        datasetId: beacon.id,
+        alleleFrequency:
+          beacon.results?.[0]?.frequencyInPopulations?.[0]?.frequencies?.[0]
+            ?.alleleFrequency || "N/A",
+        response: beacon.exists ? "Found" : "Not Found",
       },
     })),
   };
@@ -62,9 +67,10 @@ function Row(props) {
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell component="th" scope="row" colSpan={5}>
-          <b>{row.name}</b> {/* Beacon Network Name */}
+        <TableCell component="th" scope="row" colSpan={4}>
+          <b>{row.name}</b>
         </TableCell>
+        <TableCell>{row.response}</TableCell>
       </TableRow>
 
       {/* Expanded Content */}
@@ -73,25 +79,7 @@ function Row(props) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Table size="small" aria-label="network details">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <b>Maturity</b>
-                    </TableCell>
-                    <TableCell>
-                      <b>Beacon Name</b>
-                    </TableCell>
-                    <TableCell>
-                      <b>Dataset</b>
-                    </TableCell>
-                    <TableCell>
-                      <b>Allele Frequency</b>
-                    </TableCell>
-                    <TableCell>
-                      <b>Response</b>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
+                <TableHead></TableHead>
                 <TableBody>
                   {row.history.map((historyRow, index) => (
                     <React.Fragment key={index}>
@@ -108,7 +96,13 @@ function Row(props) {
                         <TableCell></TableCell>
                         <TableCell></TableCell>
                         <TableCell>{historyRow.dataset.datasetId}</TableCell>
-                        <TableCell>Allele Frequency</TableCell>
+                        <TableCell>
+                          {historyRow.dataset.alleleFrequency !== "N/A"
+                            ? parseFloat(
+                                historyRow.dataset.alleleFrequency
+                              ).toFixed(5)
+                            : "N/A"}
+                        </TableCell>
                         <TableCell>{historyRow.dataset.response}</TableCell>
                       </TableRow>
                     </React.Fragment>
@@ -196,7 +190,11 @@ export default function CollapsibleTable({ data, registries }) {
                     <TableCell>{registry.beaconMaturity || "N/A"}</TableCell>
                     <TableCell>{registry.beaconName}</TableCell>
                     <TableCell></TableCell>
-                    <TableCell>AF Boolean</TableCell>
+                    <TableCell
+                      style={{ backgroundColor: "yellow", fontWeight: "bold" }}
+                    >
+                      AF Boolean
+                    </TableCell>
                     <TableCell>Response</TableCell>
                   </TableRow>
                 ))}
@@ -211,7 +209,11 @@ export default function CollapsibleTable({ data, registries }) {
                   </TableCell>
                   <TableCell />
 
-                  <TableCell>AF Response</TableCell>
+                  <TableCell
+                    style={{ backgroundColor: "yellow", fontWeight: "bold" }}
+                  >
+                    AF Response
+                  </TableCell>
                   <TableCell>
                     {individualBeacon.exists ? "Found" : "Not Found"}
                   </TableCell>
