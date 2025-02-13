@@ -184,20 +184,40 @@ export default function CollapsibleTable({ data, registries }) {
                       individualBeacon.beaconId === registry.beaconId
                   )
                 )
-                .map((registry) => (
-                  <TableRow key={registry.beaconId}>
-                    <TableCell />
-                    <TableCell>{registry.beaconMaturity || "N/A"}</TableCell>
-                    <TableCell>{registry.beaconName}</TableCell>
-                    <TableCell></TableCell>
-                    <TableCell
-                      style={{ backgroundColor: "yellow", fontWeight: "bold" }}
-                    >
-                      AF Boolean
-                    </TableCell>
-                    <TableCell>Response</TableCell>
-                  </TableRow>
-                ))}
+                .map((registry) => {
+                  const hasFoundDataset = filteredIndividualBeacons.some(
+                    (individualBeacon) =>
+                      individualBeacon.beaconId === registry.beaconId &&
+                      individualBeacon.results?.some((result) =>
+                        result.frequencyInPopulations?.some((freq) =>
+                          freq.frequencies?.some(
+                            (f) => f.alleleFrequency !== undefined
+                          )
+                        )
+                      )
+                  );
+
+                  return (
+                    <TableRow key={registry.beaconId}>
+                      <TableCell />
+                      <TableCell>{registry.beaconMaturity || "N/A"}</TableCell>
+                      <TableCell>{registry.beaconName}</TableCell>
+                      <TableCell></TableCell>
+                      <TableCell
+                        style={{
+                          backgroundColor: "yellow",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        AF Boolean
+                      </TableCell>
+                      <TableCell>
+                        {hasFoundDataset ? "Found" : "Not Found"}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+
               {filteredIndividualBeacons.map((individualBeacon) => (
                 <TableRow
                   key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
