@@ -17,27 +17,30 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from network.conf.map_entry_types import get_entry_types_map
 from network.conf import conf
-from network.authorization.__main__ import get_token
 from network.utils.txid import generate_txid
 from network.logs.logs import log_with_args, LOG, log_with_args_initial
 from network.conf.conf import level
+from network.auth.__main__ import exchange_token
 
 class EndpointView(web.View, CorsViewMixin):
     def __init__(self, request: Request):
         self._request = request
         self._id = generate_txid(self)
 
-async def beacon_get_request(session, url, data):
+@log_with_args(level)
+async def beacon_get_request(self, session, url, data):
     async with session.get(url) as response:
         response_obj = await response.json()
         return response_obj
 
-async def beacon_post_request(session, url, data):
-    async with session.post(url, json=data) as response:
+@log_with_args(level)
+async def beacon_post_request(self, session, url, data, headers):
+    async with session.post(url, json=data, headers=headers) as response:
         response_obj = await response.json()
         return response_obj
 
-async def registry(burl):
+@log_with_args(level)
+async def registry(self, burl):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
@@ -47,14 +50,15 @@ async def registry(burl):
     try:
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
             url = burl + '/info'
-            response_obj = await beacon_get_request(session, url, data)
+            response_obj = await beacon_get_request(self, session, url, data)
             #LOG.warning(json.dumps(response_obj))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
     except Exception:
         return json.dumps({"beacon": burl})
 
-async def get_requesting(burl, query):
+@log_with_args(level)
+async def get_requesting(self, burl, query):
     start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
@@ -65,7 +69,7 @@ async def get_requesting(burl, query):
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
         try:
-            response_obj = await beacon_get_request(session, url, data)
+            response_obj = await beacon_get_request(self, session, url, data)
             #LOG.warning(json.dumps(response_obj))
             end_time = perf_counter()
             final_time=end_time-start_time
@@ -73,17 +77,19 @@ async def get_requesting(burl, query):
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         except Exception:
-            response_obj = await registry(burl)
+            response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return response_obj
 
-async def returning(url):
+@log_with_args(level)
+async def returning(self, url):
     await asyncio.sleep(conf.timeout)
     return json.dumps({"beacon": url})
 
-async def get_resultSets_requesting(burl, query):
+@log_with_args(level)
+async def get_resultSets_requesting(self, burl, query):
     start_time = perf_counter()
     with ThreadPoolExecutor() as pool:
         data={}
@@ -98,44 +104,51 @@ async def get_resultSets_requesting(burl, query):
             else:
                 url = burl + query + '?includeResultsetResponses=ALL'
             try:
-                response_obj = await beacon_get_request(session, url, data)
+                response_obj = await beacon_get_request(self, session, url, data)
                 #LOG.warning(json.dumps(response_obj))
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 return json.dumps(response_obj)
             except Exception:
-                response_obj = await registry(burl)
+                response_obj = await registry(self, burl)
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 return response_obj
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
-async def get_resultset_or_timeout(burl, query, loop):
+@log_with_args(level)
+async def get_resultset_or_timeout(self, burl, query, loop):
     secondarytasks=[]
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, burl, query)
+        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, self, burl, query)
         secondarytasks.append(secondarytask)
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
         secondarytasks.append(secondarytask)
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
-    
-async def get_results_or_timeout(burl, query, loop):
-    secondarytasks=[]
-    with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, get_requesting, burl, query)
-        secondarytasks.append(secondarytask)
-    with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
-        secondarytasks.append(secondarytask)
-    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
-        return await sectask
-    
 
-async def requesting(burl, query, data):
+@log_with_args(level)
+async def get_results_or_timeout(self, burl, query, loop):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, get_requesting, self, burl, query)
+        secondarytasks.append(secondarytask)
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
+        secondarytasks.append(secondarytask)
+    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
+        return await sectask
+    
+@log_with_args(level)
+async def requesting(self, burl, query, data, token):
+    if token != 'nothing':
+        exchanged_token=exchange_token(self, burl, token)
+        headers={"Authorization": "Bearer {}".format(exchanged_token)}
+    else:
+        headers={}
     start_time = perf_counter()
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
@@ -145,7 +158,7 @@ async def requesting(burl, query, data):
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
         try:
-            response_obj = await beacon_post_request(session, url, data)
+            response_obj = await beacon_post_request(self, session, url, data, headers)
             #LOG.warning(json.dumps(response_obj))
             end_time = perf_counter()
             final_time=end_time-start_time
@@ -153,19 +166,20 @@ async def requesting(burl, query, data):
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         except Exception:
-            response_obj = await registry(burl)
+            response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return response_obj
 
-async def post_resultset_or_timeout(burl, query, loop, data):
+@log_with_args(level)
+async def post_resultset_or_timeout(self, burl, query, loop, data, token):
     secondarytasks=[]
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, requesting, burl, query, data)
+        secondarytask = await loop.run_in_executor(pool, requesting, self, burl, query, data, token)
         secondarytasks.append(secondarytask)
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
         secondarytasks.append(secondarytask)
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
@@ -331,7 +345,7 @@ class FilteringTerms(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         dict_response=await manage_filtering_terms_response(self, tasks)
@@ -341,6 +355,7 @@ class FilteringTerms(EndpointView):
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        token = 'nothing'
         post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
@@ -354,7 +369,7 @@ class FilteringTerms(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
         dict_response=await manage_filtering_terms_response(self, tasks)
@@ -378,7 +393,7 @@ class Registries(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon)
                 tasks.append(task)
         dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
@@ -392,7 +407,7 @@ class Registries(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon)
                 tasks.append(task)
         dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
@@ -407,13 +422,13 @@ class Map(EndpointView):
             raise
 
     async def get(self):
-        dict_response=get_entry_types_map()
+        dict_response=get_entry_types_map(self)
         dict_response["meta"]["beaconId"]=conf.beaconId
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        dict_response=get_entry_types_map()
+        dict_response=get_entry_types_map(self)
         dict_response["meta"]["beaconId"]=conf.beaconId
         #LOG.warning(dict_response)
         return await self.resultset(dict_response)
@@ -544,7 +559,7 @@ class Collection(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         dict_response=await manage_collection_response(self, tasks)
@@ -554,6 +569,7 @@ class Collection(EndpointView):
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        token = 'nothing'
         post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
@@ -567,7 +583,7 @@ class Collection(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
         dict_response=await manage_collection_response(self, tasks)
@@ -597,7 +613,7 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_resultset_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_resultset_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
         dict_response=await manage_resultset_response(self, tasks)
@@ -624,12 +640,8 @@ class Resultset(EndpointView):
 
         for beacon in data["Beacons"]:
             #LOG.warning(beacon)
-            if token != 'nothing':
-                # go to beacon's endpoint
-                # call the get_token function to do the exchange token
-                pass
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
         dict_response=await manage_resultset_response(self, tasks)

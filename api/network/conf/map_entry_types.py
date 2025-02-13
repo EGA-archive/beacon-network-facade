@@ -1,6 +1,6 @@
 from . import conf
 
-def get_entry_types_map():
+def get_entry_types_map(self):
     map_analysis= {
                     "entryType": "analysis",
                     "openAPIEndpointsDefinition": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/models/json/beacon-v2-default-model/analyses/endpoints.json",
