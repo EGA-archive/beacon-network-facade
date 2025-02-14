@@ -95,9 +95,11 @@ function Row(props) {
                       {historyRow.maturity && (
                         <MaturityButton maturity={historyRow.maturity} />
                       )}{" "}
-                      <span className="span-beaconId">
-                        {historyRow.beaconId}
-                      </span>
+                      <b>
+                        <span className="span-beaconId">
+                          {historyRow.beaconId}
+                        </span>
+                      </b>
                     </TableCell>
                   </TableRow>
                   <TableRow colSpan={6}>
@@ -119,11 +121,14 @@ function Row(props) {
                       </Box>
                     </TableCell>
                     <TableCell sx={{ width: "200px" }}>
-                      {historyRow.dataset.alleleFrequency !== "N/A"
-                        ? parseFloat(
-                            historyRow.dataset.alleleFrequency
-                          ).toFixed(5)
-                        : "N/A"}
+                      <b>
+                        {" "}
+                        {historyRow.dataset.alleleFrequency !== "N/A"
+                          ? parseFloat(
+                              historyRow.dataset.alleleFrequency
+                            ).toFixed(5)
+                          : "N/A"}
+                      </b>
                     </TableCell>
                     <TableCell sx={{ width: "195px" }}>
                       {/* align="center" */}

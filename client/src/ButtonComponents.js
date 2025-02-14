@@ -20,6 +20,7 @@ const StatusButton = ({ status }) => {
         borderRadius: "6px",
         fontWeight: "bold",
         textAlign: "center",
+        fontFamily: '"Open Sans", sans-serif',
         ...statusStyles[status],
       }}
     >
@@ -63,9 +64,9 @@ const MaturityButton = ({ maturity }) => {
         justifyContent: "center",
         width: "auto",
         height: "28px",
+        fontFamily: '"Open Sans", sans-serif',
         padding: "6px 12px",
         borderRadius: "6px",
-        fontWeight: "bold",
         textAlign: "center",
         ...maturityStyles[displayMaturity],
       }}
