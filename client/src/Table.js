@@ -13,10 +13,18 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 
-function createData(name, relatedNetworkBeacons, maturity) {
+function createData(
+  name,
+  relatedNetworkBeacons,
+  maturity,
+  beaconLogo,
+  beaconURL
+) {
   const hasFoundDataset = relatedNetworkBeacons.some((beacon) => beacon.exists);
   return {
     name,
+    beaconLogo,
+    beaconURL,
     response: hasFoundDataset ? "Found" : "Not Found",
     history: relatedNetworkBeacons.map((beacon) => ({
       beaconId: beacon.beaconId,
@@ -66,11 +74,21 @@ function Row(props) {
           >
             {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
+          <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
+            <img
+              src={row.beaconLogo}
+              alt={`${row.name} Logo`}
+              style={{
+                width: "auto",
+                height: "70px",
+                padding: "14.29px 16px",
+              }}
+            />
+          </a>
         </TableCell>
         <TableCell component="th" colSpan={4}>
           <b>{row.name}</b>
-          <br></br>
-          {/* Sara for clarification */}
+          <br />
           Organization:
         </TableCell>
         <TableCell>
@@ -179,7 +197,9 @@ export default function CollapsibleTable({ data, registries }) {
       return createData(
         registry.beaconName,
         relatedNetworkBeacons,
-        registry.beaconMaturity
+        registry.beaconMaturity,
+        registry.beaconLogo,
+        registry.beaconURL
       );
     });
 
