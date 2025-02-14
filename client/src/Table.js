@@ -56,8 +56,7 @@ function Row(props) {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <React.Fragment>
-      {/* Main Row (Beacon Network Name) */}
+    <>
       <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
         <TableCell>
           <IconButton
@@ -68,66 +67,78 @@ function Row(props) {
             {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell component="th" scope="row" colSpan={4}>
+        <TableCell component="th" colSpan={4}>
           <b>{row.name}</b>
+          <br></br>
+          {/* Sara for clarification */}
+          Organization:
         </TableCell>
         <TableCell>
           <StatusButton status={row.response} />
         </TableCell>
       </TableRow>
-
-      {/* Expanded Content */}
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ padding: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
-              <Table size="small" aria-label="network details">
-                <TableHead></TableHead>
-                <TableBody>
-                  {row.history.map((historyRow, index) => (
-                    <React.Fragment key={index}>
-                      <TableRow>
-                        <TableCell colSpan={3} />
+            {/* <Box sx={{ backgroundColor: "#FFA500" }}> */}
+            <Table size="small" aria-label="network details">
+              {/* <TableBody sx={{ backgroundColor: "#FFA500" }}> */}
+              {row.history.map((historyRow, index) => (
+                <React.Fragment key={index}>
+                  <TableRow>
+                    <TableCell
+                      sx={(theme) => ({
+                        width: "400px",
+                      })}
+                    ></TableCell>
+                    <TableCell colSpan={4}>
+                      {historyRow.maturity && (
+                        <MaturityButton maturity={historyRow.maturity} />
+                      )}{" "}
+                      <span className="span-beaconId">
+                        {historyRow.beaconId}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow colSpan={6}>
+                    <TableCell />
 
-                        <TableCell colSpan={2}>
-                          {historyRow.maturity && (
-                            <MaturityButton maturity={historyRow.maturity} />
-                          )}{" "}
-                          {historyRow.beaconId}
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow>
-                        <TableCell colSpan={1} />
-                        <TableCell colSpan={1} />
-                        <TableCell colSpan={1} />
-
-                        <TableCell colSpan={1}>
-                          <i>
-                            Dataset: <b> {historyRow.dataset.datasetId}</b>
-                          </i>
-                        </TableCell>
-                        <TableCell colSpan={3}>
-                          {historyRow.dataset.alleleFrequency !== "N/A"
-                            ? parseFloat(
-                                historyRow.dataset.alleleFrequency
-                              ).toFixed(5)
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell colSpan={1}>
-                          {/* {historyRow.dataset.response} */}
-                          <StatusButton status={historyRow.dataset.response} />
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
+                    <TableCell
+                      sx={{
+                        width: "400px !important",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          marginLeft: "53px !important",
+                        }}
+                      >
+                        <i>
+                          Dataset: <b> {historyRow.dataset.datasetId}</b>
+                        </i>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ width: "200px" }}>
+                      {historyRow.dataset.alleleFrequency !== "N/A"
+                        ? parseFloat(
+                            historyRow.dataset.alleleFrequency
+                          ).toFixed(5)
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ width: "195px" }}>
+                      {/* align="center" */}
+                      <StatusButton status={historyRow.dataset.response} />
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
+              ))}
+              {/* </TableBody> */}
+            </Table>
+            {/* </Box> */}
           </Collapse>
         </TableCell>
       </TableRow>
-    </React.Fragment>
+    </>
   );
 }
 
@@ -170,7 +181,7 @@ export default function CollapsibleTable({ data, registries }) {
   return (
     <TableContainer
       component={Paper}
-      sx={{ marginTop: "48px" }}
+      sx={{ marginTop: "48px", marginBottom: "48px" }}
       className="table-container"
     >
       <Table
@@ -263,11 +274,13 @@ export default function CollapsibleTable({ data, registries }) {
                   key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
                 >
                   <TableCell />
-                  <TableCell></TableCell>
+                  <TableCell />
                   <TableCell colSpan={2}>
-                    <i>
-                      Dataset: <b> {individualBeacon.id}</b>
-                    </i>
+                    <Box sx={{ marginLeft: "50px" }}>
+                      <i>
+                        Dataset: <b>{individualBeacon.id}</b>
+                      </i>
+                    </Box>
                   </TableCell>
                   <TableCell
                     style={{ backgroundColor: "yellow", fontWeight: "bold" }}

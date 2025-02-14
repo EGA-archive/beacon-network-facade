@@ -470,6 +470,10 @@ body {
   border-top: 1px solid #3276b1;
 }
 
+.span-beaconId {
+  margin-left: 2%;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
