@@ -1,6 +1,7 @@
 from aiohttp.test_utils import TestClient, TestServer, loop_context
 from aiohttp import web
 from network.__main__ import Collection, Resultset, Info, ServiceInfo, Map, Configuration, FilteringTerms, EntryTypes, Registries
+from network.auth.tests import TestAuthN
 import json
 import unittest
 
@@ -265,6 +266,16 @@ class TestMain(unittest.TestCase):
             loop.run_until_complete(client.start_server())
             async def test_check_individuals_endpoint_is_working():
                 resp = await client.post("/api/individuals")
+                assert resp.status == 200
+            loop.run_until_complete(test_check_individuals_endpoint_is_working())
+            loop.run_until_complete(client.close())
+    def test_main_check_get_individuals_endpoint_is_working(self):
+        with loop_context() as loop:
+            app = create_app()
+            client = TestClient(TestServer(app), loop=loop)
+            loop.run_until_complete(client.start_server())
+            async def test_check_individuals_endpoint_is_working():
+                resp = await client.get("/api/individuals")
                 assert resp.status == 200
             loop.run_until_complete(test_check_individuals_endpoint_is_working())
             loop.run_until_complete(client.close())

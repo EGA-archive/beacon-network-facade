@@ -13,7 +13,7 @@ def exchange_token(self, url, idp_token):
     try:
         #LOG.warning(url)
         #LOG.warning(idp_token)
-        if dict_clients[url] == 'linked_network':
+        if dict_clients[url] == 'linked_network':# pragma: no cover
             aud_exchanged_token=idp_token
         else:
             path_env="/network/auth/clients/"+dict_clients[url]

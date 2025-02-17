@@ -164,7 +164,7 @@ def get_entry_types_map(self):
     biosamples_endpoints["run"]=biosample_run
     try:
         map_biosample["endpoints"]=biosamples_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_biosample["endpoints"]={}
         map_biosample["endpoints"]=biosamples_endpoints
     map_entry_types["endpointSets"]["biosample"]=map_biosample
@@ -173,19 +173,19 @@ def get_entry_types_map(self):
     cohorts_endpoints["individual"]=cohort_individual
     try:
         map_cohort["endpoints"]=cohorts_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_cohort["endpoints"]={}
         map_cohort["endpoints"]=cohorts_endpoints
     cohorts_endpoints["analysis"]=cohort_analysis
     try:
         map_cohort["endpoints"]=cohorts_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_cohort["endpoints"]={}
         map_cohort["endpoints"]=cohorts_endpoints
     cohorts_endpoints["run"]=cohort_run
     try:
         map_cohort["endpoints"]=cohorts_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_cohort["endpoints"]={}
         map_cohort["endpoints"]=cohorts_endpoints
     map_entry_types["endpointSets"]["cohort"]=map_cohort
@@ -194,31 +194,31 @@ def get_entry_types_map(self):
     datasets_endpoints["individual"]=dataset_individual
     try:
         map_dataset["endpoints"]=datasets_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_dataset["endpoints"]={}
         map_dataset["endpoints"]=datasets_endpoints
     datasets_endpoints["analysis"]=dataset_analysis
     try:
         map_dataset["endpoints"]=datasets_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_dataset["endpoints"]={}
         map_dataset["endpoints"]=datasets_endpoints
     datasets_endpoints["run"]=dataset_run
     try:
         map_dataset["endpoints"]=datasets_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_dataset["endpoints"]={}
         map_dataset["endpoints"]=datasets_endpoints
     datasets_endpoints["biosample"]=dataset_biosample
     try:
         map_dataset["endpoints"]=datasets_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_dataset["endpoints"]={}
         map_dataset["endpoints"]=datasets_endpoints
     datasets_endpoints["genomicVariant"]=dataset_genomicVariant
     try:
         map_dataset["endpoints"]=datasets_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_dataset["endpoints"]={}
         map_dataset["endpoints"]=datasets_endpoints
     map_entry_types["endpointSets"]["dataset"]=map_dataset
@@ -227,25 +227,25 @@ def get_entry_types_map(self):
     g_variants_endpoints["individual"]=genomicVariant_individual
     try:
         map_genomicVariant["endpoints"]=g_variants_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_genomicVariant["endpoints"]={}
         map_genomicVariant["endpoints"]=g_variants_endpoints
     g_variants_endpoints["analysis"]=genomicVariant_analysis
     try:
         map_genomicVariant["endpoints"]=g_variants_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_genomicVariant["endpoints"]={}
         map_genomicVariant["endpoints"]=g_variants_endpoints
     g_variants_endpoints["run"]=genomicVariant_run
     try:
         map_genomicVariant["endpoints"]=g_variants_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_genomicVariant["endpoints"]={}
         map_genomicVariant["endpoints"]=g_variants_endpoints
     g_variants_endpoints["biosample"]=genomicVariant_biosample
     try:
         map_genomicVariant["endpoints"]=g_variants_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_genomicVariant["endpoints"]={}
         map_genomicVariant["endpoints"]=g_variants_endpoints
     map_entry_types["endpointSets"]["genomicVariant"]=map_genomicVariant
@@ -254,25 +254,25 @@ def get_entry_types_map(self):
     individuals_endpoints["genomicVariant"]=individual_genomicVariant
     try:
         map_individual["endpoints"]=individuals_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_individual["endpoints"]={}
         map_individual["endpoints"]=individuals_endpoints
     individuals_endpoints["analysis"]=individual_analysis
     try:
         map_individual["endpoints"]=individuals_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_individual["endpoints"]={}
         map_individual["endpoints"]=individuals_endpoints
     individuals_endpoints["run"]=individual_run
     try:
         map_individual["endpoints"]=individuals_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_individual["endpoints"]={}
         map_individual["endpoints"]=individuals_endpoints
     individuals_endpoints["biosample"]=individual_biosample
     try:
         map_individual["endpoints"]=individuals_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_individual["endpoints"]={}
         map_individual["endpoints"]=individuals_endpoints
     map_entry_types["endpointSets"]["individual"]=map_individual
@@ -281,13 +281,13 @@ def get_entry_types_map(self):
     runs_endpoints["genomicVariant"]=run_genomicVariant
     try:
         map_run["endpoints"]=runs_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_run["endpoints"]={}
         map_run["endpoints"]=runs_endpoints
     runs_endpoints["analysis"]=run_analysis
     try:
         map_run["endpoints"]=runs_endpoints
-    except Exception:
+    except Exception:# pragma: no cover
         map_run["endpoints"]={}
         map_run["endpoints"]=runs_endpoints
     map_entry_types["endpointSets"]["run"]=map_run

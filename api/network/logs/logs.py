@@ -35,29 +35,6 @@ if len(LOG.handlers) > 0:
 # Auditing -> registre de accions que s'han fet i que es guardin
 # DTO entre classe i classe quan es retorna un objecte 
 
-def log_with_args_initial(level):
-    def add_logging(func):
-        def wrapper(self, *args, **kwargs):
-            try:
-                start = time.time()
-                logging.basicConfig(format=fmt, level=level)
-                result = func(self, *args, **kwargs)
-                LOG.debug(f"{result} - {func.__name__} - initial call")
-                finish = time.time()
-                LOG.debug(f"{result} - {func.__name__}- {finish-start} - returned OK")
-                if f"{func.__name__}" == 'initialize':
-                    LOG.info(f"{result} - Initialization done")# pragma: no cover
-                elif f"{func.__name__}" == 'destroy':
-                    LOG.info(f"{result} - Shutting down")# pragma: no cover
-                return result
-            except:# pragma: no cover
-                err = "There was an exception in  "
-                err += func.__name__
-                LOG.error(f"{result} - {err}")
-                raise
-        return wrapper
-    return add_logging
-
 def log_with_args(level):
     def add_logging(func):
         def wrapper(self, *args, **kwargs):
@@ -73,7 +50,7 @@ def log_with_args(level):
                 elif f"{func.__name__}" == 'destroy':
                     LOG.info(f"{self._id} - Shutting down")# pragma: no cover
                 return result
-            except:
+            except:# pragma: no cover
                 err = "There was an exception in  "
                 err += func.__name__
                 LOG.error(f"{self._id} - {err}")

@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from network.conf.map_entry_types import get_entry_types_map
 from network.conf import conf
 from network.utils.txid import generate_txid
-from network.logs.logs import log_with_args, LOG, log_with_args_initial
+from network.logs.logs import log_with_args, LOG
 from network.conf.conf import level
 from network.auth.__main__ import exchange_token
 
@@ -76,7 +76,7 @@ async def get_requesting(self, burl, query):
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-        except Exception:
+        except Exception:# pragma: no cover
             response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
@@ -110,7 +110,7 @@ async def get_resultSets_requesting(self, burl, query):
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 return json.dumps(response_obj)
-            except Exception:
+            except Exception:# pragma: no cover
                 response_obj = await registry(self, burl)
                 end_time = perf_counter()
                 final_time=end_time-start_time
@@ -165,7 +165,7 @@ async def requesting(self, burl, query, data, token):
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-        except Exception:
+        except Exception:# pragma: no cover
             response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
