@@ -17,6 +17,7 @@ async def beacon_request(session, url, data):
         return response_obj
 
 async def requesting(websocket, burl, query):
+    start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
@@ -32,26 +33,39 @@ async def requesting(websocket, burl, query):
             else:
                 url = url + '?includeResultsetResponses=ALL'
             response_obj = await beacon_request(session, url, data)
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
             #LOG.warning(json.dumps(response_obj))
             return json.dumps(response_obj)
         except Exception:
-            response_obj = await registry(burl)
+            response_obj = await registry(websocket, burl)
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
             return response_obj
         #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 async def registry(websocket, burl):
+    start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
-    async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        url = burl + '/info'
-        response_obj = await beacon_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
-        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+    try:
+        async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            url = burl + '/info'
+            response_obj = await beacon_request(session, url, data)
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
+            #LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+    except Exception:
+        return json.dumps({"beacon": burl})
 
 async def returning(websocket):
     await asyncio.sleep(10)
@@ -87,25 +101,27 @@ async def ws_server(websocket):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
-                #LOG.warning(inforesponse)
-                beaconInfoId=inforesponse["meta"]["beaconId"]
-                beaconName=inforesponse["response"]["name"]
-                beaconMaturity=inforesponse["response"]["environment"]
-                beaconURL=inforesponse["response"]["alternativeUrl"]
-                beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
-                finalinforesponse["beaconId"]=beaconInfoId
-                finalinforesponse["beaconName"]=beaconName
-                finalinforesponse["beaconMaturity"]=beaconMaturity
-                finalinforesponse["beaconURL"]=beaconURL
-                finalinforesponse["beaconLogo"]=beaconLogo
-                list_of_beacons.append(finalinforesponse)
-                with open('/responses/registries.json') as registries_file:
-                    dict_registries = json.load(registries_file)
-
-                
-                dict_registries["response"]["registries"]=list_of_beacons
-                dict_registries=json.dumps(dict_registries)
-                #LOG.warning(dict_registries)
+                try:
+                    #LOG.warning(inforesponse)
+                    beaconInfoId=inforesponse["meta"]["beaconId"]
+                    beaconName=inforesponse["response"]["name"]
+                    beaconMaturity=inforesponse["response"]["environment"]
+                    beaconURL=inforesponse["response"]["alternativeUrl"]
+                    beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+                    finalinforesponse["beaconId"]=beaconInfoId
+                    finalinforesponse["beaconName"]=beaconName
+                    finalinforesponse["beaconMaturity"]=beaconMaturity
+                    finalinforesponse["beaconURL"]=beaconURL
+                    finalinforesponse["beaconLogo"]=beaconLogo
+                    list_of_beacons.append(finalinforesponse)
+                    with open('/responses/registries.json') as registries_file:
+                        dict_registries = json.load(registries_file)
+                    dict_registries["response"]["registries"]=list_of_beacons
+                    dict_registries=json.dumps(dict_registries)
+                    #LOG.warning(dict_registries)
+                except Exception:
+                    LOG.error('{} is not responding'.format(inforesponse["beacon"]))
+                    continue
                 await websocket.send(f"{dict_registries}")
         
         else:
@@ -127,8 +143,11 @@ async def ws_server(websocket):
             for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
                 response = await task
                 response = json.loads(response)
-                beaconId=response["meta"]["beaconId"]
-                LOG.warning(beaconId)
+                try:
+                    beaconId=response["meta"]["beaconId"]
+                except Exception:
+                    LOG.error('{} is not responding'.format(response["beacon"]))
+                    continue
                 try:
                     count=response["responseSummary"]["numTotalResults"]
                 except Exception:

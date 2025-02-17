@@ -9,92 +9,94 @@ import signal
 from threading import Thread
 from aiohttp_middlewares import cors_middleware
 from aiohttp_cors import CorsViewMixin
-from datetime import datetime
-import ssl
 import logging
 import yaml
 import json
 import itertools
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
-from map_entry_types import get_entry_types_map
-import conf
-from authorization.__main__ import get_token
-
-LOG = logging.getLogger(__name__)
-fmt = '%(levelname)s - %(asctime)s - %(message)s'
-formatter = logging.Formatter(fmt)
-logging.basicConfig(format=fmt, level=logging.NOTSET)
+from network.conf.map_entry_types import get_entry_types_map
+from network.conf import conf
+from network.utils.txid import generate_txid
+from network.logs.logs import log_with_args, LOG
+from network.conf.conf import level
+from network.auth.__main__ import exchange_token
 
 class EndpointView(web.View, CorsViewMixin):
     def __init__(self, request: Request):
         self._request = request
+        self._id = generate_txid(self)
 
-async def beacon_get_request(session, url, data):
+@log_with_args(level)
+async def beacon_get_request(self, session, url, data):
     async with session.get(url) as response:
         response_obj = await response.json()
         return response_obj
 
-async def beacon_post_request(session, url, data):
-    async with session.post(url, json=data) as response:
+@log_with_args(level)
+async def beacon_post_request(self, session, url, data, headers):
+    async with session.post(url, json=data, headers=headers) as response:
         response_obj = await response.json()
         return response_obj
 
-async def registry(burl):
+@log_with_args(level)
+async def registry(self, burl):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
-    async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        url = burl + '/info'
-        response_obj = await beacon_get_request(session, url, data)
-        #LOG.warning(json.dumps(response_obj))
-        return json.dumps(response_obj)
-        #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-    
-async def get_requesting(burl, query):
+    try:
+        async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            url = burl + '/info'
+            response_obj = await beacon_get_request(self, session, url, data)
+            #LOG.warning(json.dumps(response_obj))
+            return json.dumps(response_obj)
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+    except Exception:
+        return json.dumps({"beacon": burl})
+
+@log_with_args(level)
+async def get_requesting(self, burl, query):
     start_time = perf_counter()
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
         try:
-            response_obj = await beacon_get_request(session, url, data)
+            response_obj = await beacon_get_request(self, session, url, data)
             #LOG.warning(json.dumps(response_obj))
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(burl, final_time))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-        except Exception:
-            response_obj = await registry(burl)
+        except Exception:# pragma: no cover
+            response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return response_obj
 
-async def returning(url):
+@log_with_args(level)
+async def returning(self, url):
     await asyncio.sleep(conf.timeout)
-    my_timeout = aiohttp.ClientTimeout(
-    total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
-)
-    async with aiohttp.ClientSession(timeout=my_timeout) as session:
-        response_obj = await registry(url)
-        return response_obj
+    return json.dumps({"beacon": url})
 
-async def get_resultSets_requesting(burl, query):
+@log_with_args(level)
+async def get_resultSets_requesting(self, burl, query):
     start_time = perf_counter()
     with ThreadPoolExecutor() as pool:
         data={}
         my_timeout = aiohttp.ClientTimeout(
         total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-        sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-        sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+        sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+        sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
             if '?' in query:
@@ -102,78 +104,87 @@ async def get_resultSets_requesting(burl, query):
             else:
                 url = burl + query + '?includeResultsetResponses=ALL'
             try:
-                response_obj = await beacon_get_request(session, url, data)
+                response_obj = await beacon_get_request(self, session, url, data)
                 #LOG.warning(json.dumps(response_obj))
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 return json.dumps(response_obj)
-            except Exception:
-                response_obj = await registry(burl)
+            except Exception:# pragma: no cover
+                response_obj = await registry(self, burl)
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 return response_obj
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
-async def get_resultset_or_timeout(burl, query, loop):
+@log_with_args(level)
+async def get_resultset_or_timeout(self, burl, query, loop):
     secondarytasks=[]
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, burl, query)
+        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, self, burl, query)
         secondarytasks.append(secondarytask)
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
         secondarytasks.append(secondarytask)
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
-    
-async def get_results_or_timeout(burl, query, loop):
-    secondarytasks=[]
-    with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, get_requesting, burl, query)
-        secondarytasks.append(secondarytask)
-    with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
-        secondarytasks.append(secondarytask)
-    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
-        return await sectask
-    
 
-async def requesting(burl, query, data):
+@log_with_args(level)
+async def get_results_or_timeout(self, burl, query, loop):
+    secondarytasks=[]
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, get_requesting, self, burl, query)
+        secondarytasks.append(secondarytask)
+    with ThreadPoolExecutor() as pool:
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
+        secondarytasks.append(secondarytask)
+    for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
+        return await sectask
+    
+@log_with_args(level)
+async def requesting(self, burl, query, data, token):
+    if token != 'nothing':
+        exchanged_token=exchange_token(self, burl, token)
+        headers={"Authorization": "Bearer {}".format(exchanged_token)}
+    else:
+        headers={}
     start_time = perf_counter()
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
         url = burl + query
         try:
-            response_obj = await beacon_post_request(session, url, data)
+            response_obj = await beacon_post_request(self, session, url, data, headers)
             #LOG.warning(json.dumps(response_obj))
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-        except Exception:
-            response_obj = await registry(burl)
+        except Exception:# pragma: no cover
+            response_obj = await registry(self, burl)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
             return response_obj
 
-async def post_resultset_or_timeout(burl, query, loop, data):
+@log_with_args(level)
+async def post_resultset_or_timeout(self, burl, query, loop, data, token):
     secondarytasks=[]
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, requesting, burl, query, data)
+        secondarytask = await loop.run_in_executor(pool, requesting, self, burl, query, data, token)
         secondarytasks.append(secondarytask)
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, returning, burl)
+        secondarytask = await loop.run_in_executor(pool, returning, self, burl)
         secondarytasks.append(secondarytask)
     for sectask in itertools.islice(asyncio.as_completed(secondarytasks), 1):
         return await sectask
 
+@log_with_args(level)
 def combine_filtering_terms(self, list1, list2):
     definitive_list=[]
     ids_used=[]
@@ -191,7 +202,129 @@ def combine_filtering_terms(self, list1, list2):
 
     return definitive_list
 
+@log_with_args(level)
+async def manage_resultset_response(self, tasks):
+    with open('/network/responses/resultSets.json') as json_file:
+        dict_response = json.load(json_file)
+    dict_response["meta"]["beaconId"]=conf.beaconId
+    for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
+        response = await task
+        response = json.loads(response)
+        try:
+            beaconId=response["meta"]["beaconId"]
+        except Exception:
+            LOG.warning('{} is not responding'.format(response["beacon"]))
+            continue
+        try:
+            count=response["responseSummary"]["numTotalResults"]
+        except Exception:
+            count=0
+        dict_response["responseSummary"]["numTotalResults"]+=count
+        try:
+            for response1 in response["response"]["resultSets"]:
+                try:
+                    if response1["beaconId"]!=beaconId:
+                        response1["beaconNetworkId"]=beaconId
+                    else:
+                        response1["beaconId"]=beaconId
+                    dict_response["response"]["resultSets"].append(response1)
+                except Exception:
+                    response1["beaconId"]=beaconId
+                    dict_response["response"]["resultSets"].append(response1)
+        except Exception:
+            dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
+        if dict_response["responseSummary"]["numTotalResults"] > 0:
+            dict_response["responseSummary"]["exists"]=True
+    #LOG.warning(dict_response)
+    return dict_response
+
+@log_with_args(level)
+async def manage_collection_response(self, tasks):
+    with open('/network/responses/collections.json') as json_file:
+        dict_response = json.load(json_file)
+    dict_response["meta"]["beaconId"]=conf.beaconId
+    for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
+        response = await task
+        response = json.loads(response)
+        try:
+            beaconId=response["meta"]["beaconId"]
+        except Exception:
+            LOG.warning('{} is not responding'.format(response["beacon"]))
+            continue
+        try:
+            count=response["responseSummary"]["numTotalResults"]
+        except Exception:
+            count=0
+        dict_response["responseSummary"]["numTotalResults"]+=count
+        try:
+            for response1 in response["response"]["collections"]:
+                dict_response["response"]["collections"].append(response1)
+        except Exception:
+            dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
+        if dict_response["responseSummary"]["numTotalResults"] > 0:
+            dict_response["responseSummary"]["exists"]=True
+    #LOG.warning(dict_response)
+    return dict_response
+
+@log_with_args(level)
+async def manage_registries_response(self, tasks):
+    start_time = perf_counter()
+    list_of_beacons=[]
+    for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
+        finalinforesponse={}
+        inforesponse = await task
+        inforesponse = json.loads(inforesponse)
+        #LOG.warning(inforesponse)
+        try:
+            beaconInfoId=inforesponse["meta"]["beaconId"]
+            beaconName=inforesponse["response"]["name"]
+            beaconMaturity=inforesponse["response"]["environment"]
+            beaconURL=inforesponse["response"]["alternativeUrl"]
+            beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+            finalinforesponse["beaconId"]=beaconInfoId
+            finalinforesponse["beaconName"]=beaconName
+            finalinforesponse["beaconMaturity"]=beaconMaturity
+            finalinforesponse["beaconURL"]=beaconURL
+            finalinforesponse["beaconLogo"]=beaconLogo
+            list_of_beacons.append(finalinforesponse)
+            with open('/network/responses/registries.json') as registries_file:
+                dict_registries = json.load(registries_file)
+            dict_registries["meta"]["beaconId"]=conf.beaconId
+            dict_registries["response"]["registries"]=list_of_beacons
+            end_time = perf_counter()
+            final_time=end_time-start_time
+            LOG.warning("{} response took {} seconds".format(inforesponse["meta"]["beaconId"], final_time))
+        except Exception:
+            LOG.warning('{} is not responding'.format(inforesponse["beacon"]))
+            continue
+    return dict_registries
+
+async def manage_filtering_terms_response(self, tasks):
+    with open('/network/responses/filtering_terms.json') as json_file:
+        dict_response = json.load(json_file)
+    dict_response["meta"]["beaconId"]=conf.beaconId
+
+    for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
+        response = await task
+        response = json.loads(response)
+        try:
+            beaconId=response["meta"]["beaconId"]
+            if dict_response["response"]["filteringTerms"] == []:
+                for response1 in response["response"]["filteringTerms"]:
+                    dict_response["response"]["filteringTerms"].append(response1)
+                #LOG.warning(dict_response["response"]["filteringTerms"])
+            else:
+                dict_response["response"]["filteringTerms"]=combine_filtering_terms(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
+                #LOG.warning(dict_response["response"]["filteringTerms"])
+            for response2 in response["response"]["resources"]:
+                dict_response["response"]["resources"].append(response2)
+        except Exception:
+            continue
+    #LOG.warning(dict_response)
+    return dict_response
+        
 class FilteringTerms(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -200,9 +333,6 @@ class FilteringTerms(EndpointView):
             raise
 
     async def get(self):
-        request = await self.request.json() if self.request.has_body else {}
-        headers = self.request.headers
-        post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
         endpoint=path_list[-1]
@@ -210,38 +340,22 @@ class FilteringTerms(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
-        with open('/responses/filtering_terms.json') as json_file:
-            dict_response = json.load(json_file)
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-            if dict_response["response"]["filteringTerms"] == []:
-                for response1 in response["response"]["filteringTerms"]:
-                    dict_response["response"]["filteringTerms"].append(response1)
-                LOG.warning(dict_response["response"]["filteringTerms"])
-            else:
-                dict_response["response"]["filteringTerms"]=combine_filtering_terms(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
-                LOG.warning(dict_response["response"]["filteringTerms"])
-            for response2 in response["response"]["resources"]:
-                dict_response["response"]["resources"].append(response2)
-        LOG.warning(dict_response)
+        dict_response=await manage_filtering_terms_response(self, tasks)
         
         return await self.resultset(dict_response)
 
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        token = 'nothing'
         post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
@@ -250,37 +364,20 @@ class FilteringTerms(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
-
-        with open('/responses/filtering_terms.json') as json_file:
-            dict_response = json.load(json_file)
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-            if dict_response["response"]["filteringTerms"] == []:
-                for response1 in response["response"]["filteringTerms"]:
-                    dict_response["response"]["filteringTerms"].append(response1)
-                LOG.warning(dict_response["response"]["filteringTerms"])
-            else:
-                dict_response["response"]["filteringTerms"]=combine_filtering_terms(self, dict_response["response"]["filteringTerms"], response["response"]["filteringTerms"])
-                LOG.warning(dict_response["response"]["filteringTerms"])
-            for response2 in response["response"]["resources"]:
-                dict_response["response"]["resources"].append(response2)
-        LOG.warning(dict_response)
+        dict_response=await manage_filtering_terms_response(self, tasks)
         
         return await self.resultset(dict_response)
     
 class Registries(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -291,73 +388,32 @@ class Registries(EndpointView):
     async def get(self):
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon)
                 tasks.append(task)
-        list_of_beacons=[]
-        
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            finalinforesponse={}
-            inforesponse = await task
-            inforesponse = json.loads(inforesponse)
-            LOG.warning(inforesponse)
-            beaconInfoId=inforesponse["meta"]["beaconId"]
-            beaconName=inforesponse["response"]["name"]
-            beaconMaturity=inforesponse["response"]["environment"]
-            beaconURL=inforesponse["response"]["alternativeUrl"]
-            beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
-            finalinforesponse["beaconId"]=beaconInfoId
-            finalinforesponse["beaconName"]=beaconName
-            finalinforesponse["beaconMaturity"]=beaconMaturity
-            finalinforesponse["beaconURL"]=beaconURL
-            finalinforesponse["beaconLogo"]=beaconLogo
-            list_of_beacons.append(finalinforesponse)
-            with open('/responses/registries.json') as registries_file:
-                dict_registries = json.load(registries_file)
-            dict_registries["meta"]["beaconId"]=conf.beaconId
-            dict_registries["response"]["registries"]=list_of_beacons
+        dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
         
 
     async def post(self):
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon)
                 tasks.append(task)
-        list_of_beacons=[]
-        
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            finalinforesponse={}
-            inforesponse = await task
-            inforesponse = json.loads(inforesponse)
-            LOG.warning(inforesponse)
-            beaconInfoId=inforesponse["meta"]["beaconId"]
-            beaconName=inforesponse["response"]["name"]
-            beaconMaturity=inforesponse["response"]["environment"]
-            beaconURL=inforesponse["response"]["alternativeUrl"]
-            beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
-            finalinforesponse["beaconId"]=beaconInfoId
-            finalinforesponse["beaconName"]=beaconName
-            finalinforesponse["beaconMaturity"]=beaconMaturity
-            finalinforesponse["beaconURL"]=beaconURL
-            finalinforesponse["beaconLogo"]=beaconLogo
-            list_of_beacons.append(finalinforesponse)
-            with open('/responses/registries.json') as registries_file:
-                dict_registries = json.load(registries_file)
-            dict_registries["meta"]["beaconId"]=conf.beaconId
-            dict_registries["response"]["registries"]=list_of_beacons
+        dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
     
 class Map(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -366,18 +422,19 @@ class Map(EndpointView):
             raise
 
     async def get(self):
-        dict_response=get_entry_types_map()
+        dict_response=get_entry_types_map(self)
         dict_response["meta"]["beaconId"]=conf.beaconId
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        dict_response=get_entry_types_map()
+        dict_response=get_entry_types_map(self)
         dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         return await self.resultset(dict_response)
     
 class Configuration(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -386,24 +443,25 @@ class Configuration(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/configuration.json') as json_file:
+        with open('/network/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/configuration.json') as json_file:
+        with open('/network/responses/configuration.json') as json_file:
             dict_response = json.load(json_file)
         
         dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
     
 class EntryTypes(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -412,24 +470,25 @@ class EntryTypes(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/entryTypes.json') as json_file:
+        with open('/network/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/entryTypes.json') as json_file:
+        with open('/network/responses/entryTypes.json') as json_file:
             dict_response = json.load(json_file)
 
         dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
     
 class ServiceInfo(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -438,24 +497,25 @@ class ServiceInfo(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/service-info.json') as json_file:
+        with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
-        dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        dict_response["id"]=conf.beaconId
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/service-info.json') as json_file:
+        with open('/network/responses/service-info.json') as json_file:
             dict_response = json.load(json_file)
         
-        dict_response["meta"]["beaconId"]=conf.beaconId
-        LOG.warning(dict_response)
+        dict_response["id"]=conf.beaconId
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
     
 class Info(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -464,20 +524,21 @@ class Info(EndpointView):
             raise
 
     async def get(self):
-        with open('/responses/info.json') as json_file:
+        with open('/network/responses/info.json') as json_file:
             dict_response = json.load(json_file)
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
     async def post(self):
-        with open('/responses/info.json') as json_file:
+        with open('/network/responses/info.json') as json_file:
             dict_response = json.load(json_file)
-        LOG.warning(dict_response)
+        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
 class Collection(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -486,9 +547,6 @@ class Collection(EndpointView):
             raise
 
     async def get(self):
-        request = await self.request.json() if self.request.has_body else {}
-        headers = self.request.headers
-        post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
         endpoint=path_list[-1]
@@ -496,43 +554,22 @@ class Collection(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_results_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_results_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
-        with open('/responses/collections.json') as json_file:
-            dict_response = json.load(json_file)
-
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            LOG.warning(response)
-            beaconId=response["meta"]["beaconId"]
-            try:
-                count=response["responseSummary"]["numTotalResults"]
-            except Exception:
-                count=0
-            dict_response["responseSummary"]["numTotalResults"]+=count
-            try:
-                for response1 in response["response"]["collections"]:
-                    dict_response["response"]["collections"].append(response1)
-            except Exception:
-                dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
-            if dict_response["responseSummary"]["numTotalResults"] > 0:
-                dict_response["responseSummary"]["exists"]=True
-        #LOG.warning(dict_response)
+        dict_response=await manage_collection_response(self, tasks)
         
         return await self.resultset(dict_response)
 
     async def post(self):
         request = await self.request.json() if self.request.has_body else {}
         headers = self.request.headers
+        token = 'nothing'
         post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
@@ -541,41 +578,21 @@ class Collection(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
+        dict_response=await manage_collection_response(self, tasks)
 
-        with open('/responses/collections.json') as json_file:
-            dict_response = json.load(json_file)
-        
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-            try:
-                count=response["responseSummary"]["numTotalResults"]
-            except Exception:
-                count=0
-            dict_response["responseSummary"]["numTotalResults"]+=count
-            try:
-                for response1 in response["response"]["collections"]:
-                    dict_response["response"]["collections"].append(response1)
-            except Exception:
-                dict_response["response"]["collections"].append({"beaconId": beaconId, "exists": False})
-            if dict_response["responseSummary"]["numTotalResults"] > 0:
-                dict_response["responseSummary"]["exists"]=True
-        #LOG.warning(dict_response)
         
         return await self.resultset(dict_response)
 
 class Resultset(EndpointView):
+    @log_with_args(level)
     async def resultset(self, dict_response):
         try:
             response_obj = dict_response
@@ -584,9 +601,6 @@ class Resultset(EndpointView):
             raise
 
     async def get(self):
-        request = await self.request.json() if self.request.has_body else {}
-        headers = self.request.headers
-        post_data = request
         relative_url=str(self.request.rel_url)
         path_list = relative_url.split('/')
         endpoint=path_list[-1]
@@ -594,45 +608,15 @@ class Resultset(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_resultset_or_timeout, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_resultset_or_timeout, self, beacon, final_endpoint, loop)
                 tasks.append(task)
 
-        with open('/responses/resultSets.json') as json_file:
-            dict_response = json.load(json_file)
-
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-
-            try:
-                count=response["responseSummary"]["numTotalResults"]
-            except Exception:
-                count=0
-            dict_response["responseSummary"]["numTotalResults"]+=count
-            try:
-                for response1 in response["response"]["resultSets"]:
-                    try:
-                        if response1["beaconId"]!=beaconId:
-                            response1["beaconNetworkId"]=beaconId
-                        else:
-                            response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
-                    except Exception:
-                        response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
-            except Exception:
-                dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
-            if dict_response["responseSummary"]["numTotalResults"] > 0:
-                dict_response["responseSummary"]["exists"]=True
-        #LOG.warning(dict_response)
+        dict_response=await manage_resultset_response(self, tasks)
         
         return await self.resultset(dict_response)
 
@@ -651,54 +635,21 @@ class Resultset(EndpointView):
         LOG.warning(final_endpoint)
         loop=asyncio.get_running_loop()
         tasks=[]
-        with open('registry.yml', 'r') as f:
+        with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
         for beacon in data["Beacons"]:
             #LOG.warning(beacon)
-            if token != 'nothing':
-                # go to beacon's endpoint
-                # call the get_token function to do the exchange token
-                pass
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, post_resultset_or_timeout, beacon, final_endpoint, loop, post_data)
+                task = await loop.run_in_executor(pool, post_resultset_or_timeout, self, beacon, final_endpoint, loop, post_data, token)
                 tasks.append(task)
 
-        with open('/responses/resultSets.json') as json_file:
-            dict_response = json.load(json_file)
-
-        dict_response["meta"]["beaconId"]=conf.beaconId
-
-        for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-            response = await task
-            response = json.loads(response)
-            beaconId=response["meta"]["beaconId"]
-            try:
-                count=response["responseSummary"]["numTotalResults"]
-            except Exception:
-                count=0
-            dict_response["responseSummary"]["numTotalResults"]+=count
-            try:
-                for response1 in response["response"]["resultSets"]:
-                    try:
-                        if response1["beaconId"]!=beaconId:
-                            response1["beaconNetworkId"]=beaconId
-                        else:
-                            response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
-                    except Exception:
-                        response1["beaconId"]=beaconId
-                        dict_response["response"]["resultSets"].append(response1)
-            except Exception:
-                dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
-            if dict_response["responseSummary"]["numTotalResults"] > 0:
-                dict_response["responseSummary"]["exists"]=True
-        #LOG.warning(dict_response)
+        dict_response=await manage_resultset_response(self, tasks)
         
         return await self.resultset(dict_response)
         
 async def initialize(app):# pragma: no cover
-    LOG.info("Initialization done.")
+    LOG.warning("Initialization done.")
 
 def _on_shutdown(pid):# pragma: no cover
     time.sleep(6)
@@ -706,7 +657,7 @@ def _on_shutdown(pid):# pragma: no cover
     #  Sending SIGINT to close server
     os.kill(pid, signal.SIGINT)
 
-    LOG.info('Shutting down beacon v2')
+    LOG.warning('Shutting down beacon v2')
 
 async def _graceful_shutdown_ctx(app):# pragma: no cover
     def graceful_shutdown_sigterm_handler():
