@@ -37,7 +37,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
   }, []);
 
   const connectWebSocket = () => {
-    if (reconnectRef.current) return; // Prevent multiple connections
+    if (reconnectRef.current) return;
 
     console.log("🔄 Initializing WebSocket...");
     const ws = new WebSocket("ws://localhost:5700");

@@ -59,6 +59,49 @@ function separateBeacons(data) {
   return { individualBeacons, networkBeacons };
 }
 
+function getFormattedAlleleFrequency(beacon) {
+  let frequencies = [];
+
+  // Special case for "EGAD00001007774" where frequencies are in different objects
+  if (beacon.id === "EGAD00001007774") {
+    beacon.results.forEach((result) => {
+      result.frequencyInPopulations?.forEach((pop) => {
+        pop.frequencies?.forEach((freq) => {
+          if (freq.alleleFrequency !== undefined) {
+            frequencies.push(freq.alleleFrequency);
+          }
+        });
+      });
+    });
+  }
+  // All other cases where frequencies are in a single array
+  else {
+    beacon.results.forEach((result) => {
+      result.frequencyInPopulations?.[0]?.frequencies?.forEach((freq) => {
+        if (freq.alleleFrequency !== undefined) {
+          frequencies.push(freq.alleleFrequency);
+        }
+      });
+    });
+  }
+
+  // Sort frequencies for range calculation
+  frequencies.sort((a, b) => a - b);
+
+  // Apply display rules
+  if (frequencies.length === 1) {
+    return frequencies[0].toFixed(5); // Single frequency
+  } else if (frequencies.length === 2) {
+    return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`; // Two frequencies
+  } else if (frequencies.length > 2) {
+    return `${frequencies[0].toFixed(5)} - ${frequencies[
+      frequencies.length - 1
+    ].toFixed(5)}`; // Range
+  }
+
+  return "N/A"; // No valid frequency data
+}
+
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
@@ -310,7 +353,7 @@ export default function CollapsibleTable({ data, registries }) {
                   <TableCell
                     style={{ backgroundColor: "yellow", fontWeight: "bold" }}
                   >
-                    AF Response
+                    {getFormattedAlleleFrequency(individualBeacon)}
                   </TableCell>
                   <TableCell>
                     <StatusButton
