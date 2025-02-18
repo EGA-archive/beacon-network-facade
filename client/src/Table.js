@@ -42,20 +42,67 @@ function createData(
   };
 }
 
+// function hasFoundAlleleFrequency(beaconDatasets) {
+//   for (let dataset of beaconDatasets) {
+//     for (let result of dataset.results || []) {
+//       for (let population of result.frequencyInPopulations || []) {
+//         if (
+//           population.frequencies?.some(
+//             (freq) => freq.alleleFrequency !== undefined
+//           )
+//         ) {
+//           return true;
+//         }
+//       }
+//     }
+//   }
+//   return false;
+// }
+
 function hasFoundAlleleFrequency(beaconDatasets) {
+  console.log("🔍 Checking beaconDatasets:", beaconDatasets); // Log input datasets
+
   for (let dataset of beaconDatasets) {
-    for (let result of dataset.results || []) {
-      for (let population of result.frequencyInPopulations || []) {
+    console.log("📂 Checking dataset:", dataset.datasetId || dataset);
+
+    if (!dataset.results) {
+      console.log(
+        "⚠️ No results found for dataset:",
+        dataset.datasetId || dataset
+      );
+      continue;
+    }
+
+    for (let result of dataset.results) {
+      console.log("🧬 Checking result:", result);
+
+      if (!result.frequencyInPopulations) {
+        console.log("⚠️ No frequencyInPopulations found in result");
+        continue;
+      }
+
+      for (let population of result.frequencyInPopulations) {
+        console.log(
+          "🌍 Checking population frequencies:",
+          population.frequencies
+        );
+
         if (
           population.frequencies?.some(
             (freq) => freq.alleleFrequency !== undefined
           )
         ) {
+          console.log(
+            "✅ Found allele frequency in dataset:",
+            dataset.datasetId || dataset
+          );
           return true;
         }
       }
     }
   }
+
+  console.log("❌ No allele frequency found in any dataset.");
   return false;
 }
 
@@ -78,26 +125,67 @@ function separateBeacons(data) {
   return { individualBeacons, networkBeacons };
 }
 
-function getFormattedAlleleFrequency(beacon) {
+function getFormattedAlleleFrequency(data) {
   let frequencies = [];
-  if (beacon.id === "EGAD00001007774") {
-    beacon.results.forEach((result) => {
-      result.frequencyInPopulations?.forEach((pop) => {
-        pop.frequencies?.forEach((freq) => {
-          if (freq.alleleFrequency !== undefined) {
-            frequencies.push(freq.alleleFrequency);
-          }
-        });
-      });
-    });
-  } else {
-    beacon.results.forEach((result) => {
-      result.frequencyInPopulations?.[0]?.frequencies?.forEach((freq) => {
-        if (freq.alleleFrequency !== undefined) {
+
+  // If data is a dataset from Beacon Network historyRow.dataset
+  if (data.datasetId) {
+    console.log("🔍 Processing Beacon Network dataset:", data.datasetId);
+    if (typeof data.alleleFrequency === "number") {
+      return data.alleleFrequency.toFixed(5); // Directly return if already a number
+    }
+    return (
+      <img
+        src={Dash}
+        alt="Dash"
+        style={{
+          width: "18px",
+          height: "18px",
+          display: "block",
+          margin: "auto",
+        }}
+      />
+    );
+  }
+
+  // Otherwise, treat as an Individual Beacon dataset
+  if (!data?.results) {
+    return (
+      <img
+        src={Dash}
+        alt="Dash"
+        style={{
+          width: "18px",
+          height: "18px",
+          display: "block",
+          margin: "auto",
+        }}
+      />
+    );
+  }
+
+  // Extract allele frequencies
+  data.results.forEach((result) => {
+    result.frequencyInPopulations?.forEach((pop) => {
+      pop.frequencies?.forEach((freq) => {
+        if (typeof freq.alleleFrequency === "number") {
           frequencies.push(freq.alleleFrequency);
         }
       });
     });
+  });
+
+  if (frequencies.length === 0) {
+    return (
+      <img
+        src={Dash}
+        alt="Dash"
+        style={{
+          width: "18px",
+          height: "18px",
+        }}
+      />
+    );
   }
 
   frequencies.sort((a, b) => a - b);
@@ -106,20 +194,11 @@ function getFormattedAlleleFrequency(beacon) {
     return frequencies[0].toFixed(5);
   } else if (frequencies.length === 2) {
     return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`;
-  } else if (frequencies.length > 2) {
+  } else {
     return `${frequencies[0].toFixed(5)} - ${frequencies[
       frequencies.length - 1
     ].toFixed(5)}`;
   }
-  return (
-    <img
-      src={Dash}
-      style={{
-        width: "18px",
-        height: "18px",
-      }}
-    />
-  );
 }
 
 function Row(props) {
@@ -201,7 +280,7 @@ function Row(props) {
                         </i>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ width: "200px" }}>
+                    {/* <TableCell sx={{ width: "200px" }}>
                       <b>
                         {" "}
                         {historyRow.dataset.alleleFrequency !== "N/A"
@@ -210,6 +289,9 @@ function Row(props) {
                             ).toFixed(5)
                           : "N/A"}
                       </b>
+                    </TableCell> */}
+                    <TableCell sx={{ width: "200px" }}>
+                      <b>{getFormattedAlleleFrequency(historyRow.dataset)}</b>
                     </TableCell>
                     <TableCell sx={{ width: "195px" }}>
                       {/* align="center" */}
@@ -324,7 +406,6 @@ export default function CollapsibleTable({ data, registries }) {
                         )
                       )
                   );
-
                   return (
                     <TableRow key={registry.beaconId}>
                       <TableCell />
@@ -374,7 +455,10 @@ export default function CollapsibleTable({ data, registries }) {
                   <TableCell colSpan={2}>
                     <Box sx={{ marginLeft: "50px" }}>
                       <i>
-                        Dataset: <b>{individualBeacon.id}</b>
+                        Dataset:{" "}
+                        <b>
+                          {individualBeacon.id || individualBeacon.beaconId}
+                        </b>
                       </i>
                     </Box>
                   </TableCell>
