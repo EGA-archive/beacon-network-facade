@@ -12,6 +12,8 @@ import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
+import Dash from "../src/dash.svg";
+import Tick from "../src/tick.svg";
 
 function createData(
   name,
@@ -40,6 +42,23 @@ function createData(
   };
 }
 
+function hasFoundAlleleFrequency(beaconDatasets) {
+  for (let dataset of beaconDatasets) {
+    for (let result of dataset.results || []) {
+      for (let population of result.frequencyInPopulations || []) {
+        if (
+          population.frequencies?.some(
+            (freq) => freq.alleleFrequency !== undefined
+          )
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 function separateBeacons(data) {
   const individualBeacons = [];
   const networkBeacons = [];
@@ -61,8 +80,6 @@ function separateBeacons(data) {
 
 function getFormattedAlleleFrequency(beacon) {
   let frequencies = [];
-
-  // Special case for "EGAD00001007774" where frequencies are in different objects
   if (beacon.id === "EGAD00001007774") {
     beacon.results.forEach((result) => {
       result.frequencyInPopulations?.forEach((pop) => {
@@ -73,9 +90,7 @@ function getFormattedAlleleFrequency(beacon) {
         });
       });
     });
-  }
-  // All other cases where frequencies are in a single array
-  else {
+  } else {
     beacon.results.forEach((result) => {
       result.frequencyInPopulations?.[0]?.frequencies?.forEach((freq) => {
         if (freq.alleleFrequency !== undefined) {
@@ -85,21 +100,26 @@ function getFormattedAlleleFrequency(beacon) {
     });
   }
 
-  // Sort frequencies for range calculation
   frequencies.sort((a, b) => a - b);
 
-  // Apply display rules
   if (frequencies.length === 1) {
-    return frequencies[0].toFixed(5); // Single frequency
+    return frequencies[0].toFixed(5);
   } else if (frequencies.length === 2) {
-    return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`; // Two frequencies
+    return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`;
   } else if (frequencies.length > 2) {
     return `${frequencies[0].toFixed(5)} - ${frequencies[
       frequencies.length - 1
-    ].toFixed(5)}`; // Range
+    ].toFixed(5)}`;
   }
-
-  return "N/A"; // No valid frequency data
+  return (
+    <img
+      src={Dash}
+      style={{
+        width: "18px",
+        height: "18px",
+      }}
+    />
+  );
 }
 
 function Row(props) {
@@ -320,14 +340,22 @@ export default function CollapsibleTable({ data, registries }) {
                         <b>{registry.beaconName}</b>
                       </TableCell>
 
-                      <TableCell
-                        style={{
-                          backgroundColor: "yellow",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        AF Boolean
+                      <TableCell>
+                        {hasFoundAlleleFrequency(filteredIndividualBeacons) ? (
+                          <img
+                            src={Tick}
+                            alt="Tick"
+                            style={{ width: "18px", height: "18px" }}
+                          />
+                        ) : (
+                          <img
+                            src={Dash}
+                            alt="Dash"
+                            style={{ width: "18px", height: "18px" }}
+                          />
+                        )}
                       </TableCell>
+
                       <TableCell>
                         <StatusButton
                           status={hasFoundDataset ? "Found" : "Not Found"}
@@ -350,9 +378,7 @@ export default function CollapsibleTable({ data, registries }) {
                       </i>
                     </Box>
                   </TableCell>
-                  <TableCell
-                    style={{ backgroundColor: "yellow", fontWeight: "bold" }}
-                  >
+                  <TableCell style={{ fontWeight: "bold" }}>
                     {getFormattedAlleleFrequency(individualBeacon)}
                   </TableCell>
                   <TableCell>
