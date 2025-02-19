@@ -68,6 +68,8 @@ export default function AFDialog({ open, onClose }) {
           }}
         >
           <b>Beacon:</b>
+          <br></br>
+          <b>Dataset:</b>
         </Typography>
       </DialogContent>
       <DialogContent
@@ -86,9 +88,7 @@ export default function AFDialog({ open, onClose }) {
             color: "black",
             position: "absolute",
           }}
-        >
-          <b>Dataset:</b>
-        </Typography>
+        ></Typography>
       </DialogContent>
       <DialogContent
         sx={{

@@ -43,23 +43,6 @@ function createData(
   };
 }
 
-// function hasFoundAlleleFrequency(beaconDatasets) {
-//   for (let dataset of beaconDatasets) {
-//     for (let result of dataset.results || []) {
-//       for (let population of result.frequencyInPopulations || []) {
-//         if (
-//           population.frequencies?.some(
-//             (freq) => freq.alleleFrequency !== undefined
-//           )
-//         ) {
-//           return true;
-//         }
-//       }
-//     }
-//   }
-//   return false;
-// }
-
 function hasFoundAlleleFrequency(beaconDatasets) {
   console.log("🔍 Checking beaconDatasets:", beaconDatasets); // Log input datasets
 
@@ -128,12 +111,10 @@ function separateBeacons(data) {
 
 function getFormattedAlleleFrequency(data) {
   let frequencies = [];
-
-  // If data is a dataset from Beacon Network historyRow.dataset
   if (data.datasetId) {
     console.log("🔍 Processing Beacon Network dataset:", data.datasetId);
     if (typeof data.alleleFrequency === "number") {
-      return data.alleleFrequency.toFixed(5); // Directly return if already a number
+      return data.alleleFrequency.toFixed(5);
     }
     return (
       <img
@@ -149,7 +130,6 @@ function getFormattedAlleleFrequency(data) {
     );
   }
 
-  // Otherwise, treat as an Individual Beacon dataset
   if (!data?.results) {
     return (
       <img
@@ -165,7 +145,6 @@ function getFormattedAlleleFrequency(data) {
     );
   }
 
-  // Extract allele frequencies
   data.results.forEach((result) => {
     result.frequencyInPopulations?.forEach((pop) => {
       pop.frequencies?.forEach((freq) => {
@@ -202,10 +181,37 @@ function getFormattedAlleleFrequency(data) {
   }
 }
 
+const extractFrequencies = (data) => {
+  let frequencies = [];
+  if (data.results) {
+    data.results.forEach((result) => {
+      result.frequencyInPopulations?.forEach((pop) => {
+        pop.frequencies?.forEach((freq) => {
+          if (typeof freq.alleleFrequency === "number") {
+            frequencies.push(freq.alleleFrequency);
+          }
+        });
+      });
+    });
+  }
+
+  return frequencies.sort((a, b) => a - b);
+};
+
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
+  const handleDialogOpen = (dataset) => {
+    const frequencies = extractFrequencies(dataset);
+    if (frequencies.length >= 2) {
+      setDialogOpen(true);
+    }
+  };
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
   return (
     <>
       <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
@@ -281,17 +287,10 @@ function Row(props) {
                         </i>
                       </Box>
                     </TableCell>
-                    {/* <TableCell sx={{ width: "200px" }}>
-                      <b>
-                        {" "}
-                        {historyRow.dataset.alleleFrequency !== "N/A"
-                          ? parseFloat(
-                              historyRow.dataset.alleleFrequency
-                            ).toFixed(5)
-                          : "N/A"}
-                      </b>
-                    </TableCell> */}
-                    <TableCell sx={{ width: "200px" }}>
+                    <TableCell
+                      sx={{ width: "200px", cursor: "pointer" }}
+                      onClick={() => handleDialogOpen(historyRow.dataset)}
+                    >
                       <b>{getFormattedAlleleFrequency(historyRow.dataset)} </b>
                     </TableCell>
                     <TableCell sx={{ width: "195px" }}>
@@ -307,6 +306,7 @@ function Row(props) {
           </Collapse>
         </TableCell>
       </TableRow>
+      <Dialog open={dialogOpen} onClose={handleDialogClose} />
     </>
   );
 }
@@ -350,8 +350,12 @@ export default function CollapsibleTable({ data, registries }) {
     });
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const handleDialogOpen = () => {
-    setDialogOpen(true);
+
+  const handleDialogOpen = (dataset) => {
+    const frequencies = extractFrequencies(dataset);
+    if (frequencies.length >= 2) {
+      setDialogOpen(true);
+    }
   };
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -375,7 +379,6 @@ export default function CollapsibleTable({ data, registries }) {
               <b>Beacon Name</b> <KeyboardArrowRightIcon />
               <b>Dataset</b>
             </TableCell>
-
             <TableCell colSpan={1}>
               <b>Allele Frequency</b>
             </TableCell>
@@ -473,7 +476,7 @@ export default function CollapsibleTable({ data, registries }) {
                   </TableCell>
 
                   <TableCell
-                    style={{ fontWeight: "bold" }}
+                    style={{ fontWeight: "bold", cursor: "pointer" }}
                     onClick={() => handleDialogOpen(individualBeacon)}
                   >
                     {getFormattedAlleleFrequency(individualBeacon)}
