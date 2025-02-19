@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
@@ -14,6 +14,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
+import Dialog from "./Dialog.js";
 
 function createData(
   name,
@@ -291,7 +292,7 @@ function Row(props) {
                       </b>
                     </TableCell> */}
                     <TableCell sx={{ width: "200px" }}>
-                      <b>{getFormattedAlleleFrequency(historyRow.dataset)}</b>
+                      <b>{getFormattedAlleleFrequency(historyRow.dataset)} </b>
                     </TableCell>
                     <TableCell sx={{ width: "195px" }}>
                       {/* align="center" */}
@@ -347,6 +348,14 @@ export default function CollapsibleTable({ data, registries }) {
         registry.beaconURL
       );
     });
+
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const handleDialogOpen = () => {
+    setDialogOpen(true);
+  };
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
   return (
     <TableContainer
@@ -462,9 +471,14 @@ export default function CollapsibleTable({ data, registries }) {
                       </i>
                     </Box>
                   </TableCell>
-                  <TableCell style={{ fontWeight: "bold" }}>
+
+                  <TableCell
+                    style={{ fontWeight: "bold" }}
+                    onClick={() => handleDialogOpen(individualBeacon)}
+                  >
                     {getFormattedAlleleFrequency(individualBeacon)}
                   </TableCell>
+
                   <TableCell>
                     <StatusButton
                       status={individualBeacon.exists ? "Found" : "Not Found"}
@@ -493,6 +507,7 @@ export default function CollapsibleTable({ data, registries }) {
           )}
         </TableBody>
       </Table>
+      <Dialog open={dialogOpen} onClose={handleDialogClose} />
     </TableContainer>
   );
 }
