@@ -15,6 +15,7 @@ import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
 import Dialog from "./Dialog.js";
+import Filters from "./Filters.js";
 
 function createData(
   name,
@@ -212,6 +213,7 @@ function Row(props) {
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
+
   return (
     <>
       <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
@@ -367,6 +369,7 @@ export default function CollapsibleTable({ data, registries }) {
       sx={{ marginTop: "48px", marginBottom: "48px" }}
       className="table-container"
     >
+      <Filters />
       <Table
         aria-label="collapsible table"
         sx={{ tableLayout: "fixed", width: "100%" }}
