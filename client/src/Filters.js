@@ -228,10 +228,18 @@ export default function Filters() {
       <div className="filter-group">
         <p className="filter-label">Filter by Allele Frequency:</p>
         <ToggleButtonGroup
-          value={toggle}
-          exclusive={false}
-          onChange={handleToggle}
-          aria-label="Sort options"
+          value={toggle.includes("af-only") ? "af-only" : "all"}
+          exclusive
+          onChange={(event, newValue) => {
+            if (newValue !== null) {
+              setToggle((prev) =>
+                prev
+                  .filter((val) => val !== "all" && val !== "af-only")
+                  .concat(newValue)
+              );
+            }
+          }}
+          aria-label="Allele Frequency Filter"
           sx={{
             display: "flex",
             marginBottom: "35px",
