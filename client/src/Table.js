@@ -527,11 +527,15 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
 } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Filters from "./Filters";
 import Row from "./Row";
-import { separateBeacons } from "./utils/beaconUtils";
+import {
+  separateBeacons,
+  getFormattedAlleleFrequency,
+} from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
@@ -611,7 +615,6 @@ export default function CollapsibleTable({ data, registries }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* Individual Beacons Section */}
           {filteredIndividualBeacons.length > 0 && (
             <>
               <TableRow>
@@ -635,8 +638,8 @@ export default function CollapsibleTable({ data, registries }) {
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
                       individualBeacon.results?.some((result) =>
-                        result.frequencyInPopulations?.some((freq) =>
-                          freq.frequencies?.some(
+                        result.frequencyInPopulations?.some((pop) =>
+                          pop.frequencies?.some(
                             (f) => f.alleleFrequency !== undefined
                           )
                         )
@@ -644,7 +647,6 @@ export default function CollapsibleTable({ data, registries }) {
                   );
                   return (
                     <React.Fragment key={registry.beaconId}>
-                      {/* New Row for Individual Beacon Name & Maturity */}
                       <TableRow>
                         <TableCell />
                         <TableCell>
@@ -681,7 +683,7 @@ export default function CollapsibleTable({ data, registries }) {
                         </TableCell>
                       </TableRow>
 
-                      {/* Dataset Row */}
+                      {/* Dataset rows for this Individual Beacon */}
                       {filteredIndividualBeacons
                         .filter(
                           (individualBeacon) =>
@@ -694,10 +696,15 @@ export default function CollapsibleTable({ data, registries }) {
                             <TableCell />
                             <TableCell />
                             <TableCell colSpan={2}>
-                              <b>
-                                {individualBeacon.id ||
-                                  individualBeacon.beaconId}
-                              </b>
+                              <Box sx={{ marginLeft: "50px" }}>
+                                <i>
+                                  Dataset:{" "}
+                                  <b>
+                                    {individualBeacon.id ||
+                                      individualBeacon.beaconId}
+                                  </b>
+                                </i>
+                              </Box>
                             </TableCell>
                             <TableCell>
                               {individualBeacon.results?.some((result) =>
@@ -707,11 +714,7 @@ export default function CollapsibleTable({ data, registries }) {
                                   )
                                 )
                               ) ? (
-                                <img
-                                  src={Tick}
-                                  alt="Tick"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
+                                getFormattedAlleleFrequency(individualBeacon)
                               ) : (
                                 <img
                                   src={Dash}
