@@ -4,227 +4,78 @@ import React, { useState } from "react";
 
 export default function Filters() {
   const [toggle, setToggle] = useState([
-    "found",
-    "not-found",
-    "prod-beacon",
-    "test-beacon",
-    "dev-beacon",
+    "Found",
+    "Not-Found",
+    "Prod-Beacon",
+    "Test-Beacon",
+    "Dev-Beacon",
     "all",
   ]);
 
   const handleToggle = (event, newToggle) => {
     setToggle(newToggle);
   };
+
+  const buttonStyles = {
+    width: "auto",
+    minWidth: "95px",
+    height: "28px",
+    fontFamily: "sans-serif",
+    fontSize: "12px",
+    fontWeight: 700,
+    lineHeight: "20px",
+    letterSpacing: "0.1px",
+    textTransform: "none",
+    color: "#7D7D7D",
+    background: "white",
+    border: "1px solid #7D7D7D !important",
+    borderRadius: "6px !important",
+    "&.Mui-selected": {
+      backgroundColor: "#EBEBEB",
+      color: "black",
+      border: "1px solid black !important",
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "#EBEBEB",
+      color: "black",
+      border: "1px solid black",
+    },
+  };
+
+  const filters = [
+    {
+      label: "Filter by response:",
+      values: ["Found", "Not-Found"],
+      exclusive: false,
+    },
+    {
+      label: "Filter by Beacon Maturity:",
+      values: ["Prod-Beacon", "Test-Beacon", "Dev-Beacon"],
+      exclusive: false,
+    },
+  ];
+
   return (
     <div className="filter-row">
-      <div className="filter-group">
-        <p className="filter-label">Filter by response:</p>
-        <ToggleButtonGroup
-          value={toggle}
-          exclusive={false}
-          onChange={handleToggle}
-          aria-label="Sort options"
-          sx={{
-            display: "flex",
-            marginBottom: "35px",
-            gap: "16px",
-            "& .MuiToggleButtonGroup-firstButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-            "& .MuiToggleButtonGroup-lastButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-          }}
-        >
-          <ToggleButton
-            value="found"
-            aria-label="found"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
+      {filters.map(({ label, values, exclusive }) => (
+        <div key={label} className="filter-group">
+          <p className="filter-label">{label}</p>
+          <ToggleButtonGroup
+            value={toggle}
+            exclusive={exclusive}
+            onChange={handleToggle}
+            aria-label={label}
+            sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
           >
-            Found
-          </ToggleButton>
-          <ToggleButton
-            value="not-found"
-            exclusive
-            aria-label="not-found"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              border: "1px solid #3176B1",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            Not Found
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      <div className="filter-group">
-        <p className="filter-label">Filter by Beacon Maturity:</p>
-        <ToggleButtonGroup
-          value={toggle}
-          exclusive={false}
-          onChange={handleToggle}
-          aria-label="Sort options"
-          sx={{
-            display: "flex",
-            marginBottom: "35px",
-            gap: "16px",
-            "& .MuiToggleButtonGroup-firstButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-            "& .MuiToggleButtonGroup-lastButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-          }}
-        >
-          <ToggleButton
-            value="prod-beacon"
-            aria-label="prod-beacon"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            Prod Beacon
-          </ToggleButton>
-          <ToggleButton
-            value="test-beacon"
-            exclusive
-            aria-label="test-beacon"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              border: "1px solid #3176B1",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              borderRadius: "6px !important",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            Test Beacon
-          </ToggleButton>
-          <ToggleButton
-            value="dev-beacon"
-            exclusive
-            aria-label="dev-beacon"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              border: "1px solid #3176B1",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            Dev Beacon
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
+            {values.map((value) => (
+              <ToggleButton key={value} value={value} sx={buttonStyles}>
+                {value.replace("-", " ")}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </div>
+      ))}
+
       <div className="filter-group">
         <p className="filter-label">Filter by Allele Frequency:</p>
         <ToggleButtonGroup
@@ -240,84 +91,13 @@ export default function Filters() {
             }
           }}
           aria-label="Allele Frequency Filter"
-          sx={{
-            display: "flex",
-            marginBottom: "35px",
-            gap: "16px",
-            "& .MuiToggleButtonGroup-firstButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-            "& .MuiToggleButtonGroup-lastButton": {
-              borderRadius: "6px",
-              border: "1px solid black",
-            },
-          }}
+          sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
         >
-          <ToggleButton
-            value="all"
-            aria-label="all"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            All
-          </ToggleButton>
-          <ToggleButton
-            value="af-only"
-            exclusive
-            aria-label="af-only"
-            size="small"
-            sx={{
-              width: "auto",
-              minWidth: "95px",
-              height: "28px",
-              border: "1px solid #3176B1",
-              fontFamily: "sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              lineHeight: "20px",
-              letterSpacing: "0.1px",
-              textTransform: "none",
-              color: "#7D7D7D",
-              background: "white",
-              border: "1px solid #7D7D7D !important",
-              "&.Mui-selected": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black !important",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "#EBEBEB",
-                color: "black",
-                border: "1px solid black",
-              },
-            }}
-          >
-            Allele frequency only
-          </ToggleButton>
+          {["all", "af-only"].map((value) => (
+            <ToggleButton key={value} value={value} sx={buttonStyles}>
+              {value === "all" ? "All" : "Allele Frequency only"}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
       </div>
     </div>
