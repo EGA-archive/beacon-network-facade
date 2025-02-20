@@ -76,21 +76,26 @@ body {
 }
 
 /* Filters section */
-
 .filter-row {
   display: flex;
-  width: 100%;
-
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-.response-filter {
-  margin-bottom: 1%;
+.filter-group {
+  height: 70px;
+}
+
+.filter-label {
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 7px;
 }
 
 /* Footer CSS */
-
 .footer {
   background: #e2e2e2;
   width: 100vw;
