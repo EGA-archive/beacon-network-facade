@@ -31,9 +31,24 @@ export default function Row({ row, isNetwork }) {
     <>
       <TableRow>
         <TableCell>
-          <IconButton onClick={() => setOpen(!open)}>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
             {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
+          <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
+            <img
+              src={row.beaconLogo}
+              alt={`${row.name} Logo`}
+              style={{
+                width: "auto",
+                height: "70px",
+                padding: "14.29px 16px",
+              }}
+            />
+          </a>
         </TableCell>
         <TableCell colSpan={4}>
           <b>{row.name}</b>
@@ -57,7 +72,10 @@ export default function Row({ row, isNetwork }) {
                     </TableCell>
                     <TableCell>
                       <Box>
-                        Dataset: <b>{historyRow.dataset?.datasetId || "N/A"}</b>
+                        <i>
+                          Dataset:{" "}
+                          <b>{historyRow.dataset?.datasetId || "N/A"}</b>
+                        </i>
                       </Box>
                     </TableCell>
                     <TableCell

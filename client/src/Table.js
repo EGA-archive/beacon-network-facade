@@ -554,7 +554,6 @@ export default function CollapsibleTable({ data, registries }) {
     return true;
   });
 
-  // Process network beacons into rows
   const networkRows = registries
     .filter((registry) =>
       networkBeacons.some(
@@ -682,8 +681,6 @@ export default function CollapsibleTable({ data, registries }) {
                           />
                         </TableCell>
                       </TableRow>
-
-                      {/* Dataset rows for this Individual Beacon */}
                       {filteredIndividualBeacons
                         .filter(
                           (individualBeacon) =>
