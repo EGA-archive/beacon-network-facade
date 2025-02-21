@@ -68,13 +68,15 @@ export default function Row({
     <>
       <TableRow>
         <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
+          {filteredHistory.length > 0 && (
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          )}
           <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
             <img
               src={row.beaconLogo}
@@ -91,11 +93,20 @@ export default function Row({
           <b>{row.name}</b>
         </TableCell>
         <TableCell>
-          <StatusButton status={row.response} />
+          <StatusButton
+            status={
+              filteredHistory.length > 0
+                ? filteredHistory.some(
+                    (historyRow) => historyRow.dataset?.response === "Found"
+                  )
+                  ? "Found"
+                  : "Not Found"
+                : "Not Found"
+            }
+          />
         </TableCell>
       </TableRow>
       {isNetwork && row.history?.length > 0 && filteredHistory.length > 0 && (
-        //   {isNetwork && row.history?.length > 0 && (
         <TableRow>
           <TableCell colSpan={6} style={{ padding: 0 }}>
             <Collapse in={open} timeout="auto" unmountOnExit>
