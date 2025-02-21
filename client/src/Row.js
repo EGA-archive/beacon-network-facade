@@ -35,6 +35,7 @@ export default function Row({
 
   const filteredHistory = row.history?.filter((historyRow) => {
     if (!selectedFilters || selectedFilters.length === 0) return true;
+
     const maturityMapping = {
       prod: "Prod-Beacon",
       test: "Test-Beacon",
@@ -49,21 +50,33 @@ export default function Row({
     ) {
       return false;
     }
+    const hasAlleleFrequency =
+      historyRow.dataset?.alleleFrequency &&
+      historyRow.dataset?.alleleFrequency !== "N/A";
+
+    if (selectedFilters.includes("af-only") && !hasAlleleFrequency) {
+      return false;
+    }
+
+    if (selectedFilters.includes("all")) {
+      return true;
+    }
+
     if (
       selectedFilters.includes("Found") &&
       historyRow.dataset?.response === "Found"
     )
       return true;
+
     if (
       selectedFilters.includes("Not-Found") &&
       historyRow.dataset?.response === "Not Found"
     )
       return true;
-    if (selectedFilters.includes("af-only")) {
-      return historyRow.dataset?.alleleFrequency !== "N/A";
-    }
+
     return false;
   });
+
   return (
     <>
       <TableRow>
