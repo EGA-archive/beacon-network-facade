@@ -12,6 +12,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
+import Dash from "../src/dash.svg";
 
 export default function Row({ row, isNetwork }) {
   const [open, setOpen] = useState(false);
@@ -63,39 +64,72 @@ export default function Row({ row, isNetwork }) {
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Table size="small">
                 {row.history.map((historyRow, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {historyRow.maturity && (
-                        <MaturityButton maturity={historyRow.maturity} />
-                      )}
-                      <b>{historyRow.beaconId}</b>
-                    </TableCell>
-                    <TableCell>
-                      <Box>
-                        <i>
-                          Dataset:{" "}
-                          <b>{historyRow.dataset?.datasetId || "N/A"}</b>
-                        </i>
-                      </Box>
-                    </TableCell>
-                    <TableCell
-                      onClick={() => handleDialogOpen(historyRow.dataset)}
-                      style={{ cursor: "pointer", fontWeight: "bold" }}
-                    >
-                      {getFormattedAlleleFrequency(historyRow.dataset)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusButton
-                        status={historyRow.dataset?.response || "N/A"}
-                      />
-                    </TableCell>
-                  </TableRow>
+                  <React.Fragment key={index}>
+                    <TableRow>
+                      <TableCell sx={{ width: "400px" }}></TableCell>
+                      <TableCell colSpan={4}>
+                        {historyRow.maturity && (
+                          <MaturityButton maturity={historyRow.maturity} />
+                        )}
+                        <b>
+                          <span className="span-beaconId">
+                            {historyRow.beaconId}
+                          </span>
+                        </b>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell sx={{ width: "400px" }} />
+                      <TableCell sx={{ width: "400px !important" }}>
+                        <Box sx={{ marginLeft: "53px !important" }}>
+                          <i>
+                            Dataset:{" "}
+                            <b>
+                              {historyRow.dataset?.datasetId ? (
+                                historyRow.dataset.datasetId
+                              ) : (
+                                <img
+                                  src={Dash}
+                                  alt="Dash"
+                                  style={{ width: "18px", height: "18px" }}
+                                />
+                              )}
+                            </b>
+                          </i>
+                        </Box>
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          width: "200px",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                        }}
+                        onClick={() => handleDialogOpen(historyRow.dataset)}
+                      >
+                        {historyRow.dataset?.alleleFrequency !== "N/A" ? (
+                          getFormattedAlleleFrequency(historyRow.dataset)
+                        ) : (
+                          <img
+                            src={Dash}
+                            alt="Dash"
+                            style={{ width: "18px", height: "18px" }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ width: "195px" }}>
+                        <StatusButton
+                          status={historyRow.dataset?.response || "N/A"}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
                 ))}
               </Table>
             </Collapse>
           </TableCell>
         </TableRow>
       )}
+
       <Dialog open={dialogOpen} onClose={handleDialogClose} />
     </>
   );
