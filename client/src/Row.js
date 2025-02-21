@@ -14,7 +14,12 @@ import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 
-export default function Row({ row, isNetwork }) {
+export default function Row({
+  row,
+  isNetwork,
+  selectedFilters = [],
+  setSelectedFilters,
+}) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -28,6 +33,37 @@ export default function Row({ row, isNetwork }) {
     setDialogOpen(false);
   };
 
+  const filteredHistory = row.history?.filter((historyRow) => {
+    if (!selectedFilters || selectedFilters.length === 0) return true;
+    const maturityMapping = {
+      prod: "Prod-Beacon",
+      test: "Test-Beacon",
+      dev: "Dev-Beacon",
+    };
+
+    if (
+      Object.values(maturityMapping).some((maturityFilter) =>
+        selectedFilters.includes(maturityFilter)
+      ) &&
+      !selectedFilters.includes(maturityMapping[historyRow.maturity])
+    ) {
+      return false;
+    }
+    if (
+      selectedFilters.includes("Found") &&
+      historyRow.dataset?.response === "Found"
+    )
+      return true;
+    if (
+      selectedFilters.includes("Not-Found") &&
+      historyRow.dataset?.response === "Not Found"
+    )
+      return true;
+    if (selectedFilters.includes("af-only")) {
+      return historyRow.dataset?.alleleFrequency !== "N/A";
+    }
+    return false;
+  });
   return (
     <>
       <TableRow>
@@ -58,12 +94,13 @@ export default function Row({ row, isNetwork }) {
           <StatusButton status={row.response} />
         </TableCell>
       </TableRow>
-      {isNetwork && row.history?.length > 0 && (
+      {isNetwork && row.history?.length > 0 && filteredHistory.length > 0 && (
+        //   {isNetwork && row.history?.length > 0 && (
         <TableRow>
           <TableCell colSpan={6} style={{ padding: 0 }}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Table size="small">
-                {row.history.map((historyRow, index) => (
+                {filteredHistory.map((historyRow, index) => (
                   <React.Fragment key={index}>
                     <TableRow>
                       <TableCell sx={{ width: "400px" }}></TableCell>

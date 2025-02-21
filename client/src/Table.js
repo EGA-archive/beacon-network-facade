@@ -63,21 +63,11 @@ export default function CollapsibleTable({
     return false;
   });
 
-  // const networkRows = registries
-  //   .filter((registry) =>
-  //     networkBeacons.some(
-  //       (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-  //     )
-  //   )
   const networkRows = registries
-    .filter(
-      (registry) =>
-        networkBeacons.some(
-          (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-        ) &&
-        (selectedFilters.includes("all") ||
-          selectedFilters.includes(registry.beaconMaturity) ||
-          selectedFilters.includes(registry.response))
+    .filter((registry) =>
+      networkBeacons.some(
+        (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
+      )
     )
     .map((registry) => ({
       name: registry.beaconName,
@@ -104,6 +94,7 @@ export default function CollapsibleTable({
           },
         })),
     }));
+
   return (
     <TableContainer
       component={Paper}
@@ -227,21 +218,23 @@ export default function CollapsibleTable({
                               </Box>
                             </TableCell>
                             <TableCell>
-                              {individualBeacon.results?.some((result) =>
-                                result.frequencyInPopulations?.some((pop) =>
-                                  pop.frequencies?.some(
-                                    (f) => f.alleleFrequency !== undefined
+                              <b>
+                                {individualBeacon.results?.some((result) =>
+                                  result.frequencyInPopulations?.some((pop) =>
+                                    pop.frequencies?.some(
+                                      (f) => f.alleleFrequency !== undefined
+                                    )
                                   )
-                                )
-                              ) ? (
-                                getFormattedAlleleFrequency(individualBeacon)
-                              ) : (
-                                <img
-                                  src={Dash}
-                                  alt="Dash"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
-                              )}
+                                ) ? (
+                                  getFormattedAlleleFrequency(individualBeacon)
+                                ) : (
+                                  <img
+                                    src={Dash}
+                                    alt="Dash"
+                                    style={{ width: "18px", height: "18px" }}
+                                  />
+                                )}
+                              </b>
                             </TableCell>
                             <TableCell>
                               <StatusButton
@@ -271,7 +264,12 @@ export default function CollapsibleTable({
                 </TableCell>
               </TableRow>
               {networkRows.map((row) => (
-                <Row key={row.name} row={row} isNetwork={true} />
+                <Row
+                  key={row.name}
+                  row={row}
+                  isNetwork={true}
+                  selectedFilters={selectedFilters}
+                />
               ))}
             </>
           )}
