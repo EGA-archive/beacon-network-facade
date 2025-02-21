@@ -1,19 +1,13 @@
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import React, { useState } from "react";
+import React from "react";
 
-export default function Filters() {
-  const [toggle, setToggle] = useState([
-    "Found",
-    "Not-Found",
-    "Prod-Beacon",
-    "Test-Beacon",
-    "Dev-Beacon",
-    "all",
-  ]);
-
-  const handleToggle = (event, newToggle) => {
-    setToggle(newToggle);
+export default function Filters({ selectedFilters, setSelectedFilters }) {
+  const handleToggle = (event, newFilters) => {
+    if (newFilters && newFilters.length > 0) {
+      setSelectedFilters(newFilters);
+      console.log("📌 Updated Filters:", newFilters);
+    }
   };
 
   const buttonStyles = {
@@ -61,7 +55,7 @@ export default function Filters() {
         <div key={label} className="filter-group">
           <p className="filter-label">{label}</p>
           <ToggleButtonGroup
-            value={toggle}
+            value={selectedFilters}
             exclusive={exclusive}
             onChange={handleToggle}
             aria-label={label}
@@ -79,11 +73,11 @@ export default function Filters() {
       <div className="filter-group">
         <p className="filter-label">Filter by Allele Frequency:</p>
         <ToggleButtonGroup
-          value={toggle.includes("af-only") ? "af-only" : "all"}
+          value={selectedFilters.includes("af-only") ? "af-only" : "all"}
           exclusive
           onChange={(event, newValue) => {
             if (newValue !== null) {
-              setToggle((prev) =>
+              setSelectedFilters((prev) =>
                 prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue)

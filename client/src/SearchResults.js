@@ -4,7 +4,12 @@ import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
 
-function SearchResults({ registries = [], socket }) {
+function SearchResults({
+  registries = [],
+  socket,
+  selectedFilters,
+  setSelectedFilters,
+}) {
   console.log("✅ Registries prop received:", registries);
   const { variant, genome } = useParams();
   const navigate = useNavigate();
@@ -40,6 +45,8 @@ function SearchResults({ registries = [], socket }) {
         genome={genome}
         socket={socket}
         registries={registries}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
       />
     </Container>
   );

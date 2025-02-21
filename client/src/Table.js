@@ -518,7 +518,7 @@
 //   );
 // }
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -540,25 +540,60 @@ import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 
-export default function CollapsibleTable({ data, registries }) {
+export default function CollapsibleTable({
+  data,
+  registries,
+  selectedFilters,
+  setSelectedFilters,
+}) {
   console.log("📊 Data received:", data);
   console.log("🗂 Registries received:", registries);
+  console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
   const uniqueIndividualBeacons = new Set();
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   return true;
+  // });
+
   const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
     if (uniqueIndividualBeacons.has(uniqueKey)) return false;
     uniqueIndividualBeacons.add(uniqueKey);
-    return true;
+
+    // Apply filters
+    if (selectedFilters.includes("Found") && beacon.exists) return true;
+    if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
+    if (selectedFilters.includes("af-only")) {
+      return beacon.results?.some((result) =>
+        result.frequencyInPopulations?.some((pop) =>
+          pop.frequencies?.some((f) => f.alleleFrequency !== undefined)
+        )
+      );
+    }
+
+    return false;
   });
 
+  // const networkRows = registries
+  //   .filter((registry) =>
+  //     networkBeacons.some(
+  //       (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
+  //     )
+  //   )
   const networkRows = registries
-    .filter((registry) =>
-      networkBeacons.some(
-        (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-      )
+    .filter(
+      (registry) =>
+        networkBeacons.some(
+          (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
+        ) &&
+        (selectedFilters.includes("all") ||
+          selectedFilters.includes(registry.beaconMaturity) ||
+          selectedFilters.includes(registry.response))
     )
     .map((registry) => ({
       name: registry.beaconName,
@@ -585,14 +620,17 @@ export default function CollapsibleTable({ data, registries }) {
           },
         })),
     }));
-
   return (
     <TableContainer
       component={Paper}
       sx={{ marginTop: "48px", marginBottom: "48px" }}
       className="table-container"
     >
-      <Filters />
+      <Filters
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+      />
+
       <Table
         aria-label="collapsible table"
         sx={{ tableLayout: "fixed", width: "100%" }}
@@ -644,6 +682,7 @@ export default function CollapsibleTable({ data, registries }) {
                         )
                       )
                   );
+
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>

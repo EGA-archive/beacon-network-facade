@@ -8,6 +8,8 @@ function BeaconQuery({
   genome,
   socket,
   registries,
+  selectedFilters,
+  setSelectedFilters,
 }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -71,24 +73,16 @@ function BeaconQuery({
     console.log("📊 Aggregated Data:", aggregatedData);
   }, [aggregatedData]);
 
-  //   useEffect(() => {
-  //     console.log("📊 Aggregated Data:", JSON.stringify(aggregatedData, null, 2));
-  //   }, [aggregatedData]);
-
   return (
     <div>
-      {/* {registries.map((registry, index) => {
-        return (
-          <div>
-            <span>{registry.beaconName}</span>
-            <span>{registry.beaconId}</span>
-          </div>
-        );
-      })} */}
-
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
       {aggregatedData.length > 0 ? (
-        <CollapsibleTable data={aggregatedData} registries={registries} />
+        <CollapsibleTable
+          data={aggregatedData}
+          registries={registries}
+          selectedFilters={selectedFilters}
+          setSelectedFilters={setSelectedFilters}
+        />
       ) : (
         <p>Waiting for response...</p>
       )}
