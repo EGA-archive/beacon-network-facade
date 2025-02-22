@@ -31,11 +31,45 @@ export default function CollapsibleTable({
   console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
+  // const maturityMapping = {
+  //   prod: "Prod-Beacon",
+  //   test: "Test-Beacon",
+  //   dev: "Dev-Beacon",
+  // };
+  // const filteredRegistries = registries.filter((registry) =>
+  //   selectedFilters.some(
+  //     (filter) => filter === maturityMapping[registry.beaconMaturity]
+  //   )
+  // );
+  // const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
+  // const uniqueIndividualBeacons = new Set();
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+
+  //   if (selectedFilters.includes("Found") && beacon.exists) return true;
+  //   if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
+
+  //   if (selectedFilters.includes("af-only")) {
+  //     return beacon.results?.some((result) =>
+  //       result.frequencyInPopulations?.some((pop) =>
+  //         pop.frequencies?.some((f) => f.alleleFrequency !== undefined)
+  //       )
+  //     );
+  //   }
+
+  //   return false;
+  // });
+
   const maturityMapping = {
     prod: "Prod-Beacon",
     test: "Test-Beacon",
     dev: "Dev-Beacon",
   };
+
   const filteredRegistries = registries.filter((registry) =>
     selectedFilters.some(
       (filter) => filter === maturityMapping[registry.beaconMaturity]
@@ -43,22 +77,28 @@ export default function CollapsibleTable({
   );
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
+
   const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
     if (uniqueIndividualBeacons.has(uniqueKey)) return false;
     uniqueIndividualBeacons.add(uniqueKey);
     if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+    const hasAlleleFrequency = beacon.results?.some((result) =>
+      result.frequencyInPopulations?.some((pop) =>
+        pop.frequencies?.some((f) => f.alleleFrequency !== undefined)
+      )
+    );
+
+    if (selectedFilters.includes("af-only") && !hasAlleleFrequency) {
+      return false;
+    }
+
+    if (selectedFilters.includes("all")) {
+      return true;
+    }
 
     if (selectedFilters.includes("Found") && beacon.exists) return true;
     if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
-
-    if (selectedFilters.includes("af-only")) {
-      return beacon.results?.some((result) =>
-        result.frequencyInPopulations?.some((pop) =>
-          pop.frequencies?.some((f) => f.alleleFrequency !== undefined)
-        )
-      );
-    }
 
     return false;
   });
