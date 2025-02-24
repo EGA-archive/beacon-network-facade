@@ -14,8 +14,8 @@ import { useNavigate } from "react-router-dom";
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
     .matches(
-      /[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,X]-([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?-[A,C,G,T]+-[A,C,G,T]+$/,
-      "Incorrect variant information, please check the example below"
+      /^(?:[1-9]|1[0-9]|2[0-2]|X|Y)-\d+-[ACGT]+-[ACGT]+$/,
+      "Incorrect variant format, check the example"
     )
     .required("Required"),
   genome: Yup.string().required("Required"),
@@ -98,7 +98,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
   };
 
   return (
-    <ThemeProvider theme={CustomTheme}>
+    <>
       <Container>
         <Formik
           initialValues={{ variant: "", genome: "GRCh37" }}
@@ -201,7 +201,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         </Formik>
       </Container>
       <NetworkMembers registries={registries} />
-    </ThemeProvider>
+    </>
   );
 }
 

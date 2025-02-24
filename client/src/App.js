@@ -5,7 +5,8 @@ import CustomNavbar from "./CustomNavbar";
 import Footer from "./Footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SearchResults from "./SearchResults";
-import Filters from "./Filters";
+import { ThemeProvider } from "@mui/material/styles";
+import CustomTheme from "./CustomTheme";
 
 function App() {
   const [registries, setRegistries] = useState([]);
@@ -20,38 +21,40 @@ function App() {
   ]);
 
   return (
-    <Router>
-      <div className="bigparent">
-        <div>
-          <CustomNavbar />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <WebSocketClient
-                  setRegistries={setRegistries}
-                  setSocket={setSocket}
-                  selectedFilters={selectedFilters}
-                  setSelectedFilters={setSelectedFilters}
-                />
-              }
-            />
-            <Route
-              path="/search/:variant/:genome"
-              element={
-                <SearchResults
-                  registries={registries}
-                  socket={socket}
-                  selectedFilters={selectedFilters}
-                  setSelectedFilters={setSelectedFilters}
-                />
-              }
-            />
-          </Routes>
+    <ThemeProvider theme={CustomTheme}>
+      <Router>
+        <div className="bigparent">
+          <div>
+            <CustomNavbar />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <WebSocketClient
+                    setRegistries={setRegistries}
+                    setSocket={setSocket}
+                    selectedFilters={selectedFilters}
+                    setSelectedFilters={setSelectedFilters}
+                  />
+                }
+              />
+              <Route
+                path="/search/:variant/:genome"
+                element={
+                  <SearchResults
+                    registries={registries}
+                    socket={socket}
+                    selectedFilters={selectedFilters}
+                    setSelectedFilters={setSelectedFilters}
+                  />
+                }
+              />
+            </Routes>
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 
