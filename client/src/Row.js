@@ -35,7 +35,6 @@ export default function Row({
 
   const filteredHistory = row.history?.filter((historyRow) => {
     if (!selectedFilters || selectedFilters.length === 0) return true;
-
     const maturityMapping = {
       prod: "Prod-Beacon",
       test: "Test-Beacon",
@@ -50,38 +49,26 @@ export default function Row({
     ) {
       return false;
     }
-    const hasAlleleFrequency =
-      historyRow.dataset?.alleleFrequency &&
-      historyRow.dataset?.alleleFrequency !== "N/A";
-
-    if (selectedFilters.includes("af-only") && !hasAlleleFrequency) {
-      return false;
-    }
-
-    if (selectedFilters.includes("all")) {
-      return true;
-    }
-
     if (
       selectedFilters.includes("Found") &&
       historyRow.dataset?.response === "Found"
     )
       return true;
-
     if (
       selectedFilters.includes("Not-Found") &&
       historyRow.dataset?.response === "Not Found"
     )
       return true;
-
+    if (selectedFilters.includes("af-only")) {
+      return historyRow.dataset?.alleleFrequency !== "N/A";
+    }
     return false;
   });
-
   return (
     <>
-      <TableRow>
-        <TableCell>
-          {filteredHistory.length > 0 && (
+      {filteredHistory.length > 0 && (
+        <TableRow>
+          <TableCell>
             <IconButton
               aria-label="expand row"
               size="small"
@@ -89,36 +76,37 @@ export default function Row({
             >
               {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
-          )}
-          <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
-            <img
-              src={row.beaconLogo}
-              alt={`${row.name} Logo`}
-              style={{
-                width: "auto",
-                height: "70px",
-                padding: "14.29px 16px",
-              }}
-            />
-          </a>
-        </TableCell>
-        <TableCell colSpan={4}>
-          <b>{row.name}</b>
-        </TableCell>
-        <TableCell>
-          <StatusButton
-            status={
-              filteredHistory.length > 0
-                ? filteredHistory.some(
-                    (historyRow) => historyRow.dataset?.response === "Found"
-                  )
-                  ? "Found"
+
+            <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
+              <img
+                src={row.beaconLogo}
+                alt={`${row.name} Logo`}
+                style={{
+                  width: "auto",
+                  height: "70px",
+                  padding: "14.29px 16px",
+                }}
+              />
+            </a>
+          </TableCell>
+          <TableCell colSpan={4}>
+            <b>{row.name} </b>
+          </TableCell>
+          <TableCell>
+            <StatusButton
+              status={
+                filteredHistory.length > 0
+                  ? filteredHistory.some(
+                      (historyRow) => historyRow.dataset?.response === "Found"
+                    )
+                    ? "Found"
+                    : "Not Found"
                   : "Not Found"
-                : "Not Found"
-            }
-          />
-        </TableCell>
-      </TableRow>
+              }
+            />
+          </TableCell>
+        </TableRow>
+      )}
       {isNetwork && row.history?.length > 0 && filteredHistory.length > 0 && (
         <TableRow>
           <TableCell colSpan={6} style={{ padding: 0 }}>
