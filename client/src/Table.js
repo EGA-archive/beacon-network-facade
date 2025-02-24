@@ -96,6 +96,8 @@ export default function CollapsibleTable({
         })),
     }));
 
+  console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
+  console.log("Network Rows:", networkRows);
   return (
     <TableContainer
       component={Paper}
@@ -128,131 +130,127 @@ export default function CollapsibleTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredIndividualBeacons.length > 0 && (
-            <>
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  style={{ backgroundColor: "#3276b1", color: "white" }}
-                >
-                  <b>Individual Beacons</b>
-                </TableCell>
-              </TableRow>
-              {registries
-                .filter((registry) =>
-                  filteredIndividualBeacons.some(
-                    (individualBeacon) =>
-                      individualBeacon.beaconId === registry.beaconId
-                  )
+          {/* {filteredIndividualBeacons.length > 0 && ( */}
+          <>
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                align="center"
+                style={{ backgroundColor: "#3276b1", color: "white" }}
+              >
+                <b>Individual Beacons</b>
+              </TableCell>
+            </TableRow>
+            {registries
+              .filter((registry) =>
+                filteredIndividualBeacons.some(
+                  (individualBeacon) =>
+                    individualBeacon.beaconId === registry.beaconId
                 )
-                .map((registry) => {
-                  const hasFoundDataset = filteredIndividualBeacons.some(
-                    (individualBeacon) =>
-                      individualBeacon.beaconId === registry.beaconId &&
-                      individualBeacon.results?.some((result) =>
-                        result.frequencyInPopulations?.some((pop) =>
-                          pop.frequencies?.some(
-                            (f) => f.alleleFrequency !== undefined
-                          )
+              )
+              .map((registry) => {
+                const hasFoundDataset = filteredIndividualBeacons.some(
+                  (individualBeacon) =>
+                    individualBeacon.beaconId === registry.beaconId &&
+                    individualBeacon.results?.some((result) =>
+                      result.frequencyInPopulations?.some((pop) =>
+                        pop.frequencies?.some(
+                          (f) => f.alleleFrequency !== undefined
                         )
                       )
-                  );
+                    )
+                );
 
-                  return (
-                    <React.Fragment key={registry.beaconId}>
-                      <TableRow>
-                        <TableCell />
-                        <TableCell>
-                          {registry.beaconMaturity ? (
-                            <MaturityButton
-                              maturity={registry.beaconMaturity}
-                            />
-                          ) : (
-                            "N/A"
-                          )}{" "}
-                        </TableCell>
-                        <TableCell colSpan={2}>
-                          <b>{registry.beaconName}</b>
-                        </TableCell>
-                        <TableCell>
-                          {hasFoundDataset ? (
-                            <img
-                              src={Tick}
-                              alt="Tick"
-                              style={{ width: "18px", height: "18px" }}
-                            />
-                          ) : (
-                            <img
-                              src={Dash}
-                              alt="Dash"
-                              style={{ width: "18px", height: "18px" }}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <StatusButton
-                            status={hasFoundDataset ? "Found" : "Not Found"}
+                return (
+                  <React.Fragment key={registry.beaconId}>
+                    <TableRow>
+                      <TableCell />
+                      <TableCell>
+                        {registry.beaconMaturity ? (
+                          <MaturityButton maturity={registry.beaconMaturity} />
+                        ) : (
+                          "N/A"
+                        )}{" "}
+                      </TableCell>
+                      <TableCell colSpan={2}>
+                        <b>{registry.beaconName}</b>
+                      </TableCell>
+                      <TableCell>
+                        {hasFoundDataset ? (
+                          <img
+                            src={Tick}
+                            alt="Tick"
+                            style={{ width: "18px", height: "18px" }}
                           />
-                        </TableCell>
-                      </TableRow>
-                      {filteredIndividualBeacons
-                        .filter(
-                          (individualBeacon) =>
-                            individualBeacon.beaconId === registry.beaconId
-                        )
-                        .map((individualBeacon) => (
-                          <TableRow
-                            key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
-                          >
-                            <TableCell />
-                            <TableCell />
-                            <TableCell colSpan={2}>
-                              <Box sx={{ marginLeft: "50px" }}>
-                                <i>
-                                  Dataset:{" "}
-                                  <b>
-                                    {individualBeacon.id ||
-                                      individualBeacon.beaconId}
-                                  </b>
-                                </i>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <b>
-                                {individualBeacon.results?.some((result) =>
-                                  result.frequencyInPopulations?.some((pop) =>
-                                    pop.frequencies?.some(
-                                      (f) => f.alleleFrequency !== undefined
-                                    )
+                        ) : (
+                          <img
+                            src={Dash}
+                            alt="Dash"
+                            style={{ width: "18px", height: "18px" }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <StatusButton
+                          status={hasFoundDataset ? "Found" : "Not Found"}
+                        />
+                      </TableCell>
+                    </TableRow>
+                    {filteredIndividualBeacons
+                      .filter(
+                        (individualBeacon) =>
+                          individualBeacon.beaconId === registry.beaconId
+                      )
+                      .map((individualBeacon) => (
+                        <TableRow
+                          key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+                        >
+                          <TableCell />
+                          <TableCell />
+                          <TableCell colSpan={2}>
+                            <Box sx={{ marginLeft: "50px" }}>
+                              <i>
+                                Dataset:{" "}
+                                <b>
+                                  {individualBeacon.id ||
+                                    individualBeacon.beaconId}
+                                </b>
+                              </i>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <b>
+                              {individualBeacon.results?.some((result) =>
+                                result.frequencyInPopulations?.some((pop) =>
+                                  pop.frequencies?.some(
+                                    (f) => f.alleleFrequency !== undefined
                                   )
-                                ) ? (
-                                  getFormattedAlleleFrequency(individualBeacon)
-                                ) : (
-                                  <img
-                                    src={Dash}
-                                    alt="Dash"
-                                    style={{ width: "18px", height: "18px" }}
-                                  />
-                                )}
-                              </b>
-                            </TableCell>
-                            <TableCell>
-                              <StatusButton
-                                status={
-                                  individualBeacon.exists
-                                    ? "Found"
-                                    : "Not Found"
-                                }
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </React.Fragment>
-                  );
-                })}
-            </>
-          )}
+                                )
+                              ) ? (
+                                getFormattedAlleleFrequency(individualBeacon)
+                              ) : (
+                                <img
+                                  src={Dash}
+                                  alt="Dash"
+                                  style={{ width: "18px", height: "18px" }}
+                                />
+                              )}
+                            </b>
+                          </TableCell>
+                          <TableCell>
+                            <StatusButton
+                              status={
+                                individualBeacon.exists ? "Found" : "Not Found"
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </React.Fragment>
+                );
+              })}
+          </>
+          {/* )} */}
           {networkBeacons.length > 0 && (
             <>
               <TableRow>
