@@ -10,7 +10,7 @@ function SearchResults({
   selectedFilters,
   setSelectedFilters,
 }) {
-  console.log("✅ Registries prop received:", registries);
+  // console.log("✅ Registries prop received:", registries);
   const { variant, genome } = useParams();
   const navigate = useNavigate();
   const reconnectRef = useRef(null);

@@ -26,8 +26,8 @@ export default function CollapsibleTable({
   selectedFilters,
   setSelectedFilters,
 }) {
-  console.log("📊 Data received:", data);
-  console.log("🗂 Registries received:", registries);
+  // console.log("📊 Data received:", data);
+  // console.log("🗂 Registries received:", registries);
   console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
