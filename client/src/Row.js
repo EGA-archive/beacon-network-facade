@@ -202,7 +202,7 @@ export default function Row({
                             const af = getFormattedAlleleFrequency(
                               historyRow.dataset
                             );
-                            if (af.includes(" - ")) {
+                            if (af.includes(";") || af.includes(" - ")) {
                               handleDialogOpen(historyRow.dataset);
                             }
                           }}
