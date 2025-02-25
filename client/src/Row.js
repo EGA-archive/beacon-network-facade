@@ -198,7 +198,14 @@ export default function Row({
                             fontWeight: "bold",
                             padding: "16px",
                           }}
-                          onClick={() => handleDialogOpen(historyRow.dataset)}
+                          onClick={() => {
+                            const af = getFormattedAlleleFrequency(
+                              historyRow.dataset
+                            );
+                            if (af.includes(" - ")) {
+                              handleDialogOpen(historyRow.dataset);
+                            }
+                          }}
                         >
                           {historyRow.dataset?.alleleFrequency !== "N/A" ? (
                             getFormattedAlleleFrequency(historyRow.dataset)

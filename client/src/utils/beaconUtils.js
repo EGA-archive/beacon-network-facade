@@ -21,11 +21,16 @@ export function getFormattedAlleleFrequency(data) {
   if (frequencies.length === 0) return "N/A";
 
   frequencies.sort((a, b) => a - b);
-  return frequencies.length === 1
-    ? frequencies[0].toFixed(5)
-    : `${frequencies[0].toFixed(5)} - ${frequencies[
-        frequencies.length - 1
-      ].toFixed(5)}`;
+
+  if (frequencies.length === 1) {
+    return frequencies[0].toFixed(5);
+  } else if (frequencies.length === 2) {
+    return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`;
+  } else {
+    return `${frequencies[0].toFixed(5)} - ${frequencies[
+      frequencies.length - 1
+    ].toFixed(5)}`;
+  }
 }
 
 export function separateBeacons(data) {
