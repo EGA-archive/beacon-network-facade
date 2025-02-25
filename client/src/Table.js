@@ -27,22 +27,32 @@ export default function CollapsibleTable({
   setSelectedFilters,
 }) {
   // console.log("📊 Data received:", data);
-  // console.log("🗂 Registries received:", registries);
   console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
+  console.log("All Registries:", registries);
+  console.log("All Individual Beacons:", individualBeacons);
+  console.log("All Network Beacons:", networkBeacons);
 
   const maturityMapping = {
     prod: "Prod-Beacon",
     test: "Test-Beacon",
     dev: "Dev-Beacon",
   };
+
   const filteredRegistries = registries.filter((registry) =>
     selectedFilters.some(
       (filter) => filter === maturityMapping[registry.beaconMaturity]
     )
   );
+
+  console.log("Filtered Registries by Maturity:", filteredRegistries);
+
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
+
+  console.log("Allowed Beacon IDs:", allowedBeaconIds);
+
   const uniqueIndividualBeacons = new Set();
   const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
@@ -64,7 +74,17 @@ export default function CollapsibleTable({
     return false;
   });
 
+  console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
+
+  // const networkRows = registries
+  // .filter((registry) =>
+  //   selectedFilters.includes(maturityMapping[registry.beaconMaturity])
+  // )
+
   const networkRows = registries
+    .filter((registry) =>
+      selectedFilters.includes(maturityMapping[registry.beaconMaturity])
+    )
     .filter((registry) =>
       networkBeacons.some(
         (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
@@ -96,8 +116,9 @@ export default function CollapsibleTable({
         })),
     }));
 
-  console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
-  console.log("Network Rows:", networkRows);
+  // console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
+  console.log("Final Network Rows:", networkRows);
+
   return (
     <TableContainer
       component={Paper}
@@ -251,28 +272,29 @@ export default function CollapsibleTable({
               })}
           </>
           {/* )} */}
-          {networkBeacons.length > 0 && (
-            <>
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  style={{ backgroundColor: "#023452", color: "white" }}
-                >
-                  <b>Beacon Networks</b>
-                </TableCell>
-              </TableRow>
+          {/* {networkBeacons.length > 0 && ( */}
+          {/* {networkRows.length > 0 && ( */}
+          <>
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                align="center"
+                style={{ backgroundColor: "#023452", color: "white" }}
+              >
+                <b>Beacon Networks</b>
+              </TableCell>
+            </TableRow>
 
-              {networkRows.map((row) => (
-                <Row
-                  key={row.name}
-                  row={row}
-                  isNetwork={true}
-                  selectedFilters={selectedFilters}
-                />
-              ))}
-            </>
-          )}
+            {networkRows.map((row) => (
+              <Row
+                key={row.name}
+                row={row}
+                isNetwork={true}
+                selectedFilters={selectedFilters}
+              />
+            ))}
+          </>
+          {/* )} */}
         </TableBody>
       </Table>
     </TableContainer>
