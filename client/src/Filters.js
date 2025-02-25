@@ -6,7 +6,7 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
   const handleToggle = (event, newFilters) => {
     if (newFilters && newFilters.length > 0) {
       setSelectedFilters(newFilters);
-      console.log("📌 Updated Filters:", newFilters);
+      console.log("📌 Updated Filters (Response/Maturity):", newFilters);
     }
   };
 
@@ -77,11 +77,17 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
           exclusive
           onChange={(event, newValue) => {
             if (newValue !== null) {
-              setSelectedFilters((prev) =>
-                prev
-                  .filter((val) => val !== "all" && val !== "af-only")
-                  .concat(newValue)
+              console.log(
+                "Allele Frequency Toggle Changed. New value:",
+                newValue
               );
+              setSelectedFilters((prev) => {
+                const updated = prev
+                  .filter((val) => val !== "all" && val !== "af-only")
+                  .concat(newValue);
+                console.log("📌 Updated Allele Frequency Filter:", updated);
+                return updated;
+              });
             }
           }}
           aria-label="Allele Frequency Filter"

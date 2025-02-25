@@ -27,13 +27,9 @@ export default function CollapsibleTable({
   setSelectedFilters,
 }) {
   // console.log("📊 Data received:", data);
-  console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
+  // console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
-
-  console.log("All Registries:", registries);
-  console.log("All Individual Beacons:", individualBeacons);
-  console.log("All Network Beacons:", networkBeacons);
 
   const maturityMapping = {
     prod: "Prod-Beacon",
@@ -46,13 +42,7 @@ export default function CollapsibleTable({
       (filter) => filter === maturityMapping[registry.beaconMaturity]
     )
   );
-
-  console.log("Filtered Registries by Maturity:", filteredRegistries);
-
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
-
-  console.log("Allowed Beacon IDs:", allowedBeaconIds);
-
   const uniqueIndividualBeacons = new Set();
   const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
@@ -60,26 +50,18 @@ export default function CollapsibleTable({
     uniqueIndividualBeacons.add(uniqueKey);
     if (!allowedBeaconIds.has(beacon.beaconId)) return false;
 
-    if (selectedFilters.includes("Found") && beacon.exists) return true;
-    if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
-
     if (selectedFilters.includes("af-only")) {
-      return beacon.results?.some((result) =>
-        result.frequencyInPopulations?.some((pop) =>
-          pop.frequencies?.some((f) => f.alleleFrequency !== undefined)
-        )
-      );
+      const af = getFormattedAlleleFrequency(beacon);
+      return af !== "N/A";
     }
 
+    if (selectedFilters.includes("all")) {
+      return true;
+    }
+    if (selectedFilters.includes("Found") && beacon.exists) return true;
+    if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
     return false;
   });
-
-  console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
-
-  // const networkRows = registries
-  // .filter((registry) =>
-  //   selectedFilters.includes(maturityMapping[registry.beaconMaturity])
-  // )
 
   const networkRows = registries
     .filter((registry) =>
@@ -90,16 +72,8 @@ export default function CollapsibleTable({
         (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
       )
     )
-    .map((registry) => ({
-      name: registry.beaconName,
-      beaconLogo: registry.beaconLogo,
-      beaconURL: registry.beaconURL,
-      response: networkBeacons.some(
-        (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-      )
-        ? "Found"
-        : "Not Found",
-      history: networkBeacons
+    .map((registry) => {
+      let history = networkBeacons
         .filter(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -113,11 +87,30 @@ export default function CollapsibleTable({
                 ?.alleleFrequency || "N/A",
             response: beacon.exists ? "Found" : "Not Found",
           },
-        })),
-    }));
-
-  // console.log("Filtered Individual Beacons:", filteredIndividualBeacons);
-  console.log("Final Network Rows:", networkRows);
+        }));
+      if (selectedFilters.includes("af-only")) {
+        history = history.filter(
+          (item) => item.dataset.alleleFrequency !== "N/A"
+        );
+      }
+      return {
+        name: registry.beaconName,
+        beaconLogo: registry.beaconLogo,
+        beaconURL: registry.beaconURL,
+        response: networkBeacons.some(
+          (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
+        )
+          ? "Found"
+          : "Not Found",
+        history,
+      };
+    })
+    .filter((row) => {
+      if (selectedFilters.includes("af-only")) {
+        return row.history.length > 0;
+      }
+      return true;
+    });
 
   return (
     <TableContainer
