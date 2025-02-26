@@ -5,8 +5,16 @@ import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
+import TableDialog from "./TableDialog";
 
-export default function AFDialog({ open, onClose }) {
+export default function AFDialog({
+  open,
+  onClose,
+  individualBeaconName,
+  individualDataset,
+  beaconNetworkBeaconName,
+  beaconNetworkDataset,
+}) {
   return (
     <Dialog
       onClose={onClose}
@@ -67,9 +75,11 @@ export default function AFDialog({ open, onClose }) {
             top: 70,
           }}
         >
-          <b>Beacon:</b>
+          <b>Beacon: </b>
+          {individualBeaconName || beaconNetworkBeaconName}
           <br></br>
-          <b>Dataset:</b>
+          <b>Dataset: </b>
+          {individualDataset || beaconNetworkDataset}
         </Typography>
       </DialogContent>
       <DialogContent
@@ -109,6 +119,7 @@ export default function AFDialog({ open, onClose }) {
           }}
         ></Typography>
       </DialogContent>
+      {/* <TableDialog /> */}
     </Dialog>
   );
 }

@@ -23,9 +23,13 @@ export default function Row({
 }) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentBeaconName, setCurrentBeaconName] = useState("");
+  const [currentDataset, setCurrentDataset] = useState("");
 
-  const handleDialogOpen = (dataset) => {
-    if (dataset) {
+  const handleDialogOpen = (historyRow) => {
+    if (historyRow) {
+      setCurrentBeaconName(historyRow.beaconId);
+      setCurrentDataset(historyRow.dataset.datasetId);
       setDialogOpen(true);
     }
   };
@@ -35,6 +39,7 @@ export default function Row({
   };
 
   const filteredHistory = row.history?.filter((historyRow) => {
+    console.log("3333", historyRow);
     if (!selectedFilters || selectedFilters.length === 0) return true;
     const maturityMapping = {
       prod: "Prod-Beacon",
@@ -65,6 +70,7 @@ export default function Row({
     }
     return false;
   });
+
   return (
     <>
       {filteredHistory.length > 0 && (
@@ -202,9 +208,10 @@ export default function Row({
                             const af = getFormattedAlleleFrequency(
                               historyRow.dataset
                             );
-                            if (af.includes(";") || af.includes(" - ")) {
-                              handleDialogOpen(historyRow.dataset);
-                            }
+                            // if (af.includes(";") || af.includes(" - ")) {
+                            //   handleDialogOpen(historyRow);
+                            // }
+                            handleDialogOpen(historyRow);
                           }}
                         >
                           {historyRow.dataset?.alleleFrequency !== "N/A" ? (
@@ -237,7 +244,12 @@ export default function Row({
         </TableRow>
       )}
 
-      <Dialog open={dialogOpen} onClose={handleDialogClose} />
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        beaconNetworkBeaconName={currentBeaconName}
+        beaconNetworkDataset={currentDataset}
+      />
     </>
   );
 }

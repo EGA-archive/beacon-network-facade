@@ -27,10 +27,13 @@ export default function CollapsibleTable({
   selectedFilters,
   setSelectedFilters,
 }) {
-  // console.log("📊 Data received:", data);
+  console.log("📊 Data received:", data);
+
   // console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentBeaconName, setCurrentBeaconName] = useState("");
+  const [currentDataset, setCurrentDataset] = useState("");
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
@@ -115,8 +118,10 @@ export default function CollapsibleTable({
       return true;
     });
 
-  const handleDialogOpen = (individualBeacon) => {
-    if (individualBeacon) {
+  const handleDialogOpen = (registry, individualBeacon) => {
+    if ((registry, individualBeacon)) {
+      setCurrentBeaconName(registry.beaconName);
+      setCurrentDataset(individualBeacon.id);
       setDialogOpen(true);
     }
   };
@@ -273,7 +278,7 @@ export default function CollapsibleTable({
                                 const af =
                                   getFormattedAlleleFrequency(individualBeacon);
                                 if (af.includes(";") || af.includes(" - ")) {
-                                  handleDialogOpen(individualBeacon);
+                                  handleDialogOpen(registry, individualBeacon);
                                 }
                               }}
                             >
@@ -338,7 +343,12 @@ export default function CollapsibleTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <Dialog open={dialogOpen} onClose={handleDialogClose} />
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        individualBeaconName={currentBeaconName}
+        individualDataset={currentDataset}
+      />
     </>
   );
 }
