@@ -15,6 +15,7 @@ import Row from "./Row";
 import {
   separateBeacons,
   getFormattedAlleleFrequency,
+  alleleData,
 } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
@@ -28,6 +29,7 @@ export default function CollapsibleTable({
   setSelectedFilters,
 }) {
   console.log("📊 Data received:", data);
+  // console.log("Allele Data from Table", alleleData);
 
   // console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
 
@@ -83,22 +85,41 @@ export default function CollapsibleTable({
         .filter(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
-        .map((beacon) => ({
-          beaconId: beacon.beaconId,
-          maturity: registry.beaconMaturity,
-          dataset: {
-            datasetId: beacon.id,
-            alleleFrequency:
-              beacon.results?.[0]?.frequencyInPopulations?.[0]?.frequencies?.[0]
-                ?.alleleFrequency || "N/A",
-            response: beacon.exists ? "Found" : "Not Found",
-          },
-        }));
+        .map((beacon) => {
+          let populationList = [];
+          beacon.results?.forEach((result) => {
+            result.frequencyInPopulations?.forEach((popObj) => {
+              popObj.frequencies?.forEach((freq) => {
+                if (freq.population) {
+                  populationList.push(freq.population);
+                }
+              });
+            });
+          });
+
+          let populationString =
+            populationList.length > 0 ? populationList.join(", ") : "(unknown)";
+
+          return {
+            beaconId: beacon.beaconId,
+            maturity: registry.beaconMaturity,
+            dataset: {
+              datasetId: beacon.id,
+              population: populationString,
+              alleleFrequency:
+                beacon.results?.[0]?.frequencyInPopulations?.[0]
+                  ?.frequencies?.[0]?.alleleFrequency || "N/A",
+              response: beacon.exists ? "Found" : "Not Found",
+            },
+          };
+        });
+
       if (selectedFilters.includes("af-only")) {
         history = history.filter(
           (item) => item.dataset.alleleFrequency !== "N/A"
         );
       }
+
       return {
         name: registry.beaconName,
         beaconLogo: registry.beaconLogo,
@@ -329,7 +350,6 @@ export default function CollapsibleTable({
                   <b>Beacon Networks</b>
                 </TableCell>
               </TableRow>
-
               {networkRows.map((row) => (
                 <Row
                   key={row.name}

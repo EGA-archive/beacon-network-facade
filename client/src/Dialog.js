@@ -14,6 +14,7 @@ export default function AFDialog({
   individualDataset,
   beaconNetworkBeaconName,
   beaconNetworkDataset,
+  alleleDataNetwork,
 }) {
   return (
     <Dialog
@@ -119,7 +120,11 @@ export default function AFDialog({
           }}
         ></Typography>
       </DialogContent>
-      {/* <TableDialog /> */}
+      <TableDialog
+        alleleDataNetwork={alleleDataNetwork}
+        beaconNetworkBeaconName={beaconNetworkBeaconName}
+        beaconNetworkDataset={beaconNetworkDataset}
+      />
     </Dialog>
   );
 }

@@ -7,23 +7,44 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-export default function TableDialog({ rows }) {
+export default function TableDialog({
+  alleleDataNetwork,
+  beaconNetworkBeaconName,
+  beaconNetworkBeaconDataset,
+}) {
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 400 }} aria-label="Allele Frequency Table">
-        <TableHead>
+    <TableContainer
+      component={Paper}
+      sx={{
+        boxShadow: "none",
+        borderRadius: "6px",
+      }}
+    >
+      <Table aria-label="Allele Frequency Table">
+        <TableHead
+          sx={{
+            backgroundColor: "#dbeefd",
+            borderBottom: "1px solid #023452 !important",
+          }}
+        >
           <TableRow>
-            <TableCell>Population</TableCell>
-            <TableCell align="center">Allele Frequency</TableCell>
+            <TableCell>
+              <b>Population</b>
+            </TableCell>
+            <TableCell align="center">
+              <b>Allele Frequency</b>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row, index) => (
+          {alleleDataNetwork.map((alleleDataNetwork, index) => (
             <TableRow key={index}>
               <TableCell component="th" scope="row">
-                {row.population}
+                {alleleDataNetwork.population}
               </TableCell>
-              <TableCell align="center">{row.alleleFrequency}</TableCell>
+              <TableCell align="center">
+                {alleleDataNetwork.alleleFrequency}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

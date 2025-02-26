@@ -26,6 +26,20 @@ export default function Row({
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
 
+  //   console.log("Rows", row);
+  //   console.log("RowHistory", row.history);
+
+  const alleleDataNetwork = row.history.map((historyRow) => {
+    return {
+      beaconId: historyRow.beaconId,
+      datasetId: historyRow.dataset.datasetId,
+      population: historyRow.dataset.population,
+      alleleFrequency: historyRow.dataset.alleleFrequency,
+    };
+  });
+
+  //   console.log("alleleDataNetwork:", alleleDataNetwork);
+
   const handleDialogOpen = (historyRow) => {
     if (historyRow) {
       setCurrentBeaconName(historyRow.beaconId);
@@ -39,7 +53,6 @@ export default function Row({
   };
 
   const filteredHistory = row.history?.filter((historyRow) => {
-    console.log("3333", historyRow);
     if (!selectedFilters || selectedFilters.length === 0) return true;
     const maturityMapping = {
       prod: "Prod-Beacon",
@@ -249,6 +262,7 @@ export default function Row({
         onClose={handleDialogClose}
         beaconNetworkBeaconName={currentBeaconName}
         beaconNetworkDataset={currentDataset}
+        alleleDataNetwork={alleleDataNetwork}
       />
     </>
   );
