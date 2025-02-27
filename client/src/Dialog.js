@@ -61,6 +61,7 @@ export default function AFDialog({
       <DialogContent
         sx={{
           padding: "20px",
+          maxHeight: "150px",
         }}
       >
         <Typography
@@ -83,47 +84,12 @@ export default function AFDialog({
           {individualDataset || beaconNetworkDataset}
         </Typography>
       </DialogContent>
-      <DialogContent
-        sx={{
-          padding: "20px",
-        }}
-      >
-        <Typography
-          gutterBottom
-          sx={{
-            fontFamily: "Open Sans, sans-serif",
-            fontSize: "14px",
-            fontWeight: 400,
-            lineHeight: "24px",
-            letterSpacing: "0.5px",
-            color: "black",
-            position: "absolute",
-          }}
-        ></Typography>
-      </DialogContent>
-      <DialogContent
-        sx={{
-          paddingBottom: "0",
-        }}
-      >
-        <Typography
-          gutterBottom
-          sx={{
-            fontFamily: "Open Sans, sans-serif",
-            fontSize: "14px",
-            fontWeight: 700,
-            lineHeight: "24px",
-            letterSpacing: "0.5px",
-            color: "#3176B1",
-            wordBreak: "break-word",
-            paddingBottom: "0",
-          }}
-        ></Typography>
-      </DialogContent>
       <TableDialog
         alleleDataNetwork={alleleDataNetwork}
         beaconNetworkBeaconName={beaconNetworkBeaconName}
         beaconNetworkDataset={beaconNetworkDataset}
+        beaconNetworkIdToMatch={beaconNetworkBeaconName}
+        datasetNetworkIdToMatch={beaconNetworkDataset}
       />
     </Dialog>
   );

@@ -9,18 +9,33 @@ import Paper from "@mui/material/Paper";
 
 export default function TableDialog({
   alleleDataNetwork,
-  beaconNetworkBeaconName,
-  beaconNetworkBeaconDataset,
+  datasetNetworkIdToMatch,
+  beaconNetworkIdToMatch,
 }) {
+  //   console.log("alleleDataNetwork:", alleleDataNetwork);
+  //   console.log("datasetNetworkIdToMatch:", datasetNetworkIdToMatch);
+  //   console.log("beaconNetworkIdToMatch:", beaconNetworkIdToMatch);
+
+  const matchedNetwork = alleleDataNetwork.filter((item) => {
+    return (
+      item.beaconId === beaconNetworkIdToMatch &&
+      item.datasetId === datasetNetworkIdToMatch
+    );
+  });
+
+  //   console.log("matchedNetwork:", matchedNetwork);
+
   return (
     <TableContainer
       component={Paper}
       sx={{
         boxShadow: "none",
         borderRadius: "6px",
+        width: "100%",
+        mx: "auto",
       }}
     >
-      <Table aria-label="Allele Frequency Table">
+      <Table sx={{ minWidth: 650 }} aria-label="caption table">
         <TableHead
           sx={{
             backgroundColor: "#dbeefd",
@@ -37,14 +52,12 @@ export default function TableDialog({
           </TableRow>
         </TableHead>
         <TableBody>
-          {alleleDataNetwork.map((alleleDataNetwork, index) => (
+          {matchedNetwork.map((item, index) => (
             <TableRow key={index}>
               <TableCell component="th" scope="row">
-                {alleleDataNetwork.population}
+                {item.population}
               </TableCell>
-              <TableCell align="center">
-                {alleleDataNetwork.alleleFrequency}
-              </TableCell>
+              <TableCell align="center">{item.alleleFrequency}</TableCell>
             </TableRow>
           ))}
         </TableBody>

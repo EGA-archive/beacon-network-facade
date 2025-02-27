@@ -80,7 +80,7 @@ export function getFormattedAlleleFrequency(data) {
       })
     )
   );
-
+  console.log("getFormattedAlleleFrequency called with data:", data.results);
   console.log("Allele Data:", alleleData);
 
   if (frequencies.length === 0) return "N/A";
