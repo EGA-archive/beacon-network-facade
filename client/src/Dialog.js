@@ -12,6 +12,7 @@ export default function AFDialog({
   onClose,
   individualBeaconName,
   individualDataset,
+  individualBeaconRegistryId,
   beaconNetworkBeaconName,
   beaconNetworkDataset,
   alleleDataNetwork,
@@ -88,8 +89,9 @@ export default function AFDialog({
         alleleDataNetwork={alleleDataNetwork}
         beaconNetworkBeaconName={beaconNetworkBeaconName}
         beaconNetworkDataset={beaconNetworkDataset}
-        beaconNetworkIdToMatch={beaconNetworkBeaconName}
-        datasetNetworkIdToMatch={beaconNetworkDataset}
+        individualBeaconName={individualBeaconName}
+        individualDataset={individualDataset}
+        individualBeaconRegistryId={individualBeaconRegistryId}
       />
     </Dialog>
   );

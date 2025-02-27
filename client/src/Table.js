@@ -15,7 +15,7 @@ import Row from "./Row";
 import {
   separateBeacons,
   getFormattedAlleleFrequency,
-  alleleData,
+  getAlleleData,
 } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
@@ -29,15 +29,22 @@ export default function CollapsibleTable({
   setSelectedFilters,
 }) {
   console.log("📊 Data received:", data);
-  // console.log("Allele Data from Table", alleleData);
-
-  // console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
+  const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
+  if (individualBeacons.length > 0) {
+    const alleleData = getAlleleData(individualBeacons[0]);
+    console.log(
+      "Extracted alleleData from first individual beacon:",
+      alleleData
+    );
+  }
 
   const maturityMapping = {
     prod: "Prod-Beacon",
@@ -142,6 +149,7 @@ export default function CollapsibleTable({
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
       setCurrentBeaconName(registry.beaconName);
+      setCurrentBeaconId(registry.beaconId);
       setCurrentDataset(individualBeacon.id);
       setDialogOpen(true);
     }
@@ -368,6 +376,7 @@ export default function CollapsibleTable({
         onClose={handleDialogClose}
         individualBeaconName={currentBeaconName}
         individualDataset={currentDataset}
+        individualBeaconRegistryId={currentBeaconId}
       />
     </>
   );

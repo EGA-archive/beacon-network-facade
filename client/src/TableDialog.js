@@ -9,20 +9,28 @@ import Paper from "@mui/material/Paper";
 
 export default function TableDialog({
   alleleDataNetwork,
-  datasetNetworkIdToMatch,
-  beaconNetworkIdToMatch,
+  beaconNetworkDataset,
+  beaconNetworkBeaconName,
+  individualDataset,
+  individualBeaconName,
+  individualBeaconRegistryId,
 }) {
   //   console.log("alleleDataNetwork:", alleleDataNetwork);
   //   console.log("datasetNetworkIdToMatch:", datasetNetworkIdToMatch);
-  //   console.log("beaconNetworkIdToMatch:", beaconNetworkIdToMatch);
+  //   console.log("beaconNetworkBeaconName:", beaconNetworkBeaconName);
 
   const matchedNetwork = alleleDataNetwork.filter((item) => {
     return (
-      item.beaconId === beaconNetworkIdToMatch &&
-      item.datasetId === datasetNetworkIdToMatch
+      item.beaconId === beaconNetworkBeaconName &&
+      item.datasetId === beaconNetworkDataset
     );
   });
 
+  //   <b>Beacon: </b>
+  //   {individualBeaconName || beaconNetworkBeaconName}
+  //   <br></br>
+  //   <b>Dataset: </b>
+  //   {individualDataset || beaconNetworkDataset}
   //   console.log("matchedNetwork:", matchedNetwork);
 
   return (
@@ -35,7 +43,7 @@ export default function TableDialog({
         mx: "auto",
       }}
     >
-      <Table sx={{ minWidth: 650 }} aria-label="caption table">
+      <Table sx={{ minWidth: 450 }} aria-label="caption table">
         <TableHead
           sx={{
             backgroundColor: "#dbeefd",
@@ -43,7 +51,7 @@ export default function TableDialog({
           }}
         >
           <TableRow>
-            <TableCell>
+            <TableCell align="center">
               <b>Population</b>
             </TableCell>
             <TableCell align="center">
@@ -54,10 +62,12 @@ export default function TableDialog({
         <TableBody>
           {matchedNetwork.map((item, index) => (
             <TableRow key={index}>
-              <TableCell component="th" scope="row">
+              <TableCell component="th" scope="row" align="center">
                 {item.population}
               </TableCell>
-              <TableCell align="center">{item.alleleFrequency}</TableCell>
+              <TableCell align="center">
+                {item.alleleFrequency.toFixed(5)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

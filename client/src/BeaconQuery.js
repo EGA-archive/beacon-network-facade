@@ -16,9 +16,9 @@ function BeaconQuery({
   const [aggregatedData, setAggregatedData] = useState([]);
 
   useEffect(() => {
-    console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
-    console.log(`🔎 Variant: ${variant}, Genome: ${genome}`);
-    console.log(`📡 Socket:`, socket);
+    // console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
+    // console.log(`🔎 Variant: ${variant}, Genome: ${genome}`);
+    // console.log(`📡 Socket:`, socket);
 
     if (
       //!beaconId ||
@@ -34,7 +34,7 @@ function BeaconQuery({
     }
 
     const query = `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`;
-    console.log(`📤 Sending Query to WebSocket:`, query);
+    // console.log(`📤 Sending Query to WebSocket:`, query);
 
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(query));
