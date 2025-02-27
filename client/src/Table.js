@@ -38,13 +38,25 @@ export default function CollapsibleTable({
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
+  let individualAlleleData = [];
   if (individualBeacons.length > 0) {
     const alleleData = [].concat(
       ...individualBeacons.map((beacon) => getAlleleData(beacon))
     );
+    const individualAlleleData = alleleData.filter(
+      (item, index, self) =>
+        index ===
+        self.findIndex(
+          (t) =>
+            t.population === item.population &&
+            t.alleleFrequency === item.alleleFrequency &&
+            t.id === item.id &&
+            t.beaconId === item.beaconId
+        )
+    );
     console.log(
-      "Extracted alleleData from all individual beacons:",
-      alleleData
+      "Extracted individual alleleData from all individual beacons:",
+      individualAlleleData
     );
   }
 
@@ -379,6 +391,7 @@ export default function CollapsibleTable({
         individualBeaconName={currentBeaconName}
         individualDataset={currentDataset}
         individualBeaconRegistryId={currentBeaconId}
+        individualAlleleData={individualAlleleData}
       />
     </>
   );
