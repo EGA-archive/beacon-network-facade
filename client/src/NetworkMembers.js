@@ -39,7 +39,6 @@ function NetworkMembers({ registries = [] }) {
                       className="logos"
                     />
                   </a>
-                  {/* <p>{registry.beaconName}</p> */}
                 </div>
               </Grid>
             ))

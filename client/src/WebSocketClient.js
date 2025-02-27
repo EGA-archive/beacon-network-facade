@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
     .matches(
-      /[1-9XY]-\d+-[ACGT]+-[ACGT]+$/,
+      /^(?:[1-9]|1[0-9]|2[0-2]|X|Y)-\d+-[ACGT]+-[ACGT]+$/,
       "Incorrect variant format, check the example"
     )
     .required("Required"),
@@ -37,7 +37,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
   }, []);
 
   const connectWebSocket = () => {
-    if (reconnectRef.current) return; // Prevent multiple connections
+    if (reconnectRef.current) return;
 
     console.log("🔄 Initializing WebSocket...");
     const ws = new WebSocket("ws://localhost:5700");
@@ -57,7 +57,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message:", event.data);
+      // console.log("📩 WebSocket Received Message:", event.data);
       setLoading(false);
       try {
         const data = JSON.parse(event.data);
@@ -83,8 +83,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
       console.log("⚠️ WebSocket Disconnected - Reconnecting in 5 seconds...");
       setConnected(false);
       reconnectRef.current = setTimeout(() => {
-        setSocket(null); // Reset socket
-        connectWebSocket(); // Reconnect
+        setSocket(null);
+        connectWebSocket();
         reconnectRef.current = null;
       }, 5000);
     };
@@ -98,7 +98,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
   };
 
   return (
-    <ThemeProvider theme={CustomTheme}>
+    <>
       <Container>
         <Formik
           initialValues={{ variant: "", genome: "GRCh37" }}
@@ -201,7 +201,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         </Formik>
       </Container>
       <NetworkMembers registries={registries} />
-    </ThemeProvider>
+    </>
   );
 }
 

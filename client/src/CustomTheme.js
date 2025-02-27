@@ -62,6 +62,24 @@ const customTheme = createTheme({
         },
       },
     },
+    // Row
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          height: "61px",
+        },
+      },
+    },
+    MuiTableCell: {
+      variants: [
+        {
+          props: { variant: "noBorder" },
+          style: {
+            border: "none",
+          },
+        },
+      ],
+    },
   },
 });
 
