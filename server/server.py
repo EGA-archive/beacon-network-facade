@@ -67,7 +67,7 @@ async def requesting(websocket, burl, query, is_v2):
                 beaconquery=burl+'/beacons'
                 beacons_v1=await beacon_request(session,beaconquery,data)
                 #LOG.warning(beacons_v1)
-                beacons_v1 = ["molgenis-emx2", "brca-exchange", "ucsc", "cogr-consensus", "cogr-sinai", "lovd", "hgmd", "curoverse"]
+                beacons_v1 = ["brca-exchange", "ucsc", "cogr-consensus", "cogr-sinai", "lovd", "hgmd"]
                 list_of_beacons_v1=[]
                 for beaconv1 in beacons_v1:
                     #LOG.warning(beaconv1)
@@ -88,21 +88,29 @@ async def requesting(websocket, burl, query, is_v2):
                 for querytask in itertools.islice(asyncio.as_completed(querytasks), len(querytasks)):
                     beaconv1tov2={"beaconId": "", "exists": False}
                     response_obj = await querytask
-                    #LOG.warning(response_obj)
-                    beaconv1tov2["beaconId"]=response_obj[0]["beacon"]["id"]
+                    try:
+                        beaconv1tov2["beaconId"]=response_obj[0]["beacon"]["id"]
+                    except Exception:
+                        beaconv1tov2["beaconId"]=response_obj[0]["id"]
+                    #LOG.warning(beaconv1tov2)
                     try:
                         if response_obj[0]["response"]== None:
-                            beaconv1tov2["exists"]=response_obj[0]["response"]=False
+                            beaconv1tov2["exists"]=response_obj[0]["response"]
+                            default_v2_response["response"]["resultSets"].append(beaconv1tov2)
+                        elif response_obj[0]["response"]== False:
+                            beaconv1tov2["exists"]=response_obj[0]["response"]
+                            default_v2_response["response"]["resultSets"].append(beaconv1tov2)
                         elif response_obj[0]["response"] == True:
                             beaconv1tov2["exists"]=response_obj[0]["response"]
                             default_v2_response["response"]["resultSets"].append(beaconv1tov2)
                             default_v2_response["responseSummary"]["exists"]=True
                     except Exception:
                         beaconv1tov2["exists"]=False
+                        default_v2_response["response"]["resultSets"].append(beaconv1tov2)
                         
                     
                     
-                    #LOG.warning(default_v2_response)
+                #LOG.warning(default_v2_response)
                 
                 
                 end_time = perf_counter()
@@ -203,6 +211,7 @@ async def ws_server(websocket):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
+                LOG.warning(inforesponse)
                 try:
                     #LOG.warning(inforesponse)
                     beaconInfoId=inforesponse["meta"]["beaconId"]
@@ -250,6 +259,7 @@ async def ws_server(websocket):
             for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
                 response = await task
                 response = json.loads(response)
+                LOG.warning(response)
                 try:
                     beaconId=response["meta"]["beaconId"]
                 except Exception:
@@ -280,7 +290,7 @@ async def ws_server(websocket):
                 if dict_response["responseSummary"]["numTotalResults"] > 0 or dict_response["responseSummary"]["exists"] == True:
                     dict_response["responseSummary"]["exists"]=True
                 dict_response = json.dumps(dict_response)
-                #LOG.warning(dict_response)
+                LOG.warning(dict_response)
                 await websocket.send(f"{dict_response}")
             
  
