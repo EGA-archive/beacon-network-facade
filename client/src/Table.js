@@ -39,9 +39,11 @@ export default function CollapsibleTable({
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
   if (individualBeacons.length > 0) {
-    const alleleData = getAlleleData(individualBeacons[0]);
+    const alleleData = [].concat(
+      ...individualBeacons.map((beacon) => getAlleleData(beacon))
+    );
     console.log(
-      "Extracted alleleData from first individual beacon:",
+      "Extracted alleleData from all individual beacons:",
       alleleData
     );
   }
