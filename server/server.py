@@ -95,7 +95,7 @@ async def requesting(websocket, burl, query, is_v2):
                     #LOG.warning(beaconv1tov2)
                     try:
                         if response_obj[0]["response"]== None:
-                            beaconv1tov2["exists"]=response_obj[0]["response"]
+                            beaconv1tov2["exists"]=False
                             default_v2_response["response"]["resultSets"].append(beaconv1tov2)
                         elif response_obj[0]["response"]== False:
                             beaconv1tov2["exists"]=response_obj[0]["response"]
