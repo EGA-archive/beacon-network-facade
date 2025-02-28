@@ -43,7 +43,7 @@ export default function CollapsibleTable({
     const alleleData = [].concat(
       ...individualBeacons.map((beacon) => getAlleleData(beacon))
     );
-    const individualAlleleData = alleleData.filter(
+    individualAlleleData = alleleData.filter(
       (item, index, self) =>
         index ===
         self.findIndex(
@@ -53,10 +53,6 @@ export default function CollapsibleTable({
             t.id === item.id &&
             t.beaconId === item.beaconId
         )
-    );
-    console.log(
-      "Extracted individual alleleData from all individual beacons:",
-      individualAlleleData
     );
   }
 
@@ -206,7 +202,6 @@ export default function CollapsibleTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* {filteredIndividualBeacons.length > 0 && ( */}
             <>
               <TableRow>
                 <TableCell
@@ -279,89 +274,81 @@ export default function CollapsibleTable({
                           (individualBeacon) =>
                             individualBeacon.beaconId === registry.beaconId
                         )
-                        .map((individualBeacon) => (
-                          <TableRow
-                            key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
-                          >
-                            <TableCell />
-                            <TableCell />
-                            <TableCell colSpan={2}>
-                              <Box sx={{ marginLeft: "50px" }}>
-                                <i>
-                                  Dataset:{" "}
-                                  <b>
-                                    {individualBeacon.id ||
-                                      individualBeacon.beaconId}
-                                  </b>
-                                </i>
-                              </Box>
-                            </TableCell>
-                            {/* <TableCell>
-                            <b>
-                              {individualBeacon.results?.some((result) =>
-                                result.frequencyInPopulations?.some((pop) =>
-                                  pop.frequencies?.some(
-                                    (f) => f.alleleFrequency !== undefined
-                                  )
-                                )
-                              ) ? (
-                                getFormattedAlleleFrequency(individualBeacon)
-                              ) : (
-                                <img
-                                  src={Dash}
-                                  alt="Dash"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
-                              )}
-                            </b>
-                          </TableCell> */}
-                            <TableCell
-                              style={{ fontWeight: "bold", cursor: "pointer" }}
-                              onClick={() => {
-                                const af =
-                                  getFormattedAlleleFrequency(individualBeacon);
-                                if (af.includes(";") || af.includes(" - ")) {
-                                  handleDialogOpen(registry, individualBeacon);
-                                }
-                              }}
+                        .map((individualBeacon) => {
+                          const afValue =
+                            getFormattedAlleleFrequency(individualBeacon);
+                          const clickable =
+                            afValue.includes(";") || afValue.includes(" - ");
+                          return (
+                            <TableRow
+                              key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
                             >
-                              <b>
-                                {individualBeacon.results?.some((result) =>
-                                  result.frequencyInPopulations?.some((pop) =>
-                                    pop.frequencies?.some(
-                                      (f) => f.alleleFrequency !== undefined
+                              <TableCell />
+                              <TableCell />
+                              <TableCell colSpan={2}>
+                                <Box sx={{ marginLeft: "50px" }}>
+                                  <i>
+                                    Dataset:{" "}
+                                    <b>
+                                      {individualBeacon.id ||
+                                        individualBeacon.beaconId}
+                                    </b>
+                                  </i>
+                                </Box>
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  width: "154px",
+                                  cursor: clickable ? "pointer" : "default",
+                                  fontWeight: "bold",
+                                  padding: "16px",
+                                  textDecoration: clickable
+                                    ? "underline"
+                                    : "none",
+                                }}
+                                onClick={() => {
+                                  if (clickable) {
+                                    handleDialogOpen(
+                                      registry,
+                                      individualBeacon
+                                    );
+                                  }
+                                }}
+                              >
+                                <b>
+                                  {individualBeacon.results?.some((result) =>
+                                    result.frequencyInPopulations?.some((pop) =>
+                                      pop.frequencies?.some(
+                                        (f) => f.alleleFrequency !== undefined
+                                      )
                                     )
-                                  )
-                                ) ? (
-                                  getFormattedAlleleFrequency(individualBeacon)
-                                ) : (
-                                  <img
-                                    src={Dash}
-                                    alt="Dash"
-                                    style={{ width: "18px", height: "18px" }}
-                                  />
-                                )}
-                              </b>
-                            </TableCell>
-
-                            <TableCell>
-                              <StatusButton
-                                status={
-                                  individualBeacon.exists
-                                    ? "Found"
-                                    : "Not Found"
-                                }
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                  ) ? (
+                                    afValue
+                                  ) : (
+                                    <img
+                                      src={Dash}
+                                      alt="Dash"
+                                      style={{ width: "18px", height: "18px" }}
+                                    />
+                                  )}
+                                </b>
+                              </TableCell>
+                              <TableCell>
+                                <StatusButton
+                                  status={
+                                    individualBeacon.exists
+                                      ? "Found"
+                                      : "Not Found"
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                     </React.Fragment>
                   );
                 })}
             </>
-            {/* )} */}
-            {/* {networkBeacons.length > 0 && ( */}
-            {/* {networkRows.length > 0 && ( */}
             <>
               <TableRow>
                 <TableCell
@@ -381,7 +368,6 @@ export default function CollapsibleTable({
                 />
               ))}
             </>
-            {/* )} */}
           </TableBody>
         </Table>
       </TableContainer>

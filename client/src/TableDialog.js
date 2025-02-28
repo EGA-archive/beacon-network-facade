@@ -91,7 +91,6 @@ export default function TableDialog({
   beaconNetworkDataset,
   beaconNetworkBeaconName,
   individualDataset,
-  individualBeaconName,
   individualBeaconRegistryId,
   individualAlleleData,
 }) {
@@ -107,14 +106,10 @@ export default function TableDialog({
     matchedData = individualAlleleData.filter((item) => {
       return (
         item.beaconId === individualBeaconRegistryId &&
-        item.datasetId === individualDataset
+        item.id === individualDataset
       );
     });
-    console.log("Miao", individualAlleleData);
   }
-
-  console.log("Matched Data:", matchedData);
-
   return (
     <TableContainer
       component={Paper}
