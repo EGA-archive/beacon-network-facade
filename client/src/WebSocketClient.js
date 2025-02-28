@@ -45,39 +45,46 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onopen = () => {
       console.log("✅ Connected to WebSocket");
       setConnected(true);
-      setSocket(ws); // ✅ Update socket in App.js
+      setSocket(ws);
 
-      if (!hasRequestedRegistries.current) {
-        ws.send(JSON.stringify("/registries"));
-        setTimeout(() => {
-          ws.send(JSON.stringify("/registries"));
-        }, 300);
-        hasRequestedRegistries.current = true;
-      }
+      reconnectRef.current = setTimeout(() => {
+        setSocket(null);
+        connectWebSocket();
+        reconnectRef.current = null;
+      }, 9000);
     };
 
-    ws.onmessage = (event) => {
-      // console.log("📩 WebSocket Received Message:", event.data);
-      setLoading(false);
-      try {
-        const data = JSON.parse(event.data);
-        if (data.response?.registries) {
-          console.log("✅ Updating Registries:", data.response.registries);
-          setLocalRegistries(data.response.registries);
-          setRegistries(data.response.registries);
-        } else {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            JSON.stringify(data, null, 2),
-          ]);
-        }
-      } catch (error) {
-        console.error("❌ Error parsing WebSocket response:", error);
-        setMessages((prevMessages) => [...prevMessages, event.data]);
-      }
-    };
+    //   if (!hasRequestedRegistries.current) {
+    //     ws.send(JSON.stringify("/registries"));
+    //     setTimeout(() => {
+    //       ws.send(JSON.stringify("/registries"));
+    //     }, 300);
+    //     hasRequestedRegistries.current = true;
+    //   }
+    // };
 
-    ws.onerror = (error) => console.error("❌ WebSocket error:", error);
+    // ws.onmessage = (event) => {
+    //   // console.log("📩 WebSocket Received Message:", event.data);
+    //   setLoading(false);
+    //   try {
+    //     const data = JSON.parse(event.data);
+    //     if (data.response?.registries) {
+    //       console.log("✅ Updating Registries:", data.response.registries);
+    //       setLocalRegistries(data.response.registries);
+    //       setRegistries(data.response.registries);
+    //     } else {
+    //       setMessages((prevMessages) => [
+    //         ...prevMessages,
+    //         JSON.stringify(data, null, 2),
+    //       ]);
+    //     }
+    //   } catch (error) {
+    //     console.error("❌ Error parsing WebSocket response:", error);
+    //     setMessages((prevMessages) => [...prevMessages, event.data]);
+    //   }
+    // };
+
+    // ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
       console.log("⚠️ WebSocket Disconnected - Reconnecting in 5 seconds...");
