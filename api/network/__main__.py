@@ -40,22 +40,38 @@ async def beacon_post_request(self, session, url, data, headers):
         return response_obj
 
 @log_with_args(level)
-async def registry(self, burl):
+async def registry(self, burl, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
     sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
     sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
 )
-    try:
-        async with aiohttp.ClientSession(timeout=my_timeout) as session:
-            url = burl + '/info'
-            response_obj = await beacon_get_request(self, session, url, data)
-            #LOG.warning(json.dumps(response_obj))
-            return json.dumps(response_obj)
-            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
-    except Exception:
-        return json.dumps({"beacon": burl})
+    if is_v2 == True:
+        try:
+            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+                url = burl + '/info'
+                response_obj = await beacon_get_request(self, session, url, data)
+                #LOG.warning(json.dumps(response_obj))
+                return json.dumps(response_obj)
+                #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:
+            return json.dumps({"beacon": burl})
+    elif is_v2 == False:
+        try:
+            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+                default_v2_response={"meta": {}, "response": {"organization": {}}}
+                default_v2_response["meta"]["beaconId"]="beacon.network.org"
+                default_v2_response["response"]["name"]="Beacon Network"
+                default_v2_response["response"]["environment"]="prod"
+                default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
+                default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"
+                response_obj=default_v2_response
+                #LOG.warning(json.dumps(response_obj))
+                return json.dumps(response_obj)
+                #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+        except Exception:
+            return json.dumps({"beacon": burl})
 
 @log_with_args(level)
 async def get_requesting(self, burl, query):
@@ -77,7 +93,7 @@ async def get_requesting(self, burl, query):
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         except Exception:# pragma: no cover
-            response_obj = await registry(self, burl)
+            response_obj = await registry(self, burl, True)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
@@ -89,7 +105,7 @@ async def returning(self, url):
     return json.dumps({"beacon": url})
 
 @log_with_args(level)
-async def get_resultSets_requesting(self, burl, query):
+async def get_resultSets_requesting(self, burl, query, is_v2):
     start_time = perf_counter()
     with ThreadPoolExecutor() as pool:
         data={}
@@ -99,30 +115,112 @@ async def get_resultSets_requesting(self, burl, query):
         sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
-            if '?' in query:
-                url = burl + query + '&includeResultsetResponses=ALL'
-            else:
-                url = burl + query + '?includeResultsetResponses=ALL'
-            try:
-                response_obj = await beacon_get_request(self, session, url, data)
-                #LOG.warning(json.dumps(response_obj))
-                end_time = perf_counter()
-                final_time=end_time-start_time
-                LOG.warning("{} response took {} seconds".format(burl, final_time))
-                return json.dumps(response_obj)
-            except Exception:# pragma: no cover
-                response_obj = await registry(self, burl)
-                end_time = perf_counter()
-                final_time=end_time-start_time
-                LOG.warning("{} response took {} seconds".format(burl, final_time))
-                return response_obj
-            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+            if is_v2 == True:
+                if '?' in query:
+                    url = burl + query + '&includeResultsetResponses=ALL'
+                else:
+                    url = burl + query + '?includeResultsetResponses=ALL'
+                try:
+                    response_obj = await beacon_get_request(self, session, url, data)
+                    #LOG.warning(json.dumps(response_obj))
+                    end_time = perf_counter()
+                    final_time=end_time-start_time
+                    LOG.warning("{} response took {} seconds".format(burl, final_time))
+                    return json.dumps(response_obj)
+                except Exception:# pragma: no cover
+                    response_obj = await registry(self, burl, True)
+                    end_time = perf_counter()
+                    final_time=end_time-start_time
+                    LOG.warning("{} response took {} seconds".format(burl, final_time))
+                    return response_obj
+            elif is_v2 == False:
+                try:
+                    LOG.warning(query)
+                    query_splitted=query.split('&')
+                    defquery='https://beacon-network.org/api/responses?'
+                    for parameter in query_splitted:
+                        if 'start' in parameter:
+                            parametervalue=parameter.split('=')
+                            defquery=defquery+'pos='+parametervalue[1]+'&'
+                        elif 'alternateBases' in parameter:
+                            parametervalue=parameter.split('=')
+                            defquery=defquery+'allele='+parametervalue[1]+'&'
+                        elif 'assemblyId' in parameter:
+                            parametervalue=parameter.split('=')
+                            defquery=defquery+'ref='+parametervalue[1]+'&'
+                        elif 'referenceName' in parameter:
+                            parametervalue=parameter.split('=')
+                            defquery=defquery+'chrom='+parametervalue[1]+'&'
+                    beaconquery=burl+'/beacons'
+                    beacons_v1=await beacon_get_request(self,session,beaconquery,data)
+                    #LOG.warning(beacons_v1)
+                    beacons_v1 = ["brca-exchange", "ucsc", "cogr-consensus", "cogr-sinai", "lovd", "hgmd"]
+                    list_of_beacons_v1=[]
+                    for beaconv1 in beacons_v1:
+                        #LOG.warning(beaconv1)
+                        list_of_beacons_v1.append(beaconv1)
+                    LOG.warning(list_of_beacons_v1)
+                    default_v2_response={"meta": {"beaconId": "beacon.network.org"}, "responseSummary": {"exists": False}, "response": {"resultSets": []}}
+                    loop=asyncio.get_running_loop()
+                    querytasks=[]
+                    for beacontoquery in list_of_beacons_v1:
+                        ultimatequery=defquery+'beacon=' + beacontoquery
+                        
+                        with ThreadPoolExecutor() as pool:
+                            LOG.warning(ultimatequery)
+                            querytask = await loop.run_in_executor(pool, beacon_get_request, self, session, ultimatequery, data)
+                            querytasks.append(querytask)
+
+                    LOG.warning('tasks are readyyyy')
+                    for querytask in itertools.islice(asyncio.as_completed(querytasks), len(querytasks)):
+                        beaconv1tov2={"beaconId": "", "exists": False}
+                        response_obj = await querytask
+                        try:
+                            beaconv1tov2["beaconId"]=response_obj[0]["beacon"]["id"]
+                        except Exception:
+                            beaconv1tov2["beaconId"]=response_obj[0]["id"]
+                        #LOG.warning(beaconv1tov2)
+                        try:
+                            if response_obj[0]["response"]== None:
+                                beaconv1tov2["exists"]=False
+                                default_v2_response["response"]["resultSets"].append(beaconv1tov2)
+                            elif response_obj[0]["response"]== False:
+                                beaconv1tov2["exists"]=response_obj[0]["response"]
+                                default_v2_response["response"]["resultSets"].append(beaconv1tov2)
+                            elif response_obj[0]["response"] == True:
+                                beaconv1tov2["exists"]=response_obj[0]["response"]
+                                default_v2_response["response"]["resultSets"].append(beaconv1tov2)
+                                default_v2_response["responseSummary"]["exists"]=True
+                        except Exception:
+                            beaconv1tov2["exists"]=False
+                            default_v2_response["response"]["resultSets"].append(beaconv1tov2)
+                                
+                            
+                            
+                        LOG.warning(default_v2_response)
+                    
+                    
+                    end_time = perf_counter()
+                    final_time=end_time-start_time
+                    LOG.warning("{} response took {} seconds".format(burl, final_time))
+                    #LOG.warning(json.dumps(response_obj))
+                    return json.dumps(default_v2_response)
+                except Exception as e:
+                    LOG.warning('que siiii')
+                    LOG.warning(e)
+                    response_obj = await registry(self, burl, False)
+                    end_time = perf_counter()
+                    final_time=end_time-start_time
+                    LOG.warning("{} response took {} seconds".format(burl, final_time))
+                    return response_obj
+                #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
+                #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 @log_with_args(level)
-async def get_resultset_or_timeout(self, burl, query, loop):
+async def get_resultset_or_timeout(self, burl, query, loop, is_v2):
     secondarytasks=[]
     with ThreadPoolExecutor() as pool:
-        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, self, burl, query)
+        secondarytask = await loop.run_in_executor(pool, get_resultSets_requesting, self, burl, query, is_v2)
         secondarytasks.append(secondarytask)
     with ThreadPoolExecutor() as pool:
         secondarytask = await loop.run_in_executor(pool, returning, self, burl)
@@ -166,7 +264,7 @@ async def requesting(self, burl, query, data, token):
             return json.dumps(response_obj)
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         except Exception:# pragma: no cover
-            response_obj = await registry(self, burl)
+            response_obj = await registry(self, burl, True)
             end_time = perf_counter()
             final_time=end_time-start_time
             LOG.warning("{} response took {} seconds".format(burl, final_time))
@@ -391,9 +489,14 @@ class Registries(EndpointView):
         with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
-        for beacon in data["Beacons"]:
+        for beacon in data["v2_Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, self, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon, True)
+                tasks.append(task)
+
+        for beacon in data["v1_Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, registry, self, beacon, False)
                 tasks.append(task)
         dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
@@ -405,9 +508,9 @@ class Registries(EndpointView):
         with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
-        for beacon in data["Beacons"]:
+        for beacon in data["v2_Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, registry, self, beacon)
+                task = await loop.run_in_executor(pool, registry, self, beacon, True)
                 tasks.append(task)
         dict_registries=await manage_registries_response(self, tasks)
         return await self.resultset(dict_registries)
@@ -611,9 +714,14 @@ class Resultset(EndpointView):
         with open('network/registry.yml', 'r') as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
 
-        for beacon in data["Beacons"]:
+        for beacon in data["v2_Beacons"]:
             with ThreadPoolExecutor() as pool:
-                task = await loop.run_in_executor(pool, get_resultset_or_timeout, self, beacon, final_endpoint, loop)
+                task = await loop.run_in_executor(pool, get_resultset_or_timeout, self, beacon, final_endpoint, loop, True)
+                tasks.append(task)
+
+        for beacon in data["v1_Beacons"]:
+            with ThreadPoolExecutor() as pool:
+                task = await loop.run_in_executor(pool, get_resultset_or_timeout, self, beacon, final_endpoint, loop, False)
                 tasks.append(task)
 
         dict_response=await manage_resultset_response(self, tasks)
