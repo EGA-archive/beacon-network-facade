@@ -28,7 +28,9 @@ function SearchResults({
           <p className="d-flex" style={{ marginTop: "36px" }}>
             <b>Results</b>{" "}
             <span className="ms-4">
-              Queried Variant: <b>{variant}</b>
+              Queried Variant: <b>{genome} </b>
+              <b>|</b>
+              <b> {variant}</b>
             </span>
           </p>
         </Grid>

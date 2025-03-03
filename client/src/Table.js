@@ -277,8 +277,7 @@ export default function CollapsibleTable({
                         .map((individualBeacon) => {
                           const afValue =
                             getFormattedAlleleFrequency(individualBeacon);
-                          const clickable =
-                            afValue.includes(";") || afValue.includes(" - ");
+                          const clickable = afValue !== "N/A";
                           return (
                             <TableRow
                               key={`${individualBeacon.beaconId}_${individualBeacon.id}`}

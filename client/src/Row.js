@@ -14,10 +14,12 @@ import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
+import DatasetDialog from "./DatasetDialog.js";
 
 export default function Row({ row, isNetwork, selectedFilters = [] }) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
 
@@ -30,16 +32,24 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
     };
   });
 
-  const handleDialogOpen = (historyRow) => {
-    if (historyRow) {
-      setCurrentBeaconName(historyRow.beaconId);
+  const handleDialogOpen = (historyRow, isDatasetDialog = false) => {
+    if (historyRow?.dataset?.datasetId) {
+      setCurrentBeaconName(historyRow.beaconId || "");
       setCurrentDataset(historyRow.dataset.datasetId);
-      setDialogOpen(true);
+
+      if (isDatasetDialog) {
+        setDatasetDialogOpen(true);
+      } else {
+        setDialogOpen(true);
+      }
+    } else {
+      console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
     }
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
+    setDatasetDialogOpen(false);
   };
 
   const filteredHistory = row.history?.filter((historyRow) => {
@@ -91,9 +101,10 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                 src={row.beaconLogo}
                 alt={`${row.name} Logo`}
                 style={{
-                  width: "auto",
-                  height: "53px",
+                  maxWidth: "100%",
+                  height: "61px",
                   padding: "10px 16px",
+                  objectFit: "contain",
                 }}
               />
             </a>
@@ -128,23 +139,17 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                     const afValue = getFormattedAlleleFrequency(
                       historyRow.dataset
                     );
-                    const clickable =
-                      afValue.includes(";") || afValue.includes(" - ");
+                    const datasetClickable = historyRow.dataset?.datasetId;
+                    const afClickable = afValue !== "N/A";
 
                     return (
                       <React.Fragment key={index}>
                         <TableRow>
                           <TableCell
-                            sx={{
-                              width: "160px !important",
-                              padding: "16px",
-                            }}
+                            sx={{ width: "160px !important", padding: "16px" }}
                           />
                           <TableCell
-                            sx={{
-                              width: "154px !important",
-                              padding: "16px",
-                            }}
+                            sx={{ width: "154px !important", padding: "16px" }}
                           >
                             {historyRow.maturity && (
                               <MaturityButton maturity={historyRow.maturity} />
@@ -159,31 +164,15 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                           >
                             <b>{historyRow.beaconId}</b>
                           </TableCell>
-                          <TableCell
-                            sx={{
-                              width: "154px",
-                              padding: "16px",
-                            }}
-                          />
-                          <TableCell
-                            sx={{
-                              width: "154px",
-                              padding: "16px",
-                            }}
-                          />
+                          <TableCell sx={{ width: "154px", padding: "16px" }} />
+                          <TableCell sx={{ width: "154px", padding: "16px" }} />
                         </TableRow>
                         <TableRow>
                           <TableCell
-                            sx={{
-                              width: "160px !important",
-                              padding: "16px",
-                            }}
+                            sx={{ width: "160px !important", padding: "16px" }}
                           />
                           <TableCell
-                            sx={{
-                              width: "154px !important",
-                              padding: "16px",
-                            }}
+                            sx={{ width: "154px !important", padding: "16px" }}
                           />
                           <TableCell
                             sx={{
@@ -193,32 +182,40 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                             }}
                           >
                             <Box sx={{ marginLeft: "50px" }}>
-                              <i>
-                                Dataset:{" "}
-                                <b>
-                                  {historyRow.dataset?.datasetId ? (
-                                    historyRow.dataset.datasetId
-                                  ) : (
-                                    <img
-                                      src={Dash}
-                                      alt="Dash"
-                                      style={{ width: "18px", height: "18px" }}
-                                    />
-                                  )}
+                              <i>Dataset: </i>
+                              {historyRow.dataset?.datasetId ? (
+                                <b
+                                  style={{
+                                    cursor: "pointer",
+                                    textDecoration: "underline",
+                                  }}
+                                  onClick={() =>
+                                    handleDialogOpen(historyRow, true)
+                                  }
+                                >
+                                  {historyRow.dataset.datasetId}
                                 </b>
-                              </i>
+                              ) : (
+                                <img
+                                  src={Dash}
+                                  alt="Dash"
+                                  style={{ width: "18px", height: "18px" }}
+                                />
+                              )}
                             </Box>
                           </TableCell>
                           <TableCell
                             sx={{
                               width: "154px",
-                              cursor: clickable ? "pointer" : "default",
+                              cursor: afClickable ? "pointer" : "default",
                               fontWeight: "bold",
                               padding: "16px",
-                              textDecoration: clickable ? "underline" : "none",
+                              textDecoration: afClickable
+                                ? "underline"
+                                : "none",
                             }}
                             onClick={() => {
-                              if (clickable) {
+                              if (afClickable) {
                                 handleDialogOpen(historyRow);
                               }
                             }}
@@ -235,12 +232,7 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                               )}
                             </b>
                           </TableCell>
-                          <TableCell
-                            sx={{
-                              width: "154px",
-                              padding: "16px",
-                            }}
-                          >
+                          <TableCell sx={{ width: "154px", padding: "16px" }}>
                             <StatusButton
                               status={historyRow.dataset?.response || "N/A"}
                             />
@@ -262,6 +254,11 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
         beaconNetworkBeaconName={currentBeaconName}
         beaconNetworkDataset={currentDataset}
         alleleDataNetwork={alleleDataNetwork}
+      />
+      <DatasetDialog
+        open={datasetDialogOpen}
+        onClose={handleDialogClose}
+        currentDataset={currentDataset}
       />
     </>
   );
