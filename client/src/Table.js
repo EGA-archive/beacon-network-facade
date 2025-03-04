@@ -21,6 +21,7 @@ import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
+import DatasetDialog from "./DatasetDialog";
 
 export default function CollapsibleTable({
   data,
@@ -35,8 +36,20 @@ export default function CollapsibleTable({
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
+  const handleDatasetDialogOpen = (datasetId) => {
+    if (datasetId) {
+      setCurrentDataset(datasetId);
+      setDatasetDialogOpen(true);
+    }
+  };
+
+  const handleDatasetDialogClose = () => {
+    setDatasetDialogOpen(false);
+  };
 
   let individualAlleleData = [];
   if (individualBeacons.length > 0) {
@@ -275,6 +288,10 @@ export default function CollapsibleTable({
                             individualBeacon.beaconId === registry.beaconId
                         )
                         .map((individualBeacon) => {
+                          const datasetClickable =
+                            individualBeacon.id &&
+                            individualBeacon.id !== "N/A";
+
                           const afValue =
                             getFormattedAlleleFrequency(individualBeacon);
                           const clickable = afValue !== "N/A";
@@ -286,13 +303,41 @@ export default function CollapsibleTable({
                               <TableCell />
                               <TableCell colSpan={2}>
                                 <Box sx={{ marginLeft: "50px" }}>
-                                  <i>
-                                    Dataset:{" "}
-                                    <b>
-                                      {individualBeacon.id ||
-                                        individualBeacon.beaconId}
-                                    </b>
-                                  </i>
+                                  <i>Dataset: </i>
+                                  {/* <b>
+                                    {individualBeacon.id ||
+                                      individualBeacon.beaconId}
+                                  </b> */}
+                                  <b
+                                    onClick={() => {
+                                      if (datasetClickable) {
+                                        handleDatasetDialogOpen(
+                                          individualBeacon.id
+                                        );
+                                      }
+                                    }}
+                                    style={{
+                                      cursor: datasetClickable
+                                        ? "pointer"
+                                        : "default",
+                                      textDecoration: datasetClickable
+                                        ? "underline"
+                                        : "none",
+                                    }}
+                                  >
+                                    {datasetClickable ? (
+                                      individualBeacon.id
+                                    ) : (
+                                      <img
+                                        src={Dash}
+                                        alt="Dash"
+                                        style={{
+                                          width: "18px",
+                                          height: "18px",
+                                        }}
+                                      />
+                                    )}
+                                  </b>
                                 </Box>
                               </TableCell>
                               <TableCell
@@ -377,6 +422,11 @@ export default function CollapsibleTable({
         individualDataset={currentDataset}
         individualBeaconRegistryId={currentBeaconId}
         individualAlleleData={individualAlleleData}
+      />
+      <DatasetDialog
+        open={datasetDialogOpen}
+        onClose={handleDatasetDialogClose}
+        currentDataset={currentDataset}
       />
     </>
   );
