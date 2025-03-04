@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
 export default function DatasetDialog({ open, onClose, currentDataset }) {
   if (!currentDataset || currentDataset === "N/A") return null;
@@ -90,14 +91,25 @@ export default function DatasetDialog({ open, onClose, currentDataset }) {
       </DialogContent>
       <div style={{ padding: "20px", textAlign: "right" }}>
         <Button
-          variant="contained"
-          color="primary"
+          variant="outlined"
           //   onClick={onClose}
           sx={{
-            backgroundColor: "#023452",
-            ":hover": { backgroundColor: "#185177" },
+            backgroundColor: "white",
+            borderRadius: "100px",
+            borderColor: "#023452",
+            color: "#023452",
+            textTransform: "none",
+            fontFamily: "Open Sans, sans-serif",
+            fontWeight: "bold",
+            fontSize: "14px",
+            padding: "8px 16px",
+            display: "flex-end",
+            alignItems: "right",
+            gap: "8px",
+            ":hover": { borderColor: "#023452", backgroundColor: "#f0f4f8" },
           }}
         >
+          <MailOutlineIcon sx={{ color: "#023452", fontSize: "20px" }} />
           Contact
         </Button>
       </div>
