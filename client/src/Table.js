@@ -29,8 +29,8 @@ export default function CollapsibleTable({
   selectedFilters,
   setSelectedFilters,
 }) {
-  console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Data received:", data);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
@@ -97,9 +97,11 @@ export default function CollapsibleTable({
       return true;
     }
     if (selectedFilters.includes("Found") && beacon.exists) return true;
-    if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
+    if (selectedFilters.includes("Not Found") && !beacon.exists) return true;
     return false;
   });
+
+  console.log("filteredIndividualBeacons", filteredIndividualBeacons);
 
   const networkRows = registries
     .filter((registry) =>
@@ -168,6 +170,8 @@ export default function CollapsibleTable({
       }
       return true;
     });
+
+  console.log("Network Rows", networkRows);
 
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {

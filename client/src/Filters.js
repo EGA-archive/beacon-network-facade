@@ -77,15 +77,15 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
           exclusive
           onChange={(event, newValue) => {
             if (newValue !== null) {
-              console.log(
-                "Allele Frequency Toggle Changed. New value:",
-                newValue
-              );
+              // console.log(
+              //   "Allele Frequency Toggle Changed. New value:",
+              //   newValue
+              // );
               setSelectedFilters((prev) => {
                 const updated = prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue);
-                console.log("📌 Updated Allele Frequency Filter:", updated);
+                // console.log("📌 Updated Allele Frequency Filter:", updated);
                 return updated;
               });
             }
