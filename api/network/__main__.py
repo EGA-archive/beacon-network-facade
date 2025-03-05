@@ -52,6 +52,7 @@ async def registry(self, burl, is_v2):
             async with aiohttp.ClientSession(timeout=my_timeout) as session:
                 url = burl + '/info'
                 response_obj = await beacon_get_request(self, session, url, data)
+                response_obj["api"]=burl
                 #LOG.warning(json.dumps(response_obj))
                 return json.dumps(response_obj)
                 #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
@@ -106,13 +107,14 @@ async def returning(self, url):
 
 @log_with_args(level)
 async def get_resultSets_requesting(self, burl, query, is_v2):
+    default_v2_response = {}
     start_time = perf_counter()
     with ThreadPoolExecutor() as pool:
         data={}
         my_timeout = aiohttp.ClientTimeout(
         total=conf.timeout, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-        sock_connect=conf.timeout, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-        sock_read=conf.timeout # Maximal number of seconds for reading a portion of data from a peer
+        sock_connect=conf.timeout_connect, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+        sock_read=conf.timeout_read # Maximal number of seconds for reading a portion of data from a peer
     )
         async with aiohttp.ClientSession(timeout=my_timeout) as session:
             if is_v2 == True:
@@ -154,11 +156,11 @@ async def get_resultSets_requesting(self, burl, query, is_v2):
                     beaconquery=burl+'/beacons'
                     beacons_v1=await beacon_get_request(self,session,beaconquery,data)
                     #LOG.warning(beacons_v1)
-                    beacons_v1 = ["brca-exchange", "ucsc", "cogr-consensus", "cogr-sinai", "lovd", "hgmd"]
+                    #beacons_v1 = ["brca-exchange", "ucsc", "cogr-consensus", "cogr-sinai", "lovd", "hgmd"]
                     list_of_beacons_v1=[]
                     for beaconv1 in beacons_v1:
                         #LOG.warning(beaconv1)
-                        list_of_beacons_v1.append(beaconv1)
+                        list_of_beacons_v1.append(beaconv1["id"])
                     LOG.warning(list_of_beacons_v1)
                     default_v2_response={"meta": {"beaconId": "beacon.network.org"}, "responseSummary": {"exists": False}, "response": {"resultSets": []}}
                     loop=asyncio.get_running_loop()
@@ -208,11 +210,17 @@ async def get_resultSets_requesting(self, burl, query, is_v2):
                 except Exception as e:
                     LOG.warning('que siiii')
                     LOG.warning(e)
-                    response_obj = await registry(self, burl, False)
+                    
                     end_time = perf_counter()
                     final_time=end_time-start_time
+                    LOG.warning('whaaaaaaat')
                     LOG.warning("{} response took {} seconds".format(burl, final_time))
-                    return response_obj
+                    LOG.warning(default_v2_response)
+                    if default_v2_response != {}:
+                        return json.dumps(default_v2_response)
+                    else:
+                        response_obj = await registry(self, burl, False)
+                        return response_obj
                 #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
                 #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
@@ -372,18 +380,23 @@ async def manage_registries_response(self, tasks):
         finalinforesponse={}
         inforesponse = await task
         inforesponse = json.loads(inforesponse)
-        #LOG.warning(inforesponse)
+        LOG.warning(inforesponse)
         try:
             beaconInfoId=inforesponse["meta"]["beaconId"]
             beaconName=inforesponse["response"]["name"]
             beaconMaturity=inforesponse["response"]["environment"]
             beaconURL=inforesponse["response"]["alternativeUrl"]
             beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
+            try:
+                beaconAPI=inforesponse["api"]
+            except Exception:
+                beaconAPI="https://beacon-network.org/api"
             finalinforesponse["beaconId"]=beaconInfoId
             finalinforesponse["beaconName"]=beaconName
             finalinforesponse["beaconMaturity"]=beaconMaturity
             finalinforesponse["beaconURL"]=beaconURL
             finalinforesponse["beaconLogo"]=beaconLogo
+            finalinforesponse["beaconAPI"]=beaconAPI
             list_of_beacons.append(finalinforesponse)
             with open('/network/responses/registries.json') as registries_file:
                 dict_registries = json.load(registries_file)

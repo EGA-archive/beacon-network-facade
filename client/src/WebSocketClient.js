@@ -51,7 +51,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         ws.send(JSON.stringify("/registries"));
         setTimeout(() => {
           ws.send(JSON.stringify("/registries"));
-        }, 300);
+        }, 11100);
         hasRequestedRegistries.current = true;
       }
     };
@@ -86,7 +86,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         setSocket(null);
         connectWebSocket();
         reconnectRef.current = null;
-      }, 5000);
+      }, 325000);
     };
 
     return () => ws.close();
