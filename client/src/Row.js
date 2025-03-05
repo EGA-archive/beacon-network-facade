@@ -60,8 +60,6 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
       dev: "Dev-Beacon",
     };
 
-    // console.log("🔍 Checking historyRow:", historyRow);
-
     if (
       Object.values(maturityMapping).some((maturityFilter) =>
         selectedFilters.includes(maturityFilter)
@@ -85,10 +83,6 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
     }
     return false;
   });
-
-  // console.log("🎬", historyRow.dataset?.response);
-  // I want to check the historyRow.dataset?.response to check what
-  // it gives to then try to do the same thing in the Table
 
   return (
     <>

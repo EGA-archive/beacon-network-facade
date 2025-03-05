@@ -82,26 +82,125 @@ export default function CollapsibleTable({
   );
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
-  const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
-    const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-    if (uniqueIndividualBeacons.has(uniqueKey)) return false;
-    uniqueIndividualBeacons.add(uniqueKey);
-    if (!allowedBeaconIds.has(beacon.beaconId)) return false;
 
-    if (selectedFilters.includes("af-only")) {
-      const af = getFormattedAlleleFrequency(beacon);
-      return af !== "N/A";
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+
+  //   if (selectedFilters.includes("Found") && beacon.exists) return true;
+  //   if (selectedFilters.includes("Not Found") && !beacon.exists) return true;
+
+  //   if (selectedFilters.includes("af-only")) {
+  //     const af = getFormattedAlleleFrequency(beacon);
+  //     return af !== "N/A";
+  //   }
+
+  //   if (selectedFilters.includes("all")) {
+  //     return true;
+  //   }
+  //   return false;
+  // });
+
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+
+  //   if (selectedFilters.includes("af-only")) {
+  //     const af = getFormattedAlleleFrequency(beacon);
+  //     return af !== "N/A";
+  //   }
+
+  //   if (selectedFilters.includes("all")) {
+  //     return true;
+  //   }
+  //   if (selectedFilters.includes("Found") && beacon.exists === "true")
+  //     return true;
+  //   if (selectedFilters.includes("Not Found") && beacon.exists === "false")
+  //     return true;
+  //   return false;
+  // });
+  // console.log("filteredIndividualBeacons", filteredIndividualBeacons);
+
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   console.log("beacon.results", beacon);
+  //   // console.log("💁🏼 Checking Beacon:", beacon);
+  //   // console.log("📍 Exists:", beacon.exists);
+  //   // console.log("🔎 Selected Filters:", selectedFilters);
+
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) {
+  //     return false;
+  //   }
+  //   uniqueIndividualBeacons.add(uniqueKey);
+
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) {
+  //     return false;
+  //   }
+
+  //   if (selectedFilters.includes("Found") && beacon.exists) {
+  //     console.log("✅ Matched 'Found'");
+  //     return true;
+  //   }
+
+  //   if (selectedFilters.includes("Not-Found") && !beacon.exists) {
+  //     console.log("✅ Matched 'Not-Found'");
+  //     return true;
+  //   }
+
+  //   // if (selectedFilters.includes("af-only") && beacon.exists) {
+  //   //   const af = getFormattedAlleleFrequency(beacon);
+  //   //   console.log("🧬 Checking Allele Frequency:", af);
+  //   //   return af !== "N/A";
+  //   // }
+
+  //   // if (selectedFilters.includes("all")) {
+  //   //   console.log("✅ Matched 'all' filter");
+  //   //   return true;
+  //   // }
+
+  //   console.log(2222222, beacon);
+  //   return false;
+  // });
+
+  const foundFilteredBeacons = individualBeacons.filter((beacon) => {
+    const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+    if (uniqueIndividualBeacons.has(uniqueKey)) {
+      return false;
+    }
+    uniqueIndividualBeacons.add(uniqueKey);
+
+    if (!allowedBeaconIds.has(beacon.beaconId)) {
+      return false;
     }
 
-    if (selectedFilters.includes("all")) {
+    if (selectedFilters.includes("Found") && beacon.exists) {
+      console.log("✅ Matched 'Found'");
       return true;
     }
-    if (selectedFilters.includes("Found") && beacon.exists) return true;
-    if (selectedFilters.includes("Not Found") && !beacon.exists) return true;
-    return false;
+    if (selectedFilters.includes("Not-Found") && !beacon.exists) {
+      console.log("✅ Matched 'Not-Found'");
+      return true;
+    }
+    return (
+      !selectedFilters.includes("Found") &&
+      !selectedFilters.includes("Not-Found")
+    );
   });
 
-  console.log("filteredIndividualBeacons", filteredIndividualBeacons);
+  const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
+    if (selectedFilters.includes("af-only")) {
+      const af = getFormattedAlleleFrequency(beacon);
+      console.log("🧬 Checking Allele Frequency:", af);
+      return af !== "N/A";
+    }
+    return true;
+  });
+
+  console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
 
   const networkRows = registries
     .filter((registry) =>
@@ -170,8 +269,6 @@ export default function CollapsibleTable({
       }
       return true;
     });
-
-  console.log("Network Rows", networkRows);
 
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
