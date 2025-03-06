@@ -91,7 +91,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
-          console.log("✅ Updating Registries:", data.response.registries);
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
           // setLoading(false);
@@ -110,7 +109,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
-      console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
+      // console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
       setConnected(false);
       // reconnectRef.current = setTimeout(() => {
       //   console.log("🔄 Attempting WebSocket Reconnection...");
@@ -124,7 +123,10 @@ function WebSocketClient({ setRegistries, setSocket }) {
   };
   const handleSearch = (values) => {
     const { variant, genome } = values;
-    navigate(`/search/${variant}/${genome}`);
+
+    navigate(`/search/${variant}/${genome}`, {
+      state: { registriesLength: registries.length },
+    });
   };
 
   return (
@@ -229,6 +231,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         </Formik>
       </Container>
       <NetworkMembers registries={registries} />
+      {/* <SearchResults registriesLenght={registries.length} /> */}
     </>
   );
 }
