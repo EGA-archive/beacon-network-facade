@@ -1,14 +1,28 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
+import CircularProgress from "@mui/material/CircularProgress";
 
-function SearchResults({ registries = [], socket }) {
-  console.log("✅ Registries prop received:", registries);
+function SearchResults({
+  registries = [],
+  socket,
+  selectedFilters,
+  setSelectedFilters,
+}) {
+  // console.log("✅ Registries prop received:", registries);
   const { variant, genome } = useParams();
   const navigate = useNavigate();
   const reconnectRef = useRef(null);
+
+  const [stats, setStats] = useState({
+    beaconNetworkCount: 0,
+    totalBeaconCount: 0,
+    totalDatasetCount: 0,
+  });
+
+  const [loading, setLoading] = useState(false);
 
   return (
     <Container>
@@ -17,15 +31,27 @@ function SearchResults({ registries = [], socket }) {
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
-        style={{ marginTop: "60px" }}
       >
         <Grid item xs={12} sm={9} style={{ marginTop: "30px" }}>
           <p className="d-flex" style={{ marginTop: "36px" }}>
             <b>Results</b>{" "}
-            <span className="ms-4">Queried Variant: {variant}</span>
           </p>
         </Grid>
-
+        {loading && (
+          <Grid
+            item
+            xs={12}
+            sm={9}
+            style={{
+              textAlign: "center",
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <CircularProgress size={50} />
+          </Grid>
+        )}
         <Grid item xs={12} sm={2} className="d-flex justify-content-end">
           <button className="searchbutton" onClick={() => navigate("/")}>
             <div>
@@ -34,40 +60,41 @@ function SearchResults({ registries = [], socket }) {
           </button>
         </Grid>
       </Grid>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid item xs={12} sm={9}>
+          <p className="d-flex">
+            <span>
+              Queried Variant: <b>{genome} </b>
+              <b>|</b>
+              <b> {variant}</b>
+            </span>
+          </p>
+          <p className="d-flex">
+            <span>
+              Found Results: <b>{stats.beaconNetworkCount} Beacon Networks</b> /{" "}
+              <b>{stats.totalBeaconCount} Beacons</b> /
+              <b>{stats.totalDatasetCount} Datasets</b>
+            </span>
+          </p>
+        </Grid>
 
-      {/* Displaying Registries List */}
-      {/* <h3>Available Registries:</h3>
-      {registries.length > 0 ? (
-        <ul>
-          {registries.map((registry, index) => (
-            <li key={index}>
-              <b>Name:</b> {registry.beaconName} <br />
-              <b>ID:</b> {registry.beaconId}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Loading registries...</p>
-      )} */}
-
-      {/* Beacon Queries should only appear on this page */}
-      {registries.length > 0 ? (
-        registries.map((registry, index) => {
-          console.log(`🟡 Rendering BeaconQuery for: ${registry.beaconName}`);
-          return (
-            <BeaconQuery
-              key={index}
-              beaconId={registry.beaconId}
-              beaconName={registry.beaconName}
-              variant={variant} // Dynamic from URL
-              genome={genome} // Dynamic from URL
-              socket={socket} // Pass WebSocket connection
-            />
-          );
-        })
-      ) : (
-        <p>Loading registries...</p>
-      )}
+        <Grid item xs={12} sm={2} className="d-flex justify-content-end"></Grid>
+      </Grid>
+      <BeaconQuery
+        variant={variant}
+        genome={genome}
+        socket={socket}
+        registries={registries}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+        setStats={setStats}
+        setLoading={setLoading}
+      />
     </Container>
   );
 }

@@ -4,8 +4,6 @@ import { Container, Form } from "react-bootstrap";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import Grid from "@mui/material/Grid2";
-import CustomTheme from "./CustomTheme";
-import { ThemeProvider } from "@mui/material/styles";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
@@ -14,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
     .matches(
-      /[1-9XY]-\d+-[ACGT]+-[ACGT]+$/,
+      /^(?:[1-9]|1[0-9]|2[0-2]|X|Y)-\d+-[ACGT]+-[ACGT]+$/,
       "Incorrect variant format, check the example"
     )
     .required("Required"),
@@ -26,7 +24,7 @@ const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 function WebSocketClient({ setRegistries, setSocket }) {
   const [messages, setMessages] = useState([]);
   const [registries, setLocalRegistries] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
@@ -36,8 +34,35 @@ function WebSocketClient({ setRegistries, setSocket }) {
     connectWebSocket();
   }, []);
 
+  // const connectWebSocket = () => {
+  //   if (reconnectRef.current) return;
+
+  //   console.log("🔄 Initializing WebSocket...");
+  //   const ws = new WebSocket("ws://localhost:5700");
+
+  //   ws.onopen = () => {
+  //     console.log("✅ Connected to WebSocket");
+  //     setConnected(true);
+  //     setSocket(ws);
+
+  //     //   reconnectRef.current = setTimeout(() => {
+  //     //     setSocket(null);
+  //     //     connectWebSocket();
+  //     //     reconnectRef.current = null;
+  //     //   }, 9000);
+  //     // };
+
+  //     if (!hasRequestedRegistries.current) {
+  //       ws.send(JSON.stringify("/registries"));
+  //       setTimeout(() => {
+  //         ws.send(JSON.stringify("/registries"));
+  //       }, 300);
+  //       hasRequestedRegistries.current = true;
+  //     }
+  //   };
+
   const connectWebSocket = () => {
-    if (reconnectRef.current) return; // Prevent multiple connections
+    if (reconnectRef.current) return;
 
     console.log("🔄 Initializing WebSocket...");
     const ws = new WebSocket("ws://localhost:5700");
@@ -45,26 +70,32 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onopen = () => {
       console.log("✅ Connected to WebSocket");
       setConnected(true);
-      setSocket(ws); // ✅ Update socket in App.js
+      setSocket(ws);
 
       if (!hasRequestedRegistries.current) {
+        console.log("📤 Requesting /registries...");
         ws.send(JSON.stringify("/registries"));
+
         setTimeout(() => {
+          console.log(
+            "📤 Sending second /registries request to ensure response..."
+          );
           ws.send(JSON.stringify("/registries"));
-        }, 300);
+        }, 3000);
+
         hasRequestedRegistries.current = true;
       }
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message:", event.data);
-      setLoading(false);
+      // console.log("📩 WebSocket Received Message:", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
           console.log("✅ Updating Registries:", data.response.registries);
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
+          // setLoading(false);
         } else {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -80,25 +111,25 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
-      console.log("⚠️ WebSocket Disconnected - Reconnecting in 5 seconds...");
+      console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
       setConnected(false);
-      reconnectRef.current = setTimeout(() => {
-        setSocket(null); // Reset socket
-        connectWebSocket(); // Reconnect
-        reconnectRef.current = null;
-      }, 5000);
+      // reconnectRef.current = setTimeout(() => {
+      //   console.log("🔄 Attempting WebSocket Reconnection...");
+      //   setSocket(null);
+      //   connectWebSocket();
+      //   reconnectRef.current = null;
+      // }, 15000);
     };
 
     return () => ws.close();
   };
-
   const handleSearch = (values) => {
     const { variant, genome } = values;
     navigate(`/search/${variant}/${genome}`);
   };
 
   return (
-    <ThemeProvider theme={CustomTheme}>
+    <>
       <Container>
         <Formik
           initialValues={{ variant: "", genome: "GRCh37" }}
@@ -180,8 +211,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     </Grid>
                   </Grid>
                 </Form.Group>
-
-                {/* ✅ Example Input Section */}
                 <Grid container className="example-span">
                   <Grid xs={12} sm="auto">
                     <span>Example: </span>
@@ -201,7 +230,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
         </Formik>
       </Container>
       <NetworkMembers registries={registries} />
-    </ThemeProvider>
+    </>
   );
 }
 
