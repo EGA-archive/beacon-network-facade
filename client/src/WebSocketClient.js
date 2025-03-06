@@ -82,7 +82,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
           );
           ws.send(JSON.stringify("/registries"));
         }, 3000);
-
         hasRequestedRegistries.current = true;
       }
     };
