@@ -34,33 +34,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
     connectWebSocket();
   }, []);
 
-  // const connectWebSocket = () => {
-  //   if (reconnectRef.current) return;
-
-  //   console.log("🔄 Initializing WebSocket...");
-  //   const ws = new WebSocket("ws://localhost:5700");
-
-  //   ws.onopen = () => {
-  //     console.log("✅ Connected to WebSocket");
-  //     setConnected(true);
-  //     setSocket(ws);
-
-  //     //   reconnectRef.current = setTimeout(() => {
-  //     //     setSocket(null);
-  //     //     connectWebSocket();
-  //     //     reconnectRef.current = null;
-  //     //   }, 9000);
-  //     // };
-
-  //     if (!hasRequestedRegistries.current) {
-  //       ws.send(JSON.stringify("/registries"));
-  //       setTimeout(() => {
-  //         ws.send(JSON.stringify("/registries"));
-  //       }, 300);
-  //       hasRequestedRegistries.current = true;
-  //     }
-  //   };
-
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
 
@@ -93,7 +66,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
         if (data.response?.registries) {
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
-          // setLoading(false);
         } else {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -109,14 +81,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
-      // console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
       setConnected(false);
-      // reconnectRef.current = setTimeout(() => {
-      //   console.log("🔄 Attempting WebSocket Reconnection...");
-      //   setSocket(null);
-      //   connectWebSocket();
-      //   reconnectRef.current = null;
-      // }, 15000);
     };
 
     return () => ws.close();
@@ -231,7 +196,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
         </Formik>
       </Container>
       <NetworkMembers registries={registries} />
-      {/* <SearchResults registriesLenght={registries.length} /> */}
     </>
   );
 }
