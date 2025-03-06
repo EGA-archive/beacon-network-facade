@@ -514,7 +514,7 @@ body {
   color: #61dafb;
 }
 
-.loader {
+/* .loader {
   transform: rotateZ(45deg);
   perspective: 1000px;
   border-radius: 55%;
@@ -542,7 +542,7 @@ body {
   color: #70154c;
   transform: rotateY(70deg);
   animation-delay: 0.4s;
-}
+} */
 @keyframes rotate {
   0% {
     transform: translate(-50%, -50%) rotateZ(0deg);

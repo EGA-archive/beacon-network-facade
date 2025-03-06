@@ -6,7 +6,7 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
   const handleToggle = (event, newFilters) => {
     if (newFilters && newFilters.length > 0) {
       setSelectedFilters(newFilters);
-      console.log("📌 Updated Filters (Response/Maturity):", newFilters);
+      // console.log("📌 Updated Filters (Response/Maturity):", newFilters);
     }
   };
 
@@ -85,7 +85,7 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
                 const updated = prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue);
-                console.log("📌 Updated Allele Frequency Filter:", updated);
+                // console.log("📌 Updated Allele Frequency Filter:", updated);
                 return updated;
               });
             }

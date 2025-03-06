@@ -1,61 +1,3 @@
-// export function getFormattedAlleleFrequency(data) {
-//   // console.log("getFormattedAlleleFrequency called with data:", data);
-//   if (data.datasetId) {
-//     return typeof data.alleleFrequency === "number"
-//       ? data.alleleFrequency.toFixed(5)
-//       : "N/A";
-//   }
-
-//   if (!data?.results) return "N/A";
-
-//   let frequencies = [];
-//   data.results.forEach((result) =>
-//     result.frequencyInPopulations?.forEach((pop) =>
-//       pop.frequencies?.forEach((freq) => {
-//         if (typeof freq.alleleFrequency === "number") {
-//           frequencies.push(freq.alleleFrequency);
-//         }
-//       })
-//     )
-//   );
-
-//   if (frequencies.length === 0) return "N/A";
-
-//   frequencies.sort((a, b) => a - b);
-
-//   if (frequencies.length === 1) {
-//     return frequencies[0].toFixed(5);
-//   } else if (frequencies.length === 2) {
-//     return `${frequencies[0].toFixed(5)}; ${frequencies[1].toFixed(5)}`;
-//   } else {
-//     return `${frequencies[0].toFixed(5)} - ${frequencies[
-//       frequencies.length - 1
-//     ].toFixed(5)}`;
-//   }
-// }
-
-// export function getAlleleData(data) {
-//   console.log("getAlleleData called with datadddd:", data);
-//   if (!data?.results) return [];
-
-//   let alleleData = [];
-//   data.results.forEach((result) =>
-//     result.frequencyInPopulations?.forEach((population) =>
-//       population.frequencies?.forEach((freq) => {
-//         if (typeof freq.alleleFrequency === "number") {
-//           alleleData.push({
-//             population: freq.population,
-//             alleleFrequency: freq.alleleFrequency,
-//           });
-//         }
-//       })
-//     )
-//   );
-//   console.log("Results!", data?.results);
-//   console.log("👩🏻‍💻 Allele Data", alleleData);
-//   return alleleData;
-// }
-
 export function getFormattedAlleleFrequency(data) {
   if (data.datasetId) {
     return typeof data.alleleFrequency === "number"
@@ -75,13 +17,14 @@ export function getFormattedAlleleFrequency(data) {
           alleleData.push({
             population: freq.population,
             alleleFrequency: freq.alleleFrequency,
+            id: data.id,
+            beaconId: data.beaconId,
           });
         }
       })
     )
   );
-  console.log("getFormattedAlleleFrequency called with data:", data.results);
-  console.log("Allele Data:", alleleData);
+  // console.log("alleleData", alleleData);
 
   if (frequencies.length === 0) return "N/A";
 
@@ -98,6 +41,36 @@ export function getFormattedAlleleFrequency(data) {
   }
 }
 
+export function getAlleleData(data) {
+  if (data.datasetId) {
+    return typeof data.alleleFrequency === "number"
+      ? data.alleleFrequency.toFixed(5)
+      : "N/A";
+  }
+
+  if (!data?.results) return "N/A";
+
+  let frequencies = [];
+  let alleleData = [];
+  data.results.forEach((result) =>
+    result.frequencyInPopulations?.forEach((population) =>
+      population.frequencies?.forEach((freq) => {
+        if (typeof freq.alleleFrequency === "number") {
+          frequencies.push(freq.alleleFrequency);
+          alleleData.push({
+            population: freq.population,
+            alleleFrequency: freq.alleleFrequency,
+            id: data.id,
+            beaconId: data.beaconId,
+          });
+        }
+      })
+    )
+  );
+  // console.log("New alleleData", alleleData);
+  return alleleData;
+}
+
 export function separateBeacons(data) {
   const individualBeacons = [];
   const networkBeacons = [];
@@ -111,6 +84,23 @@ export function separateBeacons(data) {
       });
     }
   });
-
   return { individualBeacons, networkBeacons };
 }
+
+// const testData = {
+//   id: "test1",
+//   beaconId: "beacon1",
+//   results: [
+//     {
+//       frequencyInPopulations: [
+//         {
+//           frequencies: [
+//             { alleleFrequency: 0.12345, population: "TestPopulation" },
+//           ],
+//         },
+//       ],
+//     },
+//   ],
+// };
+
+// console.log("Test getAlleleData:", getAlleleData(testData));

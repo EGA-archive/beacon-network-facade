@@ -10,15 +10,28 @@ function BeaconQuery({
   registries,
   selectedFilters,
   setSelectedFilters,
+  setStats,
+  setLoading,
 }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [aggregatedData, setAggregatedData] = useState([]);
+  const [stats, updateStats] = useState({
+    beaconNetworkCount: 0,
+    totalBeaconCount: 0,
+    totalDatasetCount: 0,
+  });
 
   useEffect(() => {
-    console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
-    console.log(`🔎 Variant: ${variant}, Genome: ${genome}`);
-    console.log(`📡 Socket:`, socket);
+    if (stats && setStats) {
+      setStats(stats);
+    }
+  }, [stats, setStats]);
+
+  useEffect(() => {
+    // console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
+    // console.log(`🔎 Variant: ${variant}, Genome: ${genome}`);
+    // console.log(`📡 Socket:`, socket);
 
     if (
       //!beaconId ||
@@ -27,19 +40,22 @@ function BeaconQuery({
       !socket
     )
       return;
+    setLoading(true);
     const arr = variant.split("-");
     if (arr.length !== 4) {
       setError("Invalid variant format");
+      setLoading(false);
       return;
     }
 
     const query = `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`;
-    console.log(`📤 Sending Query to WebSocket:`, query);
+    // console.log(`📤 Sending Query to WebSocket:`, query);
 
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(query));
     } else {
       setError("WebSocket not connected");
+      setLoading(false);
     }
 
     const handleMessage = (event) => {
@@ -57,9 +73,13 @@ function BeaconQuery({
           );
           return isDuplicate ? prevData : [...prevData, response];
         });
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
       } catch (err) {
         console.error(`❌ Error parsing WebSocket message:`, err);
         setError("Invalid WebSocket response");
+        setLoading(false);
       }
     };
 
@@ -82,10 +102,9 @@ function BeaconQuery({
           registries={registries}
           selectedFilters={selectedFilters}
           setSelectedFilters={setSelectedFilters}
+          setStats={updateStats}
         />
-      ) : (
-        <p>Waiting for response...</p>
-      )}
+      ) : null}
     </div>
   );
 }

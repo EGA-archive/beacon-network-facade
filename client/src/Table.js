@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -15,29 +15,60 @@ import Row from "./Row";
 import {
   separateBeacons,
   getFormattedAlleleFrequency,
-  alleleData,
+  getAlleleData,
 } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
 import { StatusButton, MaturityButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
+import DatasetDialog from "./DatasetDialog";
 
 export default function CollapsibleTable({
   data,
   registries,
   selectedFilters,
   setSelectedFilters,
+  setStats,
 }) {
-  console.log("📊 Data received:", data);
-  // console.log("Allele Data from Table", alleleData);
-
-  // console.log("🔍 Selected Filters in CollapsibleTable:", selectedFilters);
+  // console.log("📊 Data received:", data);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
+  const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
+  const handleDatasetDialogOpen = (datasetId) => {
+    if (datasetId) {
+      setCurrentDataset(datasetId);
+      setDatasetDialogOpen(true);
+    }
+  };
+
+  const handleDatasetDialogClose = () => {
+    setDatasetDialogOpen(false);
+  };
+
+  let individualAlleleData = [];
+  if (individualBeacons.length > 0) {
+    const alleleData = [].concat(
+      ...individualBeacons.map((beacon) => getAlleleData(beacon))
+    );
+    individualAlleleData = alleleData.filter(
+      (item, index, self) =>
+        index ===
+        self.findIndex(
+          (t) =>
+            t.population === item.population &&
+            t.alleleFrequency === item.alleleFrequency &&
+            t.id === item.id &&
+            t.beaconId === item.beaconId
+        )
+    );
+  }
 
   const maturityMapping = {
     prod: "Prod-Beacon",
@@ -52,24 +83,125 @@ export default function CollapsibleTable({
   );
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
-  const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
-    const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-    if (uniqueIndividualBeacons.has(uniqueKey)) return false;
-    uniqueIndividualBeacons.add(uniqueKey);
-    if (!allowedBeaconIds.has(beacon.beaconId)) return false;
 
-    if (selectedFilters.includes("af-only")) {
-      const af = getFormattedAlleleFrequency(beacon);
-      return af !== "N/A";
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+
+  //   if (selectedFilters.includes("Found") && beacon.exists) return true;
+  //   if (selectedFilters.includes("Not Found") && !beacon.exists) return true;
+
+  //   if (selectedFilters.includes("af-only")) {
+  //     const af = getFormattedAlleleFrequency(beacon);
+  //     return af !== "N/A";
+  //   }
+
+  //   if (selectedFilters.includes("all")) {
+  //     return true;
+  //   }
+  //   return false;
+  // });
+
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
+  //   uniqueIndividualBeacons.add(uniqueKey);
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
+
+  //   if (selectedFilters.includes("af-only")) {
+  //     const af = getFormattedAlleleFrequency(beacon);
+  //     return af !== "N/A";
+  //   }
+
+  //   if (selectedFilters.includes("all")) {
+  //     return true;
+  //   }
+  //   if (selectedFilters.includes("Found") && beacon.exists === "true")
+  //     return true;
+  //   if (selectedFilters.includes("Not Found") && beacon.exists === "false")
+  //     return true;
+  //   return false;
+  // });
+  // console.log("filteredIndividualBeacons", filteredIndividualBeacons);
+
+  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
+  //   console.log("beacon.results", beacon);
+  //   // console.log("💁🏼 Checking Beacon:", beacon);
+  //   // console.log("📍 Exists:", beacon.exists);
+  //   // console.log("🔎 Selected Filters:", selectedFilters);
+
+  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+  //   if (uniqueIndividualBeacons.has(uniqueKey)) {
+  //     return false;
+  //   }
+  //   uniqueIndividualBeacons.add(uniqueKey);
+
+  //   if (!allowedBeaconIds.has(beacon.beaconId)) {
+  //     return false;
+  //   }
+
+  //   if (selectedFilters.includes("Found") && beacon.exists) {
+  //     console.log("✅ Matched 'Found'");
+  //     return true;
+  //   }
+
+  //   if (selectedFilters.includes("Not-Found") && !beacon.exists) {
+  //     console.log("✅ Matched 'Not-Found'");
+  //     return true;
+  //   }
+
+  //   // if (selectedFilters.includes("af-only") && beacon.exists) {
+  //   //   const af = getFormattedAlleleFrequency(beacon);
+  //   //   console.log("🧬 Checking Allele Frequency:", af);
+  //   //   return af !== "N/A";
+  //   // }
+
+  //   // if (selectedFilters.includes("all")) {
+  //   //   console.log("✅ Matched 'all' filter");
+  //   //   return true;
+  //   // }
+
+  //   console.log(2222222, beacon);
+  //   return false;
+  // });
+
+  const foundFilteredBeacons = individualBeacons.filter((beacon) => {
+    const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
+    if (uniqueIndividualBeacons.has(uniqueKey)) {
+      return false;
+    }
+    uniqueIndividualBeacons.add(uniqueKey);
+
+    if (!allowedBeaconIds.has(beacon.beaconId)) {
+      return false;
     }
 
-    if (selectedFilters.includes("all")) {
+    if (selectedFilters.includes("Found") && beacon.exists) {
+      // console.log("✅ Matched 'Found'");
       return true;
     }
-    if (selectedFilters.includes("Found") && beacon.exists) return true;
-    if (selectedFilters.includes("Not-Found") && !beacon.exists) return true;
-    return false;
+    if (selectedFilters.includes("Not-Found") && !beacon.exists) {
+      // console.log("✅ Matched 'Not-Found'");
+      return true;
+    }
+    return (
+      !selectedFilters.includes("Found") &&
+      !selectedFilters.includes("Not-Found")
+    );
   });
+
+  const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
+    if (selectedFilters.includes("af-only")) {
+      const af = getFormattedAlleleFrequency(beacon);
+      // console.log("🧬 Checking Allele Frequency:", af);
+      return af !== "N/A";
+    }
+    return true;
+  });
+
+  // console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
 
   const networkRows = registries
     .filter((registry) =>
@@ -142,6 +274,7 @@ export default function CollapsibleTable({
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
       setCurrentBeaconName(registry.beaconName);
+      setCurrentBeaconId(registry.beaconId);
       setCurrentDataset(individualBeacon.id);
       setDialogOpen(true);
     }
@@ -150,6 +283,43 @@ export default function CollapsibleTable({
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
+
+  const beaconNetworkCount = networkRows.length;
+  const uniqueIndividualBeaconIds = new Set(
+    filteredIndividualBeacons.map((beacon) => beacon.beaconId)
+  );
+  const individualBeaconCount = uniqueIndividualBeaconIds.size;
+  const uniqueNetworkBeaconIds = new Set(
+    networkRows.flatMap((network) =>
+      network.history.map((historyRow) => historyRow.beaconId)
+    )
+  );
+  const networkBeaconCount = uniqueNetworkBeaconIds.size;
+  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
+  const individualDatasetCount = new Set(
+    filteredIndividualBeacons
+      .filter((beacon) => beacon.id)
+      .map((beacon) => beacon.id)
+  ).size;
+  const networkDatasetCount = new Set(
+    networkRows.flatMap((network) =>
+      network.history
+        .filter((historyRow) => historyRow.dataset?.datasetId)
+        .map((historyRow) => historyRow.dataset.datasetId)
+    )
+  ).size;
+
+  const totalDatasetCount = individualDatasetCount + networkDatasetCount;
+
+  // console.log("beaconNetworkCount", beaconNetworkCount);
+  // console.log("totalBeaconCount", totalBeaconCount);
+  // console.log("totalDatasetCount", totalDatasetCount);
+
+  useEffect(() => {
+    if (setStats) {
+      setStats({ beaconNetworkCount, totalBeaconCount, totalDatasetCount });
+    }
+  }, [setStats, beaconNetworkCount, totalBeaconCount, totalDatasetCount]);
 
   return (
     <>
@@ -184,7 +354,6 @@ export default function CollapsibleTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* {filteredIndividualBeacons.length > 0 && ( */}
             <>
               <TableRow>
                 <TableCell
@@ -257,89 +426,112 @@ export default function CollapsibleTable({
                           (individualBeacon) =>
                             individualBeacon.beaconId === registry.beaconId
                         )
-                        .map((individualBeacon) => (
-                          <TableRow
-                            key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
-                          >
-                            <TableCell />
-                            <TableCell />
-                            <TableCell colSpan={2}>
-                              <Box sx={{ marginLeft: "50px" }}>
-                                <i>
-                                  Dataset:{" "}
-                                  <b>
+                        .map((individualBeacon) => {
+                          const datasetClickable =
+                            individualBeacon.id &&
+                            individualBeacon.id !== "N/A";
+
+                          const afValue =
+                            getFormattedAlleleFrequency(individualBeacon);
+                          const clickable = afValue !== "N/A";
+                          return (
+                            <TableRow
+                              key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+                            >
+                              <TableCell />
+                              <TableCell />
+                              <TableCell colSpan={2}>
+                                <Box sx={{ marginLeft: "50px" }}>
+                                  <i>Dataset: </i>
+                                  {/* <b>
                                     {individualBeacon.id ||
                                       individualBeacon.beaconId}
+                                  </b> */}
+                                  <b
+                                    onClick={() => {
+                                      if (datasetClickable) {
+                                        handleDatasetDialogOpen(
+                                          individualBeacon.id
+                                        );
+                                      }
+                                    }}
+                                    style={{
+                                      cursor: datasetClickable
+                                        ? "pointer"
+                                        : "default",
+                                      textDecoration: datasetClickable
+                                        ? "underline"
+                                        : "none",
+                                    }}
+                                  >
+                                    {datasetClickable ? (
+                                      individualBeacon.id
+                                    ) : (
+                                      <img
+                                        src={Dash}
+                                        alt="Dash"
+                                        style={{
+                                          width: "18px",
+                                          height: "18px",
+                                        }}
+                                      />
+                                    )}
                                   </b>
-                                </i>
-                              </Box>
-                            </TableCell>
-                            {/* <TableCell>
-                            <b>
-                              {individualBeacon.results?.some((result) =>
-                                result.frequencyInPopulations?.some((pop) =>
-                                  pop.frequencies?.some(
-                                    (f) => f.alleleFrequency !== undefined
-                                  )
-                                )
-                              ) ? (
-                                getFormattedAlleleFrequency(individualBeacon)
-                              ) : (
-                                <img
-                                  src={Dash}
-                                  alt="Dash"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
-                              )}
-                            </b>
-                          </TableCell> */}
-                            <TableCell
-                              style={{ fontWeight: "bold", cursor: "pointer" }}
-                              onClick={() => {
-                                const af =
-                                  getFormattedAlleleFrequency(individualBeacon);
-                                if (af.includes(";") || af.includes(" - ")) {
-                                  handleDialogOpen(registry, individualBeacon);
-                                }
-                              }}
-                            >
-                              <b>
-                                {individualBeacon.results?.some((result) =>
-                                  result.frequencyInPopulations?.some((pop) =>
-                                    pop.frequencies?.some(
-                                      (f) => f.alleleFrequency !== undefined
+                                </Box>
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  width: "154px",
+                                  cursor: clickable ? "pointer" : "default",
+                                  fontWeight: "bold",
+                                  padding: "16px",
+                                  textDecoration: clickable
+                                    ? "underline"
+                                    : "none",
+                                }}
+                                onClick={() => {
+                                  if (clickable) {
+                                    handleDialogOpen(
+                                      registry,
+                                      individualBeacon
+                                    );
+                                  }
+                                }}
+                              >
+                                <b>
+                                  {individualBeacon.results?.some((result) =>
+                                    result.frequencyInPopulations?.some((pop) =>
+                                      pop.frequencies?.some(
+                                        (f) => f.alleleFrequency !== undefined
+                                      )
                                     )
-                                  )
-                                ) ? (
-                                  getFormattedAlleleFrequency(individualBeacon)
-                                ) : (
-                                  <img
-                                    src={Dash}
-                                    alt="Dash"
-                                    style={{ width: "18px", height: "18px" }}
-                                  />
-                                )}
-                              </b>
-                            </TableCell>
-
-                            <TableCell>
-                              <StatusButton
-                                status={
-                                  individualBeacon.exists
-                                    ? "Found"
-                                    : "Not Found"
-                                }
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                  ) ? (
+                                    afValue
+                                  ) : (
+                                    <img
+                                      src={Dash}
+                                      alt="Dash"
+                                      style={{ width: "18px", height: "18px" }}
+                                    />
+                                  )}
+                                </b>
+                              </TableCell>
+                              <TableCell>
+                                <StatusButton
+                                  status={
+                                    individualBeacon.exists
+                                      ? "Found"
+                                      : "Not Found"
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                     </React.Fragment>
                   );
                 })}
             </>
-            {/* )} */}
-            {/* {networkBeacons.length > 0 && ( */}
-            {/* {networkRows.length > 0 && ( */}
             <>
               <TableRow>
                 <TableCell
@@ -359,7 +551,6 @@ export default function CollapsibleTable({
                 />
               ))}
             </>
-            {/* )} */}
           </TableBody>
         </Table>
       </TableContainer>
@@ -368,6 +559,13 @@ export default function CollapsibleTable({
         onClose={handleDialogClose}
         individualBeaconName={currentBeaconName}
         individualDataset={currentDataset}
+        individualBeaconRegistryId={currentBeaconId}
+        individualAlleleData={individualAlleleData}
+      />
+      <DatasetDialog
+        open={datasetDialogOpen}
+        onClose={handleDatasetDialogClose}
+        currentDataset={currentDataset}
       />
     </>
   );
