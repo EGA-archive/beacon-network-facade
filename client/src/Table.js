@@ -30,7 +30,7 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  console.log("📊 Data received:", data);
+  // console.log("📊 Data received:", data);
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -179,11 +179,11 @@ export default function CollapsibleTable({
     }
 
     if (selectedFilters.includes("Found") && beacon.exists) {
-      console.log("✅ Matched 'Found'");
+      // console.log("✅ Matched 'Found'");
       return true;
     }
     if (selectedFilters.includes("Not-Found") && !beacon.exists) {
-      console.log("✅ Matched 'Not-Found'");
+      // console.log("✅ Matched 'Not-Found'");
       return true;
     }
     return (
@@ -195,13 +195,13 @@ export default function CollapsibleTable({
   const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
     if (selectedFilters.includes("af-only")) {
       const af = getFormattedAlleleFrequency(beacon);
-      console.log("🧬 Checking Allele Frequency:", af);
+      // console.log("🧬 Checking Allele Frequency:", af);
       return af !== "N/A";
     }
     return true;
   });
 
-  console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
+  // console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
 
   const networkRows = registries
     .filter((registry) =>
@@ -311,9 +311,9 @@ export default function CollapsibleTable({
 
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
 
-  console.log("beaconNetworkCount", beaconNetworkCount);
-  console.log("totalBeaconCount", totalBeaconCount);
-  console.log("totalDatasetCount", totalDatasetCount);
+  // console.log("beaconNetworkCount", beaconNetworkCount);
+  // console.log("totalBeaconCount", totalBeaconCount);
+  // console.log("totalDatasetCount", totalDatasetCount);
 
   useEffect(() => {
     if (setStats) {

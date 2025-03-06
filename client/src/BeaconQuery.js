@@ -11,6 +11,7 @@ function BeaconQuery({
   selectedFilters,
   setSelectedFilters,
   setStats,
+  setLoading,
 }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -39,9 +40,11 @@ function BeaconQuery({
       !socket
     )
       return;
+    setLoading(true);
     const arr = variant.split("-");
     if (arr.length !== 4) {
       setError("Invalid variant format");
+      setLoading(false);
       return;
     }
 
@@ -52,6 +55,7 @@ function BeaconQuery({
       socket.send(JSON.stringify(query));
     } else {
       setError("WebSocket not connected");
+      setLoading(false);
     }
 
     const handleMessage = (event) => {
@@ -69,9 +73,13 @@ function BeaconQuery({
           );
           return isDuplicate ? prevData : [...prevData, response];
         });
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
       } catch (err) {
         console.error(`❌ Error parsing WebSocket message:`, err);
         setError("Invalid WebSocket response");
+        setLoading(false);
       }
     };
 
@@ -96,9 +104,7 @@ function BeaconQuery({
           setSelectedFilters={setSelectedFilters}
           setStats={updateStats}
         />
-      ) : (
-        <p>Waiting for response...</p>
-      )}
+      ) : null}
     </div>
   );
 }

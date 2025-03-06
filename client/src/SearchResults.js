@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function SearchResults({
   registries = [],
@@ -21,6 +22,8 @@ function SearchResults({
     totalDatasetCount: 0,
   });
 
+  const [loading, setLoading] = useState(false);
+
   return (
     <Container>
       <Grid
@@ -34,6 +37,21 @@ function SearchResults({
             <b>Results</b>{" "}
           </p>
         </Grid>
+        {loading && (
+          <Grid
+            item
+            xs={12}
+            sm={9}
+            style={{
+              textAlign: "center",
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <CircularProgress size={50} />
+          </Grid>
+        )}
         <Grid item xs={12} sm={2} className="d-flex justify-content-end">
           <button className="searchbutton" onClick={() => navigate("/")}>
             <div>
@@ -75,6 +93,7 @@ function SearchResults({
         selectedFilters={selectedFilters}
         setSelectedFilters={setSelectedFilters}
         setStats={setStats}
+        setLoading={setLoading}
       />
     </Container>
   );
