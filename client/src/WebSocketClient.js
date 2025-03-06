@@ -24,7 +24,7 @@ const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 function WebSocketClient({ setRegistries, setSocket }) {
   const [messages, setMessages] = useState([]);
   const [registries, setLocalRegistries] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
@@ -33,6 +33,33 @@ function WebSocketClient({ setRegistries, setSocket }) {
   useEffect(() => {
     connectWebSocket();
   }, []);
+
+  // const connectWebSocket = () => {
+  //   if (reconnectRef.current) return;
+
+  //   console.log("🔄 Initializing WebSocket...");
+  //   const ws = new WebSocket("ws://localhost:5700");
+
+  //   ws.onopen = () => {
+  //     console.log("✅ Connected to WebSocket");
+  //     setConnected(true);
+  //     setSocket(ws);
+
+  //     //   reconnectRef.current = setTimeout(() => {
+  //     //     setSocket(null);
+  //     //     connectWebSocket();
+  //     //     reconnectRef.current = null;
+  //     //   }, 9000);
+  //     // };
+
+  //     if (!hasRequestedRegistries.current) {
+  //       ws.send(JSON.stringify("/registries"));
+  //       setTimeout(() => {
+  //         ws.send(JSON.stringify("/registries"));
+  //       }, 300);
+  //       hasRequestedRegistries.current = true;
+  //     }
+  //   };
 
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
@@ -45,31 +72,30 @@ function WebSocketClient({ setRegistries, setSocket }) {
       setConnected(true);
       setSocket(ws);
 
-      //   reconnectRef.current = setTimeout(() => {
-      //     setSocket(null);
-      //     connectWebSocket();
-      //     reconnectRef.current = null;
-      //   }, 9000);
-      // };
-
       if (!hasRequestedRegistries.current) {
+        console.log("📤 Requesting /registries...");
         ws.send(JSON.stringify("/registries"));
+
         setTimeout(() => {
+          console.log(
+            "📤 Sending second /registries request to ensure response..."
+          );
           ws.send(JSON.stringify("/registries"));
-        }, 300);
+        }, 3000);
+
         hasRequestedRegistries.current = true;
       }
     };
 
     ws.onmessage = (event) => {
       // console.log("📩 WebSocket Received Message:", event.data);
-      setLoading(false);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
           console.log("✅ Updating Registries:", data.response.registries);
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
+          // setLoading(false);
         } else {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -85,18 +111,18 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
-      console.log("⚠️ WebSocket Disconnected - Reconnecting in 5 seconds...");
+      console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
       setConnected(false);
-      reconnectRef.current = setTimeout(() => {
-        setSocket(null);
-        connectWebSocket();
-        reconnectRef.current = null;
-      }, 5000);
+      // reconnectRef.current = setTimeout(() => {
+      //   console.log("🔄 Attempting WebSocket Reconnection...");
+      //   setSocket(null);
+      //   connectWebSocket();
+      //   reconnectRef.current = null;
+      // }, 15000);
     };
 
     return () => ws.close();
   };
-
   const handleSearch = (values) => {
     const { variant, genome } = values;
     navigate(`/search/${variant}/${genome}`);
@@ -185,8 +211,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     </Grid>
                   </Grid>
                 </Form.Group>
-
-                {/* ✅ Example Input Section */}
                 <Grid container className="example-span">
                   <Grid xs={12} sm="auto">
                     <span>Example: </span>
