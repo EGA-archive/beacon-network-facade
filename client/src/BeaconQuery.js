@@ -10,10 +10,22 @@ function BeaconQuery({
   registries,
   selectedFilters,
   setSelectedFilters,
+  setStats,
 }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [aggregatedData, setAggregatedData] = useState([]);
+  const [stats, updateStats] = useState({
+    beaconNetworkCount: 0,
+    totalBeaconCount: 0,
+    totalDatasetCount: 0,
+  });
+
+  useEffect(() => {
+    if (stats && setStats) {
+      setStats(stats);
+    }
+  }, [stats, setStats]);
 
   useEffect(() => {
     // console.log(`🚀 BeaconQuery Mounted for ${beaconName}`);
@@ -82,6 +94,7 @@ function BeaconQuery({
           registries={registries}
           selectedFilters={selectedFilters}
           setSelectedFilters={setSelectedFilters}
+          setStats={updateStats}
         />
       ) : (
         <p>Waiting for response...</p>

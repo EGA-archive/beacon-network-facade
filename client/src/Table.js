@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -28,8 +28,9 @@ export default function CollapsibleTable({
   registries,
   selectedFilters,
   setSelectedFilters,
+  setStats,
 }) {
-  // console.log("📊 Data received:", data);
+  console.log("📊 Data received:", data);
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -282,6 +283,43 @@ export default function CollapsibleTable({
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
+
+  const beaconNetworkCount = networkRows.length;
+  const uniqueIndividualBeaconIds = new Set(
+    filteredIndividualBeacons.map((beacon) => beacon.beaconId)
+  );
+  const individualBeaconCount = uniqueIndividualBeaconIds.size;
+  const uniqueNetworkBeaconIds = new Set(
+    networkRows.flatMap((network) =>
+      network.history.map((historyRow) => historyRow.beaconId)
+    )
+  );
+  const networkBeaconCount = uniqueNetworkBeaconIds.size;
+  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
+  const individualDatasetCount = new Set(
+    filteredIndividualBeacons
+      .filter((beacon) => beacon.id)
+      .map((beacon) => beacon.id)
+  ).size;
+  const networkDatasetCount = new Set(
+    networkRows.flatMap((network) =>
+      network.history
+        .filter((historyRow) => historyRow.dataset?.datasetId)
+        .map((historyRow) => historyRow.dataset.datasetId)
+    )
+  ).size;
+
+  const totalDatasetCount = individualDatasetCount + networkDatasetCount;
+
+  console.log("beaconNetworkCount", beaconNetworkCount);
+  console.log("totalBeaconCount", totalBeaconCount);
+  console.log("totalDatasetCount", totalDatasetCount);
+
+  useEffect(() => {
+    if (setStats) {
+      setStats({ beaconNetworkCount, totalBeaconCount, totalDatasetCount });
+    }
+  }, [setStats, beaconNetworkCount, totalBeaconCount, totalDatasetCount]);
 
   return (
     <>
