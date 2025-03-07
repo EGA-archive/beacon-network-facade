@@ -50,7 +50,7 @@ function SearchResults({
               justifyContent: "center",
             }}
           >
-            <CircularProgress size={50} />
+            <CircularProgress size={40} />
           </Grid>
         )}
 

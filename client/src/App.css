@@ -485,8 +485,13 @@ body {
 }
 
 .title-row {
-  background-color: #dbeefd;
-  border-top: 1px solid #3276b1;
+  background-color: #023452;
+  border-top: 1px solid #3176b1;
+}
+
+.title-row th,
+.title-row td {
+  color: white !important;
 }
 
 .span-beaconId {

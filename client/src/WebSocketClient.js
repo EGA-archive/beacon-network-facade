@@ -54,7 +54,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
             "📤 Sending second /registries request to ensure response..."
           );
           ws.send(JSON.stringify("/registries"));
-        }, 3000);
+        }, 1000);
         hasRequestedRegistries.current = true;
       }
     };
