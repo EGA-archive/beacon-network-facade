@@ -10,7 +10,11 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import { StatusButton, MaturityButton } from "./ButtonComponents";
+import {
+  StatusButton,
+  MaturityButton,
+  BeaconTypeButton,
+} from "./ButtonComponents";
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
@@ -145,12 +149,8 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                     return (
                       <React.Fragment key={index}>
                         <TableRow>
-                          <TableCell
-                            sx={{ width: "160px !important", padding: "16px" }}
-                          />
-                          <TableCell
-                            sx={{ width: "154px !important", padding: "16px" }}
-                          >
+                          <TableCell sx={{ width: "160px !important" }} />
+                          <TableCell sx={{ width: "154px !important" }}>
                             {historyRow.maturity && (
                               <MaturityButton maturity={historyRow.maturity} />
                             )}
@@ -158,26 +158,21 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                           <TableCell
                             sx={{
                               width: "340px",
-                              padding: "16px",
+
                               backgroundColor: "transparent",
                             }}
                           >
                             <b>{historyRow.beaconId}</b>
                           </TableCell>
-                          <TableCell sx={{ width: "154px", padding: "16px" }} />
-                          <TableCell sx={{ width: "154px", padding: "16px" }} />
+                          <TableCell sx={{ width: "154px" }} />
+                          <TableCell sx={{ width: "154px" }} />
                         </TableRow>
                         <TableRow>
-                          <TableCell
-                            sx={{ width: "160px !important", padding: "16px" }}
-                          />
-                          <TableCell
-                            sx={{ width: "154px !important", padding: "16px" }}
-                          />
+                          <TableCell sx={{ width: "160px !important" }} />
+                          <TableCell sx={{ width: "154px !important" }} />
                           <TableCell
                             sx={{
                               width: "340px",
-                              padding: "16px",
                               backgroundColor: "transparent",
                             }}
                           >

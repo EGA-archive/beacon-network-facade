@@ -22,7 +22,11 @@ import {
 } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
-import { StatusButton, MaturityButton } from "./ButtonComponents";
+import {
+  StatusButton,
+  MaturityButton,
+  BeaconTypeButton,
+} from "./ButtonComponents";
 import Dialog from "./Dialog";
 import DatasetDialog from "./DatasetDialog";
 
@@ -381,152 +385,7 @@ export default function CollapsibleTable({
                         )
                       )
                   );
-
                   return (
-                    // <React.Fragment key={registry.beaconId}>
-                    //   <TableRow>
-                    //     <TableCell />
-                    //     <TableCell>
-                    //       {registry.beaconMaturity ? (
-                    //         <MaturityButton
-                    //           maturity={registry.beaconMaturity}
-                    //         />
-                    //       ) : (
-                    //         "N/A"
-                    //       )}{" "}
-                    //     </TableCell>
-                    //     <TableCell colSpan={2}>
-                    //       <b>{registry.beaconName}</b>
-                    //     </TableCell>
-                    //     <TableCell>
-                    //       {hasFoundDataset ? (
-                    //         <img
-                    //           src={Tick}
-                    //           alt="Tick"
-                    //           style={{ width: "18px", height: "18px" }}
-                    //         />
-                    //       ) : (
-                    //         <img
-                    //           src={Dash}
-                    //           alt="Dash"
-                    //           style={{ width: "18px", height: "18px" }}
-                    //         />
-                    //       )}
-                    //     </TableCell>
-                    //     <TableCell>
-                    //       <StatusButton
-                    //         status={hasFoundDataset ? "Found" : "Not Found"}
-                    //       />
-                    //     </TableCell>
-                    //   </TableRow>
-                    //   {filteredIndividualBeacons
-                    //     .filter(
-                    //       (individualBeacon) =>
-                    //         individualBeacon.beaconId === registry.beaconId
-                    //     )
-                    //     .map((individualBeacon) => {
-                    //       const datasetClickable =
-                    //         individualBeacon.id &&
-                    //         individualBeacon.id !== "N/A";
-
-                    //       const afValue =
-                    //         getFormattedAlleleFrequency(individualBeacon);
-                    //       const clickable = afValue !== "N/A";
-                    //       return (
-                    //         <TableRow
-                    //           key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
-                    //         >
-                    //           <TableCell />
-                    //           <TableCell />
-                    //           <TableCell colSpan={2}>
-                    //             <Box sx={{ marginLeft: "50px" }}>
-                    //               <i>Dataset: </i>
-                    //               {/* <b>
-                    //                 {individualBeacon.id ||
-                    //                   individualBeacon.beaconId}
-                    //               </b> */}
-                    //               <b
-                    //                 onClick={() => {
-                    //                   if (datasetClickable) {
-                    //                     handleDatasetDialogOpen(
-                    //                       individualBeacon.id
-                    //                     );
-                    //                   }
-                    //                 }}
-                    //                 style={{
-                    //                   cursor: datasetClickable
-                    //                     ? "pointer"
-                    //                     : "default",
-                    //                   textDecoration: datasetClickable
-                    //                     ? "underline"
-                    //                     : "none",
-                    //                 }}
-                    //               >
-                    //                 {datasetClickable ? (
-                    //                   individualBeacon.id
-                    //                 ) : (
-                    //                   <img
-                    //                     src={Dash}
-                    //                     alt="Dash"
-                    //                     style={{
-                    //                       width: "18px",
-                    //                       height: "18px",
-                    //                     }}
-                    //                   />
-                    //                 )}
-                    //               </b>
-                    //             </Box>
-                    //           </TableCell>
-                    //           <TableCell
-                    //             sx={{
-                    //               width: "154px",
-                    //               cursor: clickable ? "pointer" : "default",
-                    //               fontWeight: "bold",
-                    //               padding: "16px",
-                    //               textDecoration: clickable
-                    //                 ? "underline"
-                    //                 : "none",
-                    //             }}
-                    //             onClick={() => {
-                    //               if (clickable) {
-                    //                 handleDialogOpen(
-                    //                   registry,
-                    //                   individualBeacon
-                    //                 );
-                    //               }
-                    //             }}
-                    //           >
-                    //             <b>
-                    //               {individualBeacon.results?.some((result) =>
-                    //                 result.frequencyInPopulations?.some((pop) =>
-                    //                   pop.frequencies?.some(
-                    //                     (f) => f.alleleFrequency !== undefined
-                    //                   )
-                    //                 )
-                    //               ) ? (
-                    //                 afValue
-                    //               ) : (
-                    //                 <img
-                    //                   src={Dash}
-                    //                   alt="Dash"
-                    //                   style={{ width: "18px", height: "18px" }}
-                    //                 />
-                    //               )}
-                    //             </b>
-                    //           </TableCell>
-                    //           <TableCell>
-                    //             <StatusButton
-                    //               status={
-                    //                 individualBeacon.exists
-                    //                   ? "Found"
-                    //                   : "Not Found"
-                    //               }
-                    //             />
-                    //           </TableCell>
-                    //         </TableRow>
-                    //       );
-                    //     })}
-                    // </React.Fragment>
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
                         <TableCell>
@@ -555,90 +414,173 @@ export default function CollapsibleTable({
                           <b>{registry.beaconName}</b>
                         </TableCell>
                         <TableCell>
-                          <img
-                            src={Tick}
-                            alt="Tick"
-                            style={{ width: "18px", height: "18px" }}
-                          />
+                          {hasFoundDataset ? (
+                            <img
+                              src={Tick}
+                              alt="Tick"
+                              style={{ width: "18px", height: "18px" }}
+                            />
+                          ) : (
+                            <img
+                              src={Dash}
+                              alt="Dash"
+                              style={{ width: "18px", height: "18px" }}
+                            />
+                          )}
                         </TableCell>
                         <TableCell>
-                          <StatusButton status="Found" />
+                          <StatusButton
+                            status={hasFoundDataset ? "Found" : "Not Found"}
+                          />
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={6} style={{ padding: 0 }}>
+                        <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
                           <Collapse in={open} timeout="auto" unmountOnExit>
-                            <Box margin={1}>
-                              {filteredIndividualBeacons
-                                .filter(
-                                  (individualBeacon) =>
-                                    individualBeacon.beaconId ===
-                                    registry.beaconId
-                                )
-                                .map((individualBeacon) => {
-                                  const rawAfValue =
-                                    getFormattedAlleleFrequency(
-                                      individualBeacon
-                                    );
-                                  const afValue =
-                                    rawAfValue !== "N/A" ? (
-                                      rawAfValue
-                                    ) : (
-                                      <i>No AF</i>
-                                    );
-                                  const clickable = rawAfValue !== "N/A";
+                            <Table
+                              size="small"
+                              sx={{ tableLayout: "fixed", width: "100%" }}
+                            >
+                              <TableBody>
+                                {filteredIndividualBeacons
+                                  .filter(
+                                    (individualBeacon) =>
+                                      individualBeacon.beaconId ===
+                                      registry.beaconId
+                                  )
+                                  .map((individualBeacon) => {
+                                    const rawAfValue =
+                                      getFormattedAlleleFrequency(
+                                        individualBeacon
+                                      );
+                                    const afValue =
+                                      rawAfValue !== "N/A" ? (
+                                        rawAfValue
+                                      ) : (
+                                        <i>No AF</i>
+                                      );
+                                    const clickable = rawAfValue !== "N/A";
+                                    const datasetClickable =
+                                      individualBeacon.id &&
+                                      individualBeacon.id !== "N/A";
+                                    return (
+                                      <TableRow
+                                        key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+                                      >
+                                        <TableCell
+                                          sx={{
+                                            width: "160px !important",
+                                          }}
+                                        />
 
-                                  return (
-                                    <TableRow key={individualBeacon.id}>
-                                      <TableCell />
-                                      <TableCell colSpan={2}>
-                                        <i>Dataset: </i>
-                                        <b
-                                          onClick={() =>
-                                            handleDatasetDialogOpen(
-                                              individualBeacon.id
-                                            )
-                                          }
-                                          style={{
-                                            cursor: "pointer",
-                                            textDecoration: "underline",
+                                        <TableCell
+                                          sx={{
+                                            width: "154px !important",
+                                          }}
+                                        />
+                                        <TableCell
+                                          sx={{
+                                            width: "340px !important",
                                           }}
                                         >
-                                          {individualBeacon.id}
-                                        </b>
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{
-                                          cursor: clickable
-                                            ? "pointer"
-                                            : "default",
-                                          textDecoration: clickable
-                                            ? "underline"
-                                            : "none",
-                                        }}
-                                        onClick={() =>
-                                          clickable &&
-                                          handleDialogOpen(
-                                            registry,
-                                            individualBeacon
-                                          )
-                                        }
-                                      >
-                                        <b>{afValue}</b>
-                                      </TableCell>
-                                      <TableCell>
-                                        <StatusButton
-                                          status={
-                                            individualBeacon.exists
-                                              ? "Found"
-                                              : "Not Found"
-                                          }
-                                        />
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })}
-                            </Box>
+                                          <Box sx={{ marginLeft: "50px" }}>
+                                            <i>Dataset: </i>
+                                            <b
+                                              onClick={() => {
+                                                if (datasetClickable) {
+                                                  handleDatasetDialogOpen(
+                                                    individualBeacon.id
+                                                  );
+                                                }
+                                              }}
+                                              style={{
+                                                cursor: datasetClickable
+                                                  ? "pointer"
+                                                  : "default",
+                                                textDecoration: datasetClickable
+                                                  ? "underline"
+                                                  : "none",
+                                              }}
+                                            >
+                                              {datasetClickable ? (
+                                                individualBeacon.id
+                                              ) : (
+                                                <img
+                                                  src={Dash}
+                                                  alt="Dash"
+                                                  style={{
+                                                    width: "18px",
+                                                    height: "18px",
+                                                  }}
+                                                />
+                                              )}
+                                            </b>
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            width: "154px !important",
+                                            cursor: clickable
+                                              ? "pointer"
+                                              : "default",
+                                            fontWeight: "bold",
+                                            padding: "16px",
+                                            textDecoration: clickable
+                                              ? "underline"
+                                              : "none",
+                                          }}
+                                          onClick={() => {
+                                            if (clickable) {
+                                              handleDialogOpen(
+                                                registry,
+                                                individualBeacon
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <b>
+                                            {individualBeacon.results?.some(
+                                              (result) =>
+                                                result.frequencyInPopulations?.some(
+                                                  (pop) =>
+                                                    pop.frequencies?.some(
+                                                      (f) =>
+                                                        f.alleleFrequency !==
+                                                        undefined
+                                                    )
+                                                )
+                                            ) ? (
+                                              afValue
+                                            ) : (
+                                              <img
+                                                src={Dash}
+                                                alt="Dash"
+                                                style={{
+                                                  width: "18px",
+                                                  height: "18px",
+                                                }}
+                                              />
+                                            )}
+                                          </b>
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            width: "154px !important",
+                                          }}
+                                        >
+                                          <StatusButton
+                                            status={
+                                              individualBeacon.exists
+                                                ? "Found"
+                                                : "Not Found"
+                                            }
+                                          />
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                              </TableBody>
+                            </Table>
                           </Collapse>
                         </TableCell>
                       </TableRow>
