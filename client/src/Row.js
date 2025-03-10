@@ -204,11 +204,13 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                             sx={{
                               width: "154px",
                               cursor: afClickable ? "pointer" : "default",
-                              fontWeight: "bold",
                               padding: "16px",
                               textDecoration: afClickable
                                 ? "underline"
                                 : "none",
+                              textDecorationColor: afClickable
+                                ? "#077EA6"
+                                : "inherit",
                             }}
                             onClick={() => {
                               if (afClickable) {
@@ -216,18 +218,13 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                               }
                             }}
                           >
-                            <b>
-                              {historyRow.dataset?.alleleFrequency !== "N/A" ? (
-                                afValue
-                              ) : (
-                                <img
-                                  src={Dash}
-                                  alt="Dash"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
-                              )}
-                            </b>
+                            {historyRow.dataset?.alleleFrequency !== "N/A" ? (
+                              <b style={{ color: "#077EA6" }}>{afValue}</b>
+                            ) : (
+                              <i>No AF</i>
+                            )}
                           </TableCell>
+
                           <TableCell sx={{ width: "154px", padding: "16px" }}>
                             <StatusButton
                               status={historyRow.dataset?.response || "N/A"}

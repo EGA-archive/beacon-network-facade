@@ -20,8 +20,8 @@ import {
   getFormattedAlleleFrequency,
   getAlleleData,
 } from "./utils/beaconUtils";
-import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
+import Dash from "../src/dash.svg";
 import {
   StatusButton,
   MaturityButton,
@@ -29,6 +29,7 @@ import {
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import DatasetDialog from "./DatasetDialog";
+import Doc from "../src/document.svg";
 
 export default function CollapsibleTable({
   data,
@@ -46,6 +47,7 @@ export default function CollapsibleTable({
   const [currentDataset, setCurrentDataset] = useState("");
   const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [docHovered, setDocHovered] = useState(false);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
@@ -435,10 +437,32 @@ export default function CollapsibleTable({
                           </IconButton>
                           <BeaconTypeButton type={beaconType} />
                         </TableCell>
-                        <TableCell sx={{ pl: 1 }}>
+                        <TableCell sx={{ pl: 1, pr: 0 }}>
                           <b>{registry.beaconName}</b>
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              cursor: "pointer",
+                              marginLeft: "16px",
+                              "&:hover": {
+                                backgroundColor: "#DBEEFD",
+                              },
+                            }}
+                          >
+                            <img
+                              src={Doc}
+                              alt="Doc"
+                              style={{ width: "18px", height: "18px" }}
+                            />
+                          </Box>
                         </TableCell>
-                        <TableCell colSpan={2}>
+                        <TableCell colSpan={2} sx={{ pl: 0 }}>
                           {registry.beaconMaturity ? (
                             <MaturityButton
                               maturity={registry.beaconMaturity}
@@ -503,7 +527,7 @@ export default function CollapsibleTable({
                                       >
                                         <TableCell
                                           sx={{
-                                            width: "160px !important",
+                                            width: "90px !important",
                                           }}
                                         />
 
@@ -514,10 +538,10 @@ export default function CollapsibleTable({
                                         />
                                         <TableCell
                                           sx={{
-                                            width: "340px !important",
+                                            width: "356px !important",
                                           }}
                                         >
-                                          <Box sx={{ marginLeft: "50px" }}>
+                                          <Box>
                                             <i>Dataset: </i>
                                             <b
                                               onClick={() => {
@@ -553,15 +577,17 @@ export default function CollapsibleTable({
                                         </TableCell>
                                         <TableCell
                                           sx={{
-                                            width: "154px !important",
+                                            width: "146px !important",
                                             cursor: clickable
                                               ? "pointer"
                                               : "default",
-                                            fontWeight: "bold",
                                             padding: "16px",
                                             textDecoration: clickable
                                               ? "underline"
                                               : "none",
+                                            textDecorationColor: clickable
+                                              ? "#077EA6"
+                                              : "inherit",
                                           }}
                                           onClick={() => {
                                             if (clickable) {
@@ -572,34 +598,28 @@ export default function CollapsibleTable({
                                             }
                                           }}
                                         >
-                                          <b>
-                                            {individualBeacon.results?.some(
-                                              (result) =>
-                                                result.frequencyInPopulations?.some(
-                                                  (pop) =>
-                                                    pop.frequencies?.some(
-                                                      (f) =>
-                                                        f.alleleFrequency !==
-                                                        undefined
-                                                    )
-                                                )
-                                            ) ? (
-                                              afValue
-                                            ) : (
-                                              <img
-                                                src={Dash}
-                                                alt="Dash"
-                                                style={{
-                                                  width: "18px",
-                                                  height: "18px",
-                                                }}
-                                              />
-                                            )}
-                                          </b>
+                                          {individualBeacon.results?.some(
+                                            (result) =>
+                                              result.frequencyInPopulations?.some(
+                                                (pop) =>
+                                                  pop.frequencies?.some(
+                                                    (f) =>
+                                                      f.alleleFrequency !==
+                                                      undefined
+                                                  )
+                                              )
+                                          ) ? (
+                                            <b style={{ color: "#077EA6" }}>
+                                              {afValue}
+                                            </b>
+                                          ) : (
+                                            <i>No AF</i>
+                                          )}
                                         </TableCell>
+
                                         <TableCell
                                           sx={{
-                                            width: "154px !important",
+                                            width: "146px !important",
                                           }}
                                         >
                                           <StatusButton

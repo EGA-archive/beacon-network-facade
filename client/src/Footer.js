@@ -8,7 +8,6 @@ function Footer() {
     <Navbar className="custom-footer">
       <Container className="container-footer d-flex justify-content-between">
         <div className="d-flex align-items-center">
-          <span className="project-collaborators">Project Collaborators:</span>
           <div className="footer-logos d-flex align-items-center">
             <img src="./bsclogobn.svg" alt="BSC Logo" className="footer-logo" />
             <img
@@ -24,7 +23,6 @@ function Footer() {
             />
           </div>
         </div>
-        <span className="footer-text">© Copyright Global Beacon Network</span>
       </Container>
     </Navbar>
   );
