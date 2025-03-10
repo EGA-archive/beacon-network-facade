@@ -346,14 +346,42 @@ export default function CollapsibleTable({
           sx={{ tableLayout: "fixed", width: "100%" }}
         >
           <TableHead>
+            {/* <TableRow className="title-row">
+              <TableCell colSpan={3} sx={{ pl: 6.5 }}>
+                <Box
+                  sx={{ display: "inline-flex", gap: 1, alignItems: "center" }}
+                >
+                  <b>Beacon Network</b>
+                  <KeyboardArrowRightIcon />
+                  <b>Beacon Name</b>
+                  <KeyboardArrowRightIcon />
+                  <i>
+                    <b>Dataset</b>
+                  </i>
+                </Box>
+              </TableCell>
+
+              <TableCell />
+              <TableCell colSpan={1}>
+                <b>Allele Frequency</b>
+              </TableCell>
+              <TableCell colSpan={1}>
+                <b>Response</b>
+              </TableCell>
+            </TableRow> */}
             <TableRow className="title-row">
-              <TableCell colSpan={3}>
-                <b>Beacon Network</b> <KeyboardArrowRightIcon />
-                <b>Beacon Name</b> <KeyboardArrowRightIcon />
-                <i>
-                  {" "}
-                  <b>Dataset</b>
-                </i>
+              <TableCell colSpan={3} sx={{ pl: 6.5 }}>
+                <Box
+                  sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+                >
+                  <b>Beacon Network</b>
+                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
+                  <b>Beacon Name</b>
+                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
+                  <i>
+                    <b>Dataset</b>
+                  </i>
+                </Box>
               </TableCell>
               <TableCell />
               <TableCell colSpan={1}>
@@ -369,11 +397,16 @@ export default function CollapsibleTable({
               {registries
                 .filter((registry) =>
                   filteredIndividualBeacons.some(
-                    (individualBeacon) =>
-                      individualBeacon.beaconId === registry.beaconId
+                    (ib) => ib.beaconId === registry.beaconId
                   )
                 )
                 .map((registry) => {
+                  // Determine if this registry is for a single or network beacon
+                  const isNetwork = networkBeacons.some(
+                    (nb) => nb.beaconNetworkId === registry.beaconId
+                  );
+                  const beaconType = isNetwork ? "network" : "single";
+
                   const hasFoundDataset = filteredIndividualBeacons.some(
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
@@ -388,7 +421,7 @@ export default function CollapsibleTable({
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
-                        <TableCell>
+                        <TableCell sx={{ pr: 0 }}>
                           <IconButton
                             aria-label="expand row"
                             size="small"
@@ -400,8 +433,12 @@ export default function CollapsibleTable({
                               <KeyboardArrowDownIcon />
                             )}
                           </IconButton>
+                          <BeaconTypeButton type={beaconType} />
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ pl: 1 }}>
+                          <b>{registry.beaconName}</b>
+                        </TableCell>
+                        <TableCell colSpan={2}>
                           {registry.beaconMaturity ? (
                             <MaturityButton
                               maturity={registry.beaconMaturity}
@@ -409,9 +446,6 @@ export default function CollapsibleTable({
                           ) : (
                             "N/A"
                           )}
-                        </TableCell>
-                        <TableCell colSpan={2}>
-                          <b>{registry.beaconName}</b>
                         </TableCell>
                         <TableCell>
                           {hasFoundDataset ? (

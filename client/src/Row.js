@@ -100,7 +100,7 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
             >
               {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
-            <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
+            {/* <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
               <img
                 src={row.beaconLogo}
                 alt={`${row.name} Logo`}
@@ -111,7 +111,8 @@ export default function Row({ row, isNetwork, selectedFilters = [] }) {
                   objectFit: "contain",
                 }}
               />
-            </a>
+            </a> */}
+            <BeaconTypeButton type={isNetwork ? "network" : "single"} />
           </TableCell>
           <TableCell colSpan={4}>
             <b>{row.name}</b>

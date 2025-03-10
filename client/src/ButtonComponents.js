@@ -70,14 +70,14 @@ const BeaconTypeButton = ({ type }) => {
     single: {
       label: "Single Beacon",
       backgroundColor: "#E1F2FF",
-      border: "2px solid #2D75A1",
-      color: "#2D75A1",
+      border: "1px solid #3176B1",
+      color: "black",
     },
     network: {
       label: "Beacon Network",
-      backgroundColor: "#CDE7F9",
-      border: "2px solid #2D75A1",
-      color: "#2D75A1",
+      backgroundColor: "#597E9D40",
+      border: "1px solid #023452",
+      color: "black",
     },
   };
 
@@ -87,12 +87,12 @@ const BeaconTypeButton = ({ type }) => {
     <Box
       sx={{
         display: "inline-flex",
+        borderRadius: "8px",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: "16px",
+        borderRadius: "6px",
         padding: "4px 8px",
         fontFamily: '"Open Sans", sans-serif',
-        fontWeight: "bold",
         fontSize: "14px",
         ...styleProps,
       }}
