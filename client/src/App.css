@@ -108,34 +108,12 @@ body {
   height: 82px !important;
 }
 
-.footer-text {
-  font-size: 12px;
-}
-
 .container-footer {
   padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-}
-
-.project-collaborators {
-  font-size: 12px;
-  font-weight: 700;
-  color: #a0a0a0;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.project-collaborators-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin-right: 5%;
-  white-space: nowrap;
 }
 
 .footer-logos {
@@ -149,22 +127,22 @@ body {
   height: auto;
 }
 
-.footer-logo:nth-child(1) {
+.footer-logo:nth-child(2) {
   width: 54px;
   height: 49.17px;
 }
 
-.footer-logo:nth-child(2) {
+.footer-logo:nth-child(3) {
   width: 51.82px;
   height: 40.31px;
 }
 
-.footer-logo:nth-child(3) {
+.footer-logo:nth-child(4) {
   width: 46.07px;
   height: 30.95px;
 }
 
-.footer-logo:nth-child(4) {
+.footer-logo:nth-child(5) {
   width: 147.61px;
   height: 20.15px;
 }
