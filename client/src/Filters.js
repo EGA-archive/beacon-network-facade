@@ -7,87 +7,50 @@ export default function Filters({
   setSelectedFilters,
   onOpenCloseChange,
 }) {
-  // const handleToggle = (event, newFilters) => {
-  //   if (!newFilters || newFilters.length === 0) return;
-  //   if (newFilters.includes("Open All")) {
-  //     onOpenCloseChange("open");
-  //   } else if (newFilters.includes("Close All")) {
-  //     onOpenCloseChange("close");
-  //   }
-  //   setSelectedFilters(newFilters);
-  // };
-
-  // const handleToggle = (event, newFilters) => {
-  //   if (!newFilters) return;
-
-  //   if (newFilters.includes("Open All")) {
-  //     onOpenCloseChange("open");
-  //     setSelectedFilters((prev) => prev);
-  //     return;
-  //   }
-
-  //   if (newFilters.includes("Close All")) {
-  //     onOpenCloseChange("close");
-  //     setSelectedFilters((prev) => prev);
-  //     return;
-  //   }
-
-  //   setSelectedFilters(newFilters);
-  // };
-
   const handleToggle = (event, newFilters) => {
-    if (!newFilters) return;
+    console.log("🔎 MUI returned:", newFilters);
 
-    if (newFilters.includes("Open All")) {
+    if (!newFilters) {
+      setSelectedFilters([]);
+      return;
+    }
+
+    const updatedFilters = Array.isArray(newFilters)
+      ? newFilters
+      : [newFilters];
+
+    if (newFilters === "Open All") {
+      console.log("🚀 Open All clicked");
       onOpenCloseChange("open");
       setSelectedFilters((prev) => [
-        ...new Set([...prev.filter((f) => f !== "Close All"), "Open All"]),
+        ...prev.filter((f) => f !== "Close All"),
+        "Open All",
       ]);
       return;
     }
 
-    if (newFilters.includes("Close All")) {
+    if (newFilters === "Close All") {
+      console.log("🚀 Close All clicked");
       onOpenCloseChange("close");
       setSelectedFilters((prev) => [
-        ...new Set([...prev.filter((f) => f !== "Open All"), "Close All"]),
+        ...prev.filter((f) => f !== "Open All"),
+        "Close All",
       ]);
       return;
     }
+
     setSelectedFilters((prev) => {
       const preservedOpenClose = prev.filter(
         (f) => f === "Open All" || f === "Close All"
       );
-      return [
+      const updatedFilters = [
         ...newFilters.filter((f) => f !== "Open All" && f !== "Close All"),
         ...preservedOpenClose,
       ];
+      console.log("✅ Setting selectedFilters:", updatedFilters);
+      return updatedFilters;
     });
   };
-
-  // const handleToggle = (event, newFilters) => {
-  //   if (!newFilters || newFilters.length === 0) return;
-
-  //   if (newFilters.includes("Open All")) {
-  //     onOpenCloseChange("open");
-  //     setSelectedFilters((prev) => [
-  //       ...prev.filter((f) => f !== "Close All"),
-  //       "Open All",
-  //     ]);
-  //     return;
-  //   }
-
-  //   if (newFilters.includes("Close All")) {
-  //     onOpenCloseChange("close");
-  //     setSelectedFilters((prev) => [
-  //       ...prev.filter((f) => f !== "Open All"),
-  //       "Close All",
-  //     ]);
-  //     return;
-  //   }
-
-  //   // Update normally if other filters clicked
-  //   setSelectedFilters(newFilters);
-  // };
 
   const buttonStyles = {
     width: "auto",
@@ -125,9 +88,9 @@ export default function Filters({
     lineHeight: "20px",
     letterSpacing: "0.1px",
     textTransform: "none",
-    color: "#023452",
+    color: "#A3B2BB",
     background: "white",
-    border: "1px solid #023452 !important",
+    border: "1px solid #A3B2BB !important",
     borderRadius: "27px !important",
     "&.Mui-selected": {
       backgroundColor: "#02345214",
