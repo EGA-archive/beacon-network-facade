@@ -38,6 +38,11 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
 
   const filters = [
     {
+      label: "Open/Close all Beacons",
+      values: ["Open All", "Close All"],
+      exclusive: true,
+    },
+    {
       label: "Filter by response:",
       values: ["Found", "Not-Found"],
       exclusive: false,

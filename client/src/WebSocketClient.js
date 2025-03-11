@@ -117,7 +117,20 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     <Grid size={{ xs: 12, sm: 7 }}>
                       <Form.Label>
                         <b className="variant-query">Variant query</b>
-                        <Tooltip title="Enter variant in format: chr-position-ref-alt">
+                        <Tooltip
+                          title={
+                            <ul className="tooltip-bullets">
+                              <li>
+                                Type your variant or copy from Excel with this
+                                specific structure: chr / position / ref. base /
+                                alt. base.
+                              </li>
+                              <li>Queries need to be in 0-based format.</li>
+                            </ul>
+                          }
+                          placement="top-start"
+                          arrow
+                        >
                           <b className="infovariant">i</b>
                         </Tooltip>
                       </Form.Label>

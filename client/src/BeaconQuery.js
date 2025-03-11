@@ -30,7 +30,7 @@ function BeaconQuery({
     if (!variant || !genome || !socket) return;
 
     setLoading(true);
-    console.log("⏳ Loader started... waiting for WebSocket responses.");
+    // console.log("⏳ Loader started... waiting for WebSocket responses.");
 
     const arr = variant.split("-");
     if (arr.length !== 4) {
@@ -51,7 +51,7 @@ function BeaconQuery({
     const handleMessage = (event) => {
       setMessageCount((prev) => {
         const newCount = prev + 1;
-        console.log(`📩 WebSocket Message ${newCount} of ${registriesLength}`);
+        // console.log(`📩 WebSocket Message ${newCount} of ${registriesLength}`);
 
         try {
           const response = JSON.parse(event.data);
@@ -62,7 +62,7 @@ function BeaconQuery({
             return isDuplicate ? prevData : [...prevData, response];
           });
           if (newCount >= registriesLength) {
-            console.log("✅ All expected messages received, stopping loader.");
+            // console.log("✅ All expected messages received, stopping loader.");
             setLoading(false);
           }
         } catch (err) {

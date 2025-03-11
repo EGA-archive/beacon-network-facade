@@ -69,6 +69,16 @@ const customTheme = createTheme({
           height: "61px",
         },
       },
+      variants: [
+        {
+          props: { variant: "emptyRow" },
+          style: {
+            height: 0,
+            padding: 0,
+            border: "none",
+          },
+        },
+      ],
     },
     MuiTableCell: {
       variants: [

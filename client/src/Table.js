@@ -38,16 +38,16 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  // console.log("📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Data received:", data);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
   const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [docHovered, setDocHovered] = useState(false);
+  // const [open, setOpen] = useState(false);
+  const [openRows, setOpenRows] = useState({});
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
@@ -331,6 +331,13 @@ export default function CollapsibleTable({
     }
   }, [setStats, beaconNetworkCount, totalBeaconCount, totalDatasetCount]);
 
+  const toggleRow = (beaconId) => {
+    setOpenRows((prev) => ({
+      ...prev,
+      [beaconId]: !prev[beaconId],
+    }));
+  };
+
   return (
     <>
       <TableContainer
@@ -403,7 +410,7 @@ export default function CollapsibleTable({
                   )
                 )
                 .map((registry) => {
-                  // Determine if this registry is for a single or network beacon
+                  const rowIsOpen = !!openRows[registry.beaconId];
                   const isNetwork = networkBeacons.some(
                     (nb) => nb.beaconNetworkId === registry.beaconId
                   );
@@ -427,9 +434,9 @@ export default function CollapsibleTable({
                           <IconButton
                             aria-label="expand row"
                             size="small"
-                            onClick={() => setOpen(!open)}
+                            onClick={() => toggleRow(registry.beaconId)}
                           >
-                            {open ? (
+                            {rowIsOpen ? (
                               <KeyboardArrowRightIcon />
                             ) : (
                               <KeyboardArrowDownIcon />
@@ -492,9 +499,9 @@ export default function CollapsibleTable({
                           />
                         </TableCell>
                       </TableRow>
-                      <TableRow>
+                      <TableRow variant="emptyRow">
                         <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
-                          <Collapse in={open} timeout="auto" unmountOnExit>
+                          <Collapse in={rowIsOpen} timeout="auto" unmountOnExit>
                             <Table
                               size="small"
                               sx={{ tableLayout: "fixed", width: "100%" }}
