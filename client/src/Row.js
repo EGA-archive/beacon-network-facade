@@ -132,10 +132,22 @@ export default function Row({
             >
               {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
+
             <BeaconTypeButton type={isNetwork ? "network" : "single"} />
           </TableCell>
           <TableCell colSpan={4}>
             <b>{row.name}</b>
+            <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
+              <img
+                src={row.beaconLogo}
+                alt={`${row.name} Logo`}
+                style={{
+                  maxWidth: "50%",
+                  height: "45px",
+                  padding: "10px 16px",
+                }}
+              />
+            </a>
             <br />
             <span>Organization:</span>
           </TableCell>
