@@ -2,13 +2,92 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import React from "react";
 
-export default function Filters({ selectedFilters, setSelectedFilters }) {
+export default function Filters({
+  selectedFilters,
+  setSelectedFilters,
+  onOpenCloseChange,
+}) {
+  // const handleToggle = (event, newFilters) => {
+  //   if (!newFilters || newFilters.length === 0) return;
+  //   if (newFilters.includes("Open All")) {
+  //     onOpenCloseChange("open");
+  //   } else if (newFilters.includes("Close All")) {
+  //     onOpenCloseChange("close");
+  //   }
+  //   setSelectedFilters(newFilters);
+  // };
+
+  // const handleToggle = (event, newFilters) => {
+  //   if (!newFilters) return;
+
+  //   if (newFilters.includes("Open All")) {
+  //     onOpenCloseChange("open");
+  //     setSelectedFilters((prev) => prev);
+  //     return;
+  //   }
+
+  //   if (newFilters.includes("Close All")) {
+  //     onOpenCloseChange("close");
+  //     setSelectedFilters((prev) => prev);
+  //     return;
+  //   }
+
+  //   setSelectedFilters(newFilters);
+  // };
+
   const handleToggle = (event, newFilters) => {
-    if (newFilters && newFilters.length > 0) {
-      setSelectedFilters(newFilters);
-      // console.log("📌 Updated Filters (Response/Maturity):", newFilters);
+    if (!newFilters) return;
+
+    if (newFilters.includes("Open All")) {
+      onOpenCloseChange("open");
+      setSelectedFilters((prev) => [
+        ...new Set([...prev.filter((f) => f !== "Close All"), "Open All"]),
+      ]);
+      return;
     }
+
+    if (newFilters.includes("Close All")) {
+      onOpenCloseChange("close");
+      setSelectedFilters((prev) => [
+        ...new Set([...prev.filter((f) => f !== "Open All"), "Close All"]),
+      ]);
+      return;
+    }
+    setSelectedFilters((prev) => {
+      const preservedOpenClose = prev.filter(
+        (f) => f === "Open All" || f === "Close All"
+      );
+      return [
+        ...newFilters.filter((f) => f !== "Open All" && f !== "Close All"),
+        ...preservedOpenClose,
+      ];
+    });
   };
+
+  // const handleToggle = (event, newFilters) => {
+  //   if (!newFilters || newFilters.length === 0) return;
+
+  //   if (newFilters.includes("Open All")) {
+  //     onOpenCloseChange("open");
+  //     setSelectedFilters((prev) => [
+  //       ...prev.filter((f) => f !== "Close All"),
+  //       "Open All",
+  //     ]);
+  //     return;
+  //   }
+
+  //   if (newFilters.includes("Close All")) {
+  //     onOpenCloseChange("close");
+  //     setSelectedFilters((prev) => [
+  //       ...prev.filter((f) => f !== "Open All"),
+  //       "Close All",
+  //     ]);
+  //     return;
+  //   }
+
+  //   // Update normally if other filters clicked
+  //   setSelectedFilters(newFilters);
+  // };
 
   const buttonStyles = {
     width: "auto",
@@ -36,9 +115,35 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
     },
   };
 
+  const openCloseStyles = {
+    width: "auto",
+    minWidth: "110px",
+    height: "28px",
+    fontFamily: "sans-serif",
+    fontSize: "12px",
+    fontWeight: 700,
+    lineHeight: "20px",
+    letterSpacing: "0.1px",
+    textTransform: "none",
+    color: "#023452",
+    background: "white",
+    border: "1px solid #023452 !important",
+    borderRadius: "27px !important",
+    "&.Mui-selected": {
+      backgroundColor: "#02345214",
+      color: "black",
+      border: "1px solid black !important",
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "#EBEBEB",
+      color: "black",
+      border: "1px solid black",
+    },
+  };
+
   const filters = [
     {
-      label: "Open/Close all Beacons",
+      label: "Open/Close all Beacons:",
       values: ["Open All", "Close All"],
       exclusive: true,
     },
@@ -67,7 +172,15 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
             sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
           >
             {values.map((value) => (
-              <ToggleButton key={value} value={value} sx={buttonStyles}>
+              <ToggleButton
+                key={value}
+                value={value}
+                sx={
+                  label === "Open/Close all Beacons:"
+                    ? openCloseStyles
+                    : buttonStyles
+                }
+              >
                 {value.replace("-", " ")}
               </ToggleButton>
             ))}
@@ -90,7 +203,7 @@ export default function Filters({ selectedFilters, setSelectedFilters }) {
                 const updated = prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue);
-                // console.log("📌 Updated Allele Frequency Filter:", updated);
+                // console.log(":pushpin: Updated Allele Frequency Filter:", updated);
                 return updated;
               });
             }
