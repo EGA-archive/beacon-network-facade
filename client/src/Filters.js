@@ -94,13 +94,13 @@ export default function Filters({
     borderRadius: "27px !important",
     "&.Mui-selected": {
       backgroundColor: "#02345214",
-      color: "black",
-      border: "1px solid black !important",
+      color: "#023452",
+      border: "1px solid #023452 !important",
     },
     "&.Mui-selected:hover": {
       backgroundColor: "#EBEBEB",
-      color: "black",
-      border: "1px solid black",
+      color: "#023452",
+      border: "1px solid #023452",
     },
   };
 

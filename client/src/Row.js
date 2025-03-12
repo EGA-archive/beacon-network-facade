@@ -19,10 +19,12 @@ import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import DatasetDialog from "./DatasetDialog.js";
+import Doc from "../src/document.svg";
 
 export default function Row({
   row,
   isNetwork,
+  isFirstRow = false,
   selectedFilters = [],
   forceOpenAll = false,
   forceCloseAll = false,
@@ -123,8 +125,13 @@ export default function Row({
   return (
     <>
       {deduplicatedHistory.length > 0 && (
-        <TableRow>
-          <TableCell>
+        <TableRow
+          sx={{
+            backgroundColor: "#E5F2FF",
+            ...(isFirstRow && { borderTop: "1px solid #3176B1" }),
+          }}
+        >
+          <TableCell variant="lessPadding">
             <IconButton
               aria-label="expand row"
               size="small"
@@ -135,23 +142,41 @@ export default function Row({
 
             <BeaconTypeButton type={isNetwork ? "network" : "single"} />
           </TableCell>
-          <TableCell colSpan={4}>
-            <b>{row.name}</b>
-            <a href={row.beaconURL} target="_blank" rel="noopener noreferrer">
-              <img
-                src={row.beaconLogo}
-                alt={`${row.name} Logo`}
+          <TableCell
+            colSpan={4}
+            variant="lessPadding"
+            style={{ verticalAlign: "middle" }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box component="span">
+                <b>{row.name}</b>
+                <br />
+                <span>Organization: </span>
+              </Box>
+
+              <a
+                href={row.beaconURL}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  maxWidth: "50%",
-                  height: "45px",
-                  padding: "10px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginLeft: "20px",
                 }}
-              />
-            </a>
-            <br />
-            <span>Organization:</span>
+              >
+                <img
+                  src={row.beaconLogo}
+                  alt={`${row.name} Logo`}
+                  style={{
+                    maxWidth: "100%",
+                    height: "50px",
+                    padding: "10px 16px",
+                  }}
+                />
+              </a>
+            </Box>
           </TableCell>
-          <TableCell>
+          <TableCell variant="lessPadding">
             <StatusButton
               status={
                 deduplicatedHistory.some(
@@ -167,7 +192,12 @@ export default function Row({
       {isNetwork &&
         row.history?.length > 0 &&
         deduplicatedHistory.length > 0 && (
-          <TableRow variant="emptyRow">
+          <TableRow
+            variant="emptyRow"
+            sx={{
+              backgroundColor: "#F4F9FE",
+            }}
+          >
             <TableCell colSpan={6} style={{ padding: 0 }} variant="noBorder">
               <Collapse in={open} timeout="auto" unmountOnExit>
                 <Table
@@ -186,7 +216,36 @@ export default function Row({
                         <React.Fragment key={index}>
                           <TableRow>
                             <TableCell sx={{ width: "160px !important" }} />
-                            <TableCell sx={{ width: "154px !important" }}>
+                            <TableCell
+                              sx={{
+                                width: "154px !important",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <b>{historyRow.beaconId} </b>
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: "50%",
+                                  cursor: "pointer",
+                                  marginLeft: "16px",
+                                  marginRight: "16px",
+                                  "&:hover": {
+                                    backgroundColor: "#DBEEFD",
+                                  },
+                                }}
+                              >
+                                <img
+                                  src={Doc}
+                                  alt="Doc"
+                                  style={{ width: "18px", height: "18px" }}
+                                />
+                              </Box>
                               {historyRow.maturity && (
                                 <MaturityButton
                                   maturity={historyRow.maturity}
@@ -196,11 +255,8 @@ export default function Row({
                             <TableCell
                               sx={{
                                 width: "340px",
-                                backgroundColor: "transparent",
                               }}
-                            >
-                              <b>{historyRow.beaconId}</b>
-                            </TableCell>
+                            ></TableCell>
                             <TableCell sx={{ width: "154px" }} />
                             <TableCell sx={{ width: "154px" }} />
                           </TableRow>
@@ -241,6 +297,7 @@ export default function Row({
                                 width: "154px",
                                 cursor: afClickable ? "pointer" : "default",
                                 padding: "16px",
+                                padding: "10px 16px 10px 16px",
                                 textDecoration: afClickable
                                   ? "underline"
                                   : "none",

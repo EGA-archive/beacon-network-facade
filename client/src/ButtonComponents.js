@@ -5,7 +5,6 @@ const StatusButton = ({ status }) => {
   const statusStyles = {
     Found: { backgroundColor: "#0099CD", color: "white" },
     "Not Found": { backgroundColor: "#FF7C62", color: "white" },
-    Offline: { backgroundColor: "#949494", color: "white" },
   };
 
   return (
@@ -53,6 +52,7 @@ const MaturityButton = ({ maturity }) => {
         fontFamily: '"Open Sans", sans-serif',
         textAlign: "center",
         fontStyle: "italic",
+        marginLeft: "30%",
         ...maturityStyles[displayMaturity],
       }}
     >

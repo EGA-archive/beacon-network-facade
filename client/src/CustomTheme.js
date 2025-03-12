@@ -81,7 +81,24 @@ const customTheme = createTheme({
       ],
     },
     MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottom: "1px solid #DBEEFD",
+        },
+      },
       variants: [
+        {
+          props: { variant: "lessPadding" },
+          style: {
+            padding: "6px 16px 16px 16px",
+            borderBottom: "1px solid #3176B1",
+            // borderTop: "1px solid #3176B1",
+          },
+          // props: { variant: "lessPaddingCell" },
+          // style: {
+          //   padding: "6px 16px 16px 16px",
+          // },
+        },
         {
           props: { variant: "noBorder" },
           style: {

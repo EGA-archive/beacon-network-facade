@@ -197,8 +197,17 @@ body {
 }
 
 .logos {
-  width: 220.25px;
-  height: 51.16px;
+  width: 100%;
+  height: 50px;
+  object-fit: contain;
+}
+
+.cell {
+  width: 248px;
+  height: 71.97px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .searchbutton {
@@ -435,19 +444,6 @@ body {
 }
 
 /* Network CSS */
-
-.cell {
-  width: 248px;
-  height: 71.97px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logos {
-  width: 170px;
-  height: auto;
-}
 
 .mail-icon {
   position: relative;

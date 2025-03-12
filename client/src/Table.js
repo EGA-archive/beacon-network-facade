@@ -290,7 +290,11 @@ export default function CollapsibleTable({
 
         <Table
           aria-label="collapsible table"
-          sx={{ tableLayout: "fixed", width: "100%" }}
+          sx={{
+            tableLayout: "fixed",
+            width: "100%",
+            // borderBottom: "1px solid black !important",
+          }}
         >
           <TableHead>
             <TableRow className="title-row">
@@ -359,7 +363,7 @@ export default function CollapsibleTable({
                           </IconButton>
                           <BeaconTypeButton type={beaconType} />
                         </TableCell>
-                        <TableCell sx={{ pl: 1, pr: 0 }}>
+                        <TableCell sx={{ pl: 1, pr: 0, whiteSpace: "nowrap" }}>
                           <b>{registry.beaconName}</b>
                           <Box
                             component="span"
@@ -383,8 +387,6 @@ export default function CollapsibleTable({
                               style={{ width: "18px", height: "18px" }}
                             />
                           </Box>
-                        </TableCell>
-                        <TableCell colSpan={2} sx={{ pl: 0 }}>
                           {registry.beaconMaturity ? (
                             <MaturityButton
                               maturity={registry.beaconMaturity}
@@ -393,6 +395,12 @@ export default function CollapsibleTable({
                             "N/A"
                           )}
                         </TableCell>
+                        <TableCell
+                          colSpan={2}
+                          sx={{
+                            pl: 0,
+                          }}
+                        ></TableCell>
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
@@ -565,11 +573,12 @@ export default function CollapsibleTable({
                 })}
             </>
             <>
-              {networkRows.map((row) => (
+              {networkRows.map((row, index) => (
                 <Row
                   key={row.name}
                   row={row}
                   isNetwork={true}
+                  isFirstRow={index === 0}
                   selectedFilters={selectedFilters}
                   forceOpenAll={selectedFilters.includes("Open All")}
                   forceCloseAll={selectedFilters.includes("Close All")}

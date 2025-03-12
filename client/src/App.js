@@ -18,6 +18,7 @@ function App() {
     "Test-Beacon",
     "Dev-Beacon",
     "all",
+    "Close All",
   ]);
 
   return (
