@@ -39,6 +39,7 @@ export default function TableDialog({
         borderRadius: "6px",
         width: "80%",
         mx: "auto",
+        overflowX: "hidden",
       }}
     >
       <Table sx={{ minWidth: 450 }} aria-label="Allele Frequency Table">
