@@ -101,9 +101,9 @@ export default function Filters({
       border: "1px solid #A3B2BB !important",
     },
     "&.Mui-selected:hover": {
-      backgroundColor: "#EBEBEB",
-      color: "#023452",
-      border: "1px solid #023452",
+      color: "#A3B2BB",
+      background: "white",
+      border: "1px solid #A3B2BB !important",
     },
   };
 
