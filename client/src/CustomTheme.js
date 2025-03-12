@@ -97,6 +97,7 @@ const customTheme = createTheme({
           // props: { variant: "lessPaddingCell" },
           // style: {
           //   padding: "6px 16px 16px 16px",
+          //   borderBottom: "1px solid #3176B1",
           // },
         },
         {

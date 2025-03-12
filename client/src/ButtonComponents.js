@@ -52,7 +52,7 @@ const MaturityButton = ({ maturity }) => {
         fontFamily: '"Open Sans", sans-serif',
         textAlign: "center",
         fontStyle: "italic",
-        marginLeft: "30%",
+        marginLeft: "15%",
         ...maturityStyles[displayMaturity],
       }}
     >

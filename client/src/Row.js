@@ -20,6 +20,7 @@ import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
 import DatasetDialog from "./DatasetDialog.js";
 import Doc from "../src/document.svg";
+import Tick from "../src/tick.svg";
 
 export default function Row({
   row,
@@ -122,6 +123,10 @@ export default function Row({
     }
   }, [forceOpenAll, forceCloseAll]);
 
+  const hasAlleleFrequency = (historyData) => {
+    return historyData.some((item) => item.dataset.alleleFrequency !== "N/A");
+  };
+
   return (
     <>
       {deduplicatedHistory.length > 0 && (
@@ -137,21 +142,21 @@ export default function Row({
               size="small"
               onClick={() => setOpen((prev) => !prev)}
             >
-              {open ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
+              {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
             </IconButton>
 
             <BeaconTypeButton type={isNetwork ? "network" : "single"} />
           </TableCell>
           <TableCell
-            colSpan={4}
+            colSpan={3}
             variant="lessPadding"
-            style={{ verticalAlign: "middle" }}
+            style={{ verticalAlign: "middle", paddingLeft: "4px" }}
           >
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Box component="span">
                 <b>{row.name}</b>
-                <br />
-                <span>Organization: </span>
+                {/* <br />
+                <span>Organization: </span> */}
               </Box>
 
               <a
@@ -175,6 +180,18 @@ export default function Row({
                 />
               </a>
             </Box>
+          </TableCell>
+
+          <TableCell variant="lessPadding">
+            {hasAlleleFrequency(deduplicatedHistory) ? (
+              <img
+                src={Tick}
+                alt="Tick"
+                style={{ width: "18px", height: "18px" }}
+              />
+            ) : (
+              <i>No AF</i>
+            )}
           </TableCell>
           <TableCell variant="lessPadding">
             <StatusButton
@@ -213,13 +230,14 @@ export default function Row({
                       const afClickable = afValue !== "N/A";
 
                       return (
-                        <React.Fragment key={index}>
+                        <>
                           <TableRow>
                             <TableCell sx={{ width: "160px !important" }} />
                             <TableCell
                               sx={{
                                 width: "154px !important",
                                 whiteSpace: "nowrap",
+                                paddingLeft: "4px",
                               }}
                             >
                               <b>{historyRow.beaconId} </b>
@@ -261,15 +279,25 @@ export default function Row({
                             <TableCell sx={{ width: "154px" }} />
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "160px !important" }} />
-                            <TableCell sx={{ width: "154px !important" }} />
                             <TableCell
                               sx={{
-                                width: "340px",
-                                backgroundColor: "transparent",
+                                width: "90px !important",
+                                // backgroundColor: "red",
+                              }}
+                            />
+                            <TableCell
+                              sx={{
+                                width: "90px !important",
+                                // backgroundColor: "green",
+                              }}
+                            />
+                            <TableCell
+                              sx={{
+                                width: "356px !important",
+                                // backgroundColor: "pink",
                               }}
                             >
-                              <Box sx={{ marginLeft: "50px" }}>
+                              <Box>
                                 <i>Dataset: </i>
                                 {historyRow.dataset?.datasetId ? (
                                   <b
@@ -294,9 +322,9 @@ export default function Row({
                             </TableCell>
                             <TableCell
                               sx={{
-                                width: "154px",
+                                // backgroundColor: "salmon",
+                                width: "146px !important",
                                 cursor: afClickable ? "pointer" : "default",
-                                padding: "16px",
                                 padding: "10px 16px 10px 16px",
                                 textDecoration: afClickable
                                   ? "underline"
@@ -317,13 +345,18 @@ export default function Row({
                                 <i>No AF</i>
                               )}
                             </TableCell>
-                            <TableCell sx={{ width: "154px", padding: "16px" }}>
+                            <TableCell
+                              sx={{
+                                width: "146px !important",
+                                // backgroundColor: "grey",
+                              }}
+                            >
                               <StatusButton
                                 status={historyRow.dataset?.response || "N/A"}
                               />
                             </TableCell>
                           </TableRow>
-                        </React.Fragment>
+                        </>
                       );
                     })}
                   </TableBody>

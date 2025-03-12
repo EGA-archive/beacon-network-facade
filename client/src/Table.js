@@ -356,14 +356,16 @@ export default function CollapsibleTable({
                             onClick={() => toggleRow(registry.beaconId)}
                           >
                             {rowIsOpen ? (
-                              <KeyboardArrowRightIcon />
-                            ) : (
                               <KeyboardArrowDownIcon />
+                            ) : (
+                              <KeyboardArrowRightIcon />
                             )}
                           </IconButton>
                           <BeaconTypeButton type={beaconType} />
                         </TableCell>
-                        <TableCell sx={{ pl: 1, pr: 0, whiteSpace: "nowrap" }}>
+                        <TableCell
+                          sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
+                        >
                           <b>{registry.beaconName}</b>
                           <Box
                             component="span"
@@ -409,11 +411,7 @@ export default function CollapsibleTable({
                               style={{ width: "18px", height: "18px" }}
                             />
                           ) : (
-                            <img
-                              src={Dash}
-                              alt="Dash"
-                              style={{ width: "18px", height: "18px" }}
-                            />
+                            <i>No AF</i>
                           )}
                         </TableCell>
                         <TableCell>
@@ -458,17 +456,20 @@ export default function CollapsibleTable({
                                         <TableCell
                                           sx={{
                                             width: "90px !important",
+                                            // backgroundColor: "red",
                                           }}
                                         />
 
                                         <TableCell
                                           sx={{
                                             width: "154px !important",
+                                            // backgroundColor: "green",
                                           }}
                                         />
                                         <TableCell
                                           sx={{
                                             width: "356px !important",
+                                            // backgroundColor: "pink",
                                           }}
                                         >
                                           <Box>
@@ -507,6 +508,7 @@ export default function CollapsibleTable({
                                         </TableCell>
                                         <TableCell
                                           sx={{
+                                            // backgroundColor: "salmon",
                                             width: "146px !important",
                                             cursor: clickable
                                               ? "pointer"
@@ -550,6 +552,7 @@ export default function CollapsibleTable({
                                         <TableCell
                                           sx={{
                                             width: "146px !important",
+                                            // backgroundColor: "grey",
                                           }}
                                         >
                                           <StatusButton
