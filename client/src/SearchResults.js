@@ -48,6 +48,7 @@ function SearchResults({
               marginTop: "20px",
               display: "flex",
               justifyContent: "center",
+              marginLeft: "7%",
             }}
           >
             <CircularProgress size={40} />
