@@ -40,6 +40,7 @@ function BeaconQuery({
     }
 
     const query = `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`;
+    console.log("My query", query);
 
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(query));

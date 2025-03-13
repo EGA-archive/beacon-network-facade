@@ -8,7 +8,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
-export default function DatasetDialog({ open, onClose, currentDataset }) {
+export default function BeaconDialog({
+  open,
+  onClose,
+  currentDataset,
+  api,
+  individualBeaconName,
+}) {
   if (!currentDataset || currentDataset === "N/A") return null;
 
   return (
@@ -37,7 +43,7 @@ export default function DatasetDialog({ open, onClose, currentDataset }) {
           color: "#023452",
         }}
       >
-        Dataset Information
+        Beacon Information
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -89,6 +95,21 @@ export default function DatasetDialog({ open, onClose, currentDataset }) {
           Here datatset description!
         </Typography>
       </DialogContent>
+
+      <DialogTitle
+        sx={{
+          m: 0,
+          p: 2,
+          fontFamily: "Open Sans, sans-serif",
+          fontSize: "16px",
+          fontWeight: 700,
+          lineHeight: "24px",
+          letterSpacing: "0.5px",
+          color: "#023452",
+        }}
+      >
+        Datasets Information
+      </DialogTitle>
       <div style={{ padding: "20px", textAlign: "right" }}>
         <Button
           variant="outlined"

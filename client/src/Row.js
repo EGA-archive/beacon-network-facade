@@ -18,7 +18,7 @@ import {
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import Dash from "../src/dash.svg";
-import DatasetDialog from "./DatasetDialog.js";
+import DatasetDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
 
@@ -110,12 +110,6 @@ export default function Row({
   });
 
   useEffect(() => {
-    console.log(
-      `🚦 ${row.name}: forceOpenAll =`,
-      forceOpenAll,
-      "forceCloseAll =",
-      forceCloseAll
-    );
     if (forceOpenAll) {
       setOpen(true);
     } else if (forceCloseAll) {
@@ -223,6 +217,7 @@ export default function Row({
                 >
                   <TableBody>
                     {deduplicatedHistory.map((historyRow, index) => {
+                      // console.log("HiRO", historyRow);
                       const afValue = getFormattedAlleleFrequency(
                         historyRow.dataset
                       );

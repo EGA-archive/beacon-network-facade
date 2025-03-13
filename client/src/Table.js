@@ -28,7 +28,7 @@ import {
   BeaconTypeButton,
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
-import DatasetDialog from "./DatasetDialog";
+import BeaconDialog from "./BeaconDialog";
 import Doc from "../src/document.svg";
 
 export default function CollapsibleTable({
@@ -39,26 +39,27 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
-  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
+  const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [openRows, setOpenRows] = useState({});
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
-  const handleDatasetDialogOpen = (datasetId) => {
-    if (datasetId) {
-      setCurrentDataset(datasetId);
-      setDatasetDialogOpen(true);
+  const handleBeaconDialogOpen = (beaconName) => {
+    console.log("BN", beaconName);
+    if (beaconName) {
+      setCurrentBeaconName(beaconName);
+      setBeaconDialogOpen(true);
     }
   };
 
-  const handleDatasetDialogClose = () => {
-    setDatasetDialogOpen(false);
+  const handleBeaconDialogClose = () => {
+    setBeaconDialogOpen(false);
   };
 
   let individualAlleleData = [];
@@ -366,7 +367,17 @@ export default function CollapsibleTable({
                         <TableCell
                           sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
                         >
-                          <b>{registry.beaconName}</b>
+                          <b
+                            style={{
+                              cursor: "pointer",
+                              textDecoration: "underline",
+                            }}
+                            onClick={() =>
+                              handleBeaconDialogOpen(registry.beaconName)
+                            }
+                          >
+                            {registry.beaconName}
+                          </b>
                           <Box
                             component="span"
                             sx={{
@@ -474,23 +485,7 @@ export default function CollapsibleTable({
                                         >
                                           <Box>
                                             <i>Dataset: </i>
-                                            <b
-                                              onClick={() => {
-                                                if (datasetClickable) {
-                                                  handleDatasetDialogOpen(
-                                                    individualBeacon.id
-                                                  );
-                                                }
-                                              }}
-                                              style={{
-                                                cursor: datasetClickable
-                                                  ? "pointer"
-                                                  : "default",
-                                                textDecoration: datasetClickable
-                                                  ? "underline"
-                                                  : "none",
-                                              }}
-                                            >
+                                            <b>
                                               {datasetClickable ? (
                                                 individualBeacon.id
                                               ) : (
@@ -599,10 +594,12 @@ export default function CollapsibleTable({
         individualBeaconRegistryId={currentBeaconId}
         individualAlleleData={individualAlleleData}
       />
-      <DatasetDialog
-        open={datasetDialogOpen}
-        onClose={handleDatasetDialogClose}
+      <BeaconDialog
+        open={beaconDialogOpen}
+        onClose={handleBeaconDialogClose}
         currentDataset={currentDataset}
+        individualBeaconName={beaconName}
+        api={registry.beaconURL}
       />
     </>
   );
