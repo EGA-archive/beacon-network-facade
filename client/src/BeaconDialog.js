@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -12,9 +13,42 @@ export default function BeaconDialog({
   open,
   onClose,
   currentDataset,
-  api,
   individualBeaconName,
+  individualBeaconAPI,
+  individualBeaconURL,
 }) {
+  const [beaconInfo, setBeaconInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (open && individualBeaconAPI) {
+      const fetchBeaconInfo = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const apiUrl = `${individualBeaconAPI}/service-info`;
+          console.log(`🚀 Fetching Beacon Info from: ${apiUrl}`);
+          const response = await axios.get(apiUrl);
+          console.log("✅ Beacon Info Response:", response.data);
+          setBeaconInfo(response.data);
+        } catch (err) {
+          console.error("❌ Error fetching beacon info:", err);
+          setError("Failed to fetch beacon info.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchBeaconInfo();
+    }
+  }, [open, individualBeaconAPI]);
+
+  console.log("📢 Beacon Dialog Opened");
+  console.log("🏷️ Beacon Name:", individualBeaconName);
+  console.log("🔗 Beacon API:", individualBeaconAPI);
+  console.log("🔗 individualBeaconURL", individualBeaconURL);
+
   if (!currentDataset || currentDataset === "N/A") return null;
 
   return (
@@ -69,27 +103,14 @@ export default function BeaconDialog({
             color: "black",
           }}
         >
-          <b>Dataset Name:</b> {currentDataset}
+          <b>Beacon Name:</b> {individualBeaconName} <br />
+          <b>Organization:</b> Organization <br />
+          <b>Beacon URL: </b>
+          <a href={individualBeaconURL}>{individualBeaconURL}</a> <br />
+          <b>Beacon API: </b>
+          <a href={individualBeaconAPI}>{individualBeaconAPI}</a>
           <br />
-          <b>Organization:</b> Oragnization <br />
-          <b>Links:</b> <br />
-          {/* {dataset.links.map((link, index) => (
-            <a
-              key={index}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "block",
-                color: "#185177",
-                textDecoration: "underline",
-                marginBottom: "5px",
-              }}
-            >
-              {link}
-            </a>
-          ))} */}
-          Links
+          <b>Types of information:</b> {individualBeaconAPI}
           <br />
           <b>Description:</b> <br />
           Here datatset description!
@@ -110,6 +131,27 @@ export default function BeaconDialog({
       >
         Datasets Information
       </DialogTitle>
+
+      <DialogContent sx={{ padding: "20px", maxHeight: "300px" }}>
+        <Typography
+          gutterBottom
+          sx={{
+            fontFamily: "Open Sans, sans-serif",
+            fontSize: "14px",
+            fontWeight: 400,
+            lineHeight: "24px",
+            letterSpacing: "0.5px",
+            color: "black",
+          }}
+        >
+          <b>Dataset ID:</b> {currentDataset}
+          <br />
+          <b>Dataset Name:</b> Here render dataset name!
+          <br />
+          <b>Description:</b> <br />
+          Here datatset description!
+        </Typography>
+      </DialogContent>
       <div style={{ padding: "20px", textAlign: "right" }}>
         <Button
           variant="outlined"

@@ -47,13 +47,17 @@ export default function CollapsibleTable({
   const [currentDataset, setCurrentDataset] = useState("");
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [openRows, setOpenRows] = useState({});
+  const [currentBeaconApi, setCurrentBeaconApi] = useState("");
+  const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
-  const handleBeaconDialogOpen = (beaconName) => {
-    console.log("BN", beaconName);
+  const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
+    console.log("🛑 Opening Beacon Dialog for:", beaconName, "API:", beaconAPI);
     if (beaconName) {
       setCurrentBeaconName(beaconName);
+      setCurrentBeaconApi(beaconAPI);
+      setCurrentBeaconUrl(beaconURL);
       setBeaconDialogOpen(true);
     }
   };
@@ -182,6 +186,7 @@ export default function CollapsibleTable({
         name: registry.beaconName,
         beaconLogo: registry.beaconLogo,
         beaconURL: registry.beaconURL,
+        beaconAPI: registry.beaconAPI,
         response: networkBeacons.some(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -373,11 +378,16 @@ export default function CollapsibleTable({
                               textDecoration: "underline",
                             }}
                             onClick={() =>
-                              handleBeaconDialogOpen(registry.beaconName)
+                              handleBeaconDialogOpen(
+                                registry.beaconName,
+                                registry.beaconAPI,
+                                registry.beaconURL
+                              )
                             }
                           >
                             {registry.beaconName}
                           </b>
+
                           <Box
                             component="span"
                             sx={{
@@ -598,8 +608,9 @@ export default function CollapsibleTable({
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
         currentDataset={currentDataset}
-        individualBeaconName={beaconName}
-        api={registry.beaconURL}
+        individualBeaconName={currentBeaconName}
+        individualBeaconAPI={currentBeaconApi}
+        individualBeaconURL={currentBeaconUrl}
       />
     </>
   );
