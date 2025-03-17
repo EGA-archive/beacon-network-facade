@@ -17,8 +17,7 @@ import {
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
-import Dash from "../src/dash.svg";
-import DatasetDialog from "./BeaconDialog.js";
+import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
 
@@ -32,26 +31,31 @@ export default function Row({
 }) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
+  const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
-  const alleleDataNetwork = row.history.map((historyRow) => ({
-    beaconId: historyRow.beaconId,
-    datasetId: historyRow.dataset.datasetId,
-    population: historyRow.dataset.population,
-    alleleFrequency: historyRow.dataset.alleleFrequency,
-  }));
 
-  const handleDialogOpen = (historyRow, isDatasetDialog = false) => {
+  const alleleDataNetwork = row.history.map((historyRow) => {
+    return {
+      beaconId: historyRow.beaconId,
+      datasetId: historyRow.dataset.datasetId,
+      population: historyRow.dataset.population,
+      alleleFrequency: historyRow.dataset.alleleFrequency,
+      beaconAPI: row.beaconAPI,
+    };
+  });
+
+  console.log("alleleDataNetwork", alleleDataNetwork);
+
+  // console.log("📡 Received networkBeacons in Row.js:", networkBeacons);
+  console.log("📝 Current row in Row.js:", row);
+  console.log("📝 Current row in Row.js:", row.beaconAPI);
+
+  const handleDialogOpen = (historyRow) => {
     if (historyRow?.dataset?.datasetId) {
       setCurrentBeaconName(historyRow.beaconId || "");
       setCurrentDataset(historyRow.dataset.datasetId);
-
-      if (isDatasetDialog) {
-        setDatasetDialogOpen(true);
-      } else {
-        setDialogOpen(true);
-      }
+      setDialogOpen(true);
     } else {
       console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
     }
@@ -59,7 +63,6 @@ export default function Row({
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    setDatasetDialogOpen(false);
   };
   const filteredHistory = row.history?.filter((historyRow) => {
     if (!selectedFilters || selectedFilters.length === 0) return true;
@@ -121,6 +124,28 @@ export default function Row({
     return historyData.some((item) => item.dataset.alleleFrequency !== "N/A");
   };
 
+  const handleBeaconDialogOpen = (historyRow) => {
+    const beaconId = historyRow.beaconId;
+    const beaconAPI = row.beaconAPI;
+
+    const datasetIds = alleleDataNetwork
+      .filter((data) => data.beaconId === beaconId)
+      .map((data) => data.datasetId);
+
+    console.log("📡 Opening Beacon Dialog with:", {
+      beaconId,
+      beaconAPI,
+      datasetIds,
+    });
+
+    setCurrentBeaconName(beaconId);
+    setCurrentDataset(datasetIds);
+    setBeaconDialogOpen(true);
+  };
+
+  const handleBeaconDialogClose = () => {
+    setBeaconDialogOpen(false);
+  };
   return (
     <>
       {deduplicatedHistory.length > 0 && (
@@ -235,7 +260,7 @@ export default function Row({
                                 paddingLeft: "4px",
                               }}
                             >
-                              <b>{historyRow.beaconId} </b>
+                              <b>{historyRow.beaconId}</b>
                               <Box
                                 component="span"
                                 sx={{
@@ -252,6 +277,9 @@ export default function Row({
                                     backgroundColor: "#DBEEFD",
                                   },
                                 }}
+                                onClick={() =>
+                                  handleBeaconDialogOpen(historyRow)
+                                }
                               >
                                 <img
                                   src={Doc}
@@ -295,23 +323,11 @@ export default function Row({
                               <Box>
                                 <i>Dataset: </i>
                                 {historyRow.dataset?.datasetId ? (
-                                  <b
-                                    style={{
-                                      cursor: "pointer",
-                                      textDecoration: "underline",
-                                    }}
-                                    onClick={() =>
-                                      handleDialogOpen(historyRow, true)
-                                    }
-                                  >
-                                    {historyRow.dataset.datasetId}
-                                  </b>
+                                  <b>{historyRow.dataset.datasetId}</b>
                                 ) : (
-                                  <img
-                                    src={Dash}
-                                    alt="Dash"
-                                    style={{ width: "18px", height: "18px" }}
-                                  />
+                                  <b>
+                                    <i>ID undefined</i>
+                                  </b>
                                 )}
                               </Box>
                             </TableCell>
@@ -367,10 +383,12 @@ export default function Row({
         beaconNetworkDataset={currentDataset}
         alleleDataNetwork={alleleDataNetwork}
       />
-      <DatasetDialog
-        open={datasetDialogOpen}
-        onClose={handleDialogClose}
-        currentDataset={currentDataset}
+      <BeaconDialog
+        open={beaconDialogOpen}
+        onClose={handleBeaconDialogClose}
+        beaconAPI={row.beaconAPI} // ✅ Pass the beaconAPI
+        beaconId={currentBeaconName} // ✅ Pass the beaconId
+        currentDataset={currentDataset} // ✅ Pass the dataset IDs array
       />
     </>
   );

@@ -16,6 +16,7 @@ export default function BeaconDialog({
   individualBeaconName,
   individualBeaconAPI,
   individualBeaconURL,
+  currentDatasets,
 }) {
   const [beaconInfo, setBeaconInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,12 +29,12 @@ export default function BeaconDialog({
         setError(null);
         try {
           const apiUrl = `${individualBeaconAPI}/service-info`;
-          console.log(`🚀 Fetching Beacon Info from: ${apiUrl}`);
+          // console.log(`🚀 Fetching Beacon Info from: ${apiUrl}`);
           const response = await axios.get(apiUrl);
-          console.log("✅ Beacon Info Response:", response.data);
+          // console.log("✅ Beacon Info Response:", response.data);
           setBeaconInfo(response.data);
         } catch (err) {
-          console.error("❌ Error fetching beacon info:", err);
+          // console.error("❌ Error fetching beacon info:", err);
           setError("Failed to fetch beacon info.");
         } finally {
           setLoading(false);
@@ -44,10 +45,10 @@ export default function BeaconDialog({
     }
   }, [open, individualBeaconAPI]);
 
-  console.log("📢 Beacon Dialog Opened");
-  console.log("🏷️ Beacon Name:", individualBeaconName);
-  console.log("🔗 Beacon API:", individualBeaconAPI);
-  console.log("🔗 individualBeaconURL", individualBeaconURL);
+  // console.log("📢 Beacon Dialog Opened");
+  // console.log("🏷️ Beacon Name:", individualBeaconName);
+  // console.log("🔗 Beacon API:", individualBeaconAPI);
+  // console.log("🔗 individualBeaconURL", individualBeaconURL);
 
   if (!currentDataset || currentDataset === "N/A") return null;
 
@@ -133,24 +134,35 @@ export default function BeaconDialog({
       </DialogTitle>
 
       <DialogContent sx={{ padding: "20px", maxHeight: "300px" }}>
-        <Typography
-          gutterBottom
-          sx={{
-            fontFamily: "Open Sans, sans-serif",
-            fontSize: "14px",
-            fontWeight: 400,
-            lineHeight: "24px",
-            letterSpacing: "0.5px",
-            color: "black",
-          }}
-        >
-          <b>Dataset ID:</b> {currentDataset}
-          <br />
-          <b>Dataset Name:</b> Here render dataset name!
-          <br />
-          <b>Description:</b> <br />
-          Here datatset description!
-        </Typography>
+        {(currentDatasets || []).map((dataset, index) => (
+          <Typography
+            key={index}
+            gutterBottom
+            sx={{
+              fontFamily: "Open Sans, sans-serif",
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: "24px",
+              letterSpacing: "0.5px",
+              color: "black",
+            }}
+          >
+            {dataset ? (
+              <div>
+                <b>Dataset ID:</b> {dataset}
+              </div>
+            ) : (
+              <div>
+                <b>Dataset ID:</b>
+                <i> ID undefined</i>
+              </div>
+            )}
+            <b>Dataset Name:</b> Here render dataset name!
+            <br />
+            <b>Description:</b> <br />
+            Here dataset description!
+          </Typography>
+        ))}
       </DialogContent>
       <div style={{ padding: "20px", textAlign: "right" }}>
         <Button

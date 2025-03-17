@@ -8,6 +8,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
 import { useNavigate } from "react-router-dom";
+import { filterValidDatasets } from "./utils/beaconUtils";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
@@ -60,7 +61,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message:", event.data);
+      // console.log("📩 WebSocket Received Message", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
