@@ -26,6 +26,7 @@ export default function BeaconDialog({
   const [organizationName, setOrganizationName] = useState("Undefined");
   const [contact, setContact] = useState("Undefined");
   const [entryTypes, setEntryTypes] = useState([]);
+  const [datasetsInfo, setDatasetsInfo] = useState([]);
 
   const apiToFetch =
     beaconType === "individual" ? individualBeaconAPI : beaconAPI;
@@ -34,28 +35,72 @@ export default function BeaconDialog({
     if (open) {
       fetchBeaconInfo();
       fetchEntryTypes();
+      fetchDatasetInfo();
     }
   }, [open]);
+
+  const fetchDatasetInfo = async () => {
+    if (!apiToFetch) return;
+
+    try {
+      const response = await axios.get(`${apiToFetch}/datasets`);
+      console.log("✅ Dataset API Response:", response.data);
+      console.log("api", apiToFetch);
+      if (response.data?.response?.collections) {
+        const datasetList = response.data.response.collections;
+        console.log("currentDatasets".currentDatasets);
+
+        const matchedDatasets = currentDatasets.map((datasetId) => {
+          const match = datasetList.find((dataset) => dataset.id === datasetId);
+
+          console.log("match.description", match?.description);
+          console.log("match.name", match?.name);
+
+          return {
+            id: datasetId,
+            name: match ? match.name : "Undefined",
+            description: match ? match.description : "Undefined",
+          };
+        });
+
+        console.log("🔍 Matched Datasets Info:", matchedDatasets);
+        setDatasetsInfo(matchedDatasets);
+      } else {
+        console.warn("⚠️ No datasets found in API response!");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching dataset info:", err);
+    }
+  };
 
   const fetchBeaconInfo = async () => {
     if (!apiToFetch) return;
 
     try {
       const response = await axios.get(apiToFetch);
-      const matchedBeacon = response.data.responses?.find((entry) =>
-        beaconType === "individual"
-          ? entry.meta?.beaconId === individualBeaconRegistryId
-          : entry.meta?.beaconId === beaconId
-      );
 
-      if (matchedBeacon) {
-        setOrganizationName(matchedBeacon.response.name || "Undefined");
-        setContact(
-          matchedBeacon.response.organization?.contactUrl || "Undefined"
+      let matchedBeacon;
+
+      if (beaconType === "individual") {
+        if (response.data.meta?.beaconId === individualBeaconRegistryId) {
+          matchedBeacon = response.data;
+        }
+      } else {
+        matchedBeacon = response.data.responses?.find(
+          (entry) => entry.meta?.beaconId === beaconId
         );
       }
+
+      if (matchedBeacon) {
+        setOrganizationName(matchedBeacon.response?.name || "Undefined");
+        setContact(
+          matchedBeacon.response?.organization?.contactUrl || "Undefined"
+        );
+      } else {
+        console.warn("⚠️ No matching beacon found in API response!");
+      }
     } catch (err) {
-      console.error("Error fetching beacon info:", err);
+      console.error("❌ Error fetching beacon info:", err);
     }
   };
 
@@ -194,38 +239,43 @@ export default function BeaconDialog({
           ...new Set(
             beaconType === "individual" ? currentDatasets : currentDataset || []
           ),
-        ].map((dataset, index) => (
-          <Typography
-            key={index}
-            gutterBottom
-            sx={{
-              fontFamily: "Open Sans, sans-serif",
-              fontSize: "14px",
-              fontWeight: 400,
-              lineHeight: "24px",
-              letterSpacing: "0.5px",
-              color: "black",
-            }}
-          >
-            {dataset ? (
-              <div>
-                <b>Dataset ID:</b> {dataset}
-              </div>
-            ) : (
-              <div>
-                <b>Dataset ID:</b>
-                <i>ID undefined</i>
-              </div>
-            )}
-            <b>Dataset Name:</b> Here render dataset name!
-            <br />
-            <b>Description:</b> <br />
-            Here dataset description!
-            <br />
-            <br />
-          </Typography>
-        ))}
+        ].map((datasetId, index) => {
+          const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
+
+          return (
+            <Typography
+              key={index}
+              gutterBottom
+              sx={{
+                fontFamily: "Open Sans, sans-serif",
+                fontSize: "14px",
+                fontWeight: 400,
+                lineHeight: "24px",
+                letterSpacing: "0.5px",
+                color: "black",
+              }}
+            >
+              {datasetId ? (
+                <div>
+                  <b>Dataset ID:</b> {datasetId}
+                </div>
+              ) : (
+                <div>
+                  <b>Dataset ID:</b> <i>undefined</i>
+                </div>
+              )}
+              <b>Dataset Name:</b>{" "}
+              {datasetInfo ? datasetInfo.name : <i>undefined</i>}
+              <br />
+              <b>Description:</b> <br />
+              {datasetInfo ? datasetInfo.description : <i>undefined</i>}
+              <br />
+              <br />
+            </Typography>
+          );
+        })}
       </DialogContent>
+
       <div style={{ padding: "20px", textAlign: "right" }}>
         <Button
           variant="outlined"

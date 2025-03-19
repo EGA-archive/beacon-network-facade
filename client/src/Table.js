@@ -57,31 +57,59 @@ export default function CollapsibleTable({
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
 
+  // const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
+  //   if (beaconName && filteredIndividualBeacons.length > 0) {
+  //     setCurrentBeaconName(beaconName);
+  //     setCurrentBeaconApi(beaconAPI);
+  //     setCurrentBeaconUrl(beaconURL);
+  //     // setCurrentBeaconId;
+
+  //     setOpenRows((prev) => ({
+  //       ...prev,
+  //       [beaconId]: true,
+  //     }));
+
+  //     const matchingBeacon = registries.find(
+  //       (registry) => registry.beaconName === beaconName
+  //     );
+
+  //     if (!matchingBeacon) {
+  //       return;
+  //     }
+  //     const beaconId = matchingBeacon.beaconId;
+  //     const datasets = filteredIndividualBeacons
+  //       .filter((beacon) => beacon.beaconId === beaconId)
+  //       .map((beacon) => beacon.id);
+  //     setCurrentDatasets(datasets);
+  //     setBeaconDialogOpen(true);
+  //   }
+  // };
+
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
       setCurrentBeaconName(beaconName);
       setCurrentBeaconApi(beaconAPI);
       setCurrentBeaconUrl(beaconURL);
-
-      setOpenRows((prev) => ({
-        ...prev,
-        [beaconId]: true, // 🔥 Force the row open
-      }));
-
       const matchingBeacon = registries.find(
         (registry) => registry.beaconName === beaconName
       );
 
       if (!matchingBeacon) {
+        console.warn("No matching beacon found in registries.");
         return;
       }
+
       const beaconId = matchingBeacon.beaconId;
+      setCurrentBeaconId(beaconId);
+      setOpenRows((prev) => ({
+        ...prev,
+        [beaconId]: true,
+      }));
+
       const datasets = filteredIndividualBeacons
         .filter((beacon) => beacon.beaconId === beaconId)
         .map((beacon) => beacon.id);
-      // .filter(Boolean);
 
-      // console.log("📂 Extracted Datasets for Selected Beacon:", datasets);
       setCurrentDatasets(datasets);
       setBeaconDialogOpen(true);
     }
@@ -608,7 +636,6 @@ export default function CollapsibleTable({
         individualAlleleData={individualAlleleData}
       />
       <BeaconDialog
-        key={beaconDialogOpen ? `dialog-open-${Date.now()}` : "dialog-closed"}
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
         beaconType="individual"
