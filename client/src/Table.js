@@ -42,10 +42,11 @@ export default function CollapsibleTable({
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
+
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
-  const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [openRows, setOpenRows] = useState({});
   const [currentBeaconApi, setCurrentBeaconApi] = useState("");
   const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
@@ -55,28 +56,6 @@ export default function CollapsibleTable({
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
-
-  useEffect(() => {
-    console.log(
-      "🔥 useEffect triggered - Beacon Dialog Open State:",
-      beaconDialogOpen
-    );
-  }, [beaconDialogOpen]);
-
-  useEffect(() => {
-    console.log("First Render - BeaconDialog Open:", beaconDialogOpen);
-    console.log("First Render - Dialog Open:", dialogOpen);
-    console.log("First Render - Current Datasets:", currentDatasets);
-  }, []);
-  useEffect(() => {
-    console.log("🔄 useEffect triggered - Data Loaded?", data.length > 0);
-
-    // Ensure state updates properly after the first load
-    if (data.length > 0) {
-      setBeaconDialogOpen(false);
-      setDialogOpen(false);
-    }
-  }, [data]);
 
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
@@ -112,20 +91,6 @@ export default function CollapsibleTable({
     setBeaconDialogOpen(false);
   };
 
-  const handleDialogOpen = (registry, individualBeacon) => {
-    if ((registry, individualBeacon)) {
-      setCurrentBeaconName(registry.beaconName);
-      setCurrentBeaconId(registry.beaconId);
-      setCurrentDataset(individualBeacon.id);
-
-      setDialogOpen(true);
-    }
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-  };
-
   let individualAlleleData = [];
   if (individualBeacons.length > 0) {
     const alleleData = [].concat(
@@ -143,6 +108,23 @@ export default function CollapsibleTable({
         )
     );
   }
+
+  const handleDialogOpen = (registry, individualBeacon) => {
+    if ((registry, individualBeacon)) {
+      setCurrentBeaconName(registry.beaconName);
+      setCurrentBeaconId(registry.beaconId);
+      setCurrentDataset(individualBeacon.id);
+      setDialogOpen(true);
+      console.log("registry", registry);
+      console.log("individualBeacon", individualBeacon);
+    } else {
+      console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
   const maturityMapping = {
     prod: "Prod-Beacon",
@@ -281,24 +263,6 @@ export default function CollapsibleTable({
   ).size;
 
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
-
-  // console.log("beaconNetworkCount", beaconNetworkCount);
-  // console.log("totalBeaconCount", totalBeaconCount);
-  // console.log("totalDatasetCount", totalDatasetCount);
-
-  // useEffect(() => {
-  //   console.log(
-  //     "🔥 useEffect triggered - Dialog Open State:",
-  //     beaconDialogOpen
-  //   );
-  // }, [beaconDialogOpen]);
-
-  useEffect(() => {
-    if (data.length > 0) {
-      setBeaconDialogOpen(false);
-      setDialogOpen(false);
-    }
-  }, [data]);
 
   useEffect(() => {
     if (setStats) {
@@ -448,11 +412,7 @@ export default function CollapsibleTable({
                               src={Doc}
                               alt="Doc"
                               style={{ width: "18px", height: "18px" }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log(
-                                  "⚡ Beacon Dialog Clicked! Opening..."
-                                );
+                              onClick={() => {
                                 handleBeaconDialogOpen(
                                   registry.beaconName,
                                   registry.beaconAPI,
@@ -569,8 +529,7 @@ export default function CollapsibleTable({
                                               ? "#077EA6"
                                               : "inherit",
                                           }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
+                                          onClick={() => {
                                             if (clickable) {
                                               handleDialogOpen(
                                                 registry,
@@ -649,6 +608,7 @@ export default function CollapsibleTable({
         individualAlleleData={individualAlleleData}
       />
       <BeaconDialog
+        key={beaconDialogOpen ? `dialog-open-${Date.now()}` : "dialog-closed"}
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
         beaconType="individual"

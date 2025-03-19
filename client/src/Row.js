@@ -127,19 +127,15 @@ export default function Row({
 
   const handleBeaconDialogOpen = (historyRow) => {
     const beaconId = historyRow.beaconId;
-    const beaconAPI = row.beaconAPI;
+    // const beaconAPI = row.beaconAPI;
 
     let datasetIds = alleleDataNetwork
       .filter((data) => data.beaconId === beaconId)
       .map((data) => data.datasetId);
 
-    datasetIds = [...new Set(datasetIds)];
+    console.log("beaconId", beaconId);
 
-    // console.log("📡 Opening Beacon Dialog with:", {
-    //   beaconId,
-    //   beaconAPI,
-    //   datasetIds,
-    // });
+    datasetIds = [...new Set(datasetIds)];
 
     setCurrentBeaconName(beaconId);
     setCurrentDataset(datasetIds);
@@ -249,7 +245,7 @@ export default function Row({
                       const afValue = getFormattedAlleleFrequency(
                         historyRow.dataset
                       );
-                      const datasetClickable = historyRow.dataset?.datasetId;
+
                       const afClickable = afValue !== "N/A";
 
                       return (

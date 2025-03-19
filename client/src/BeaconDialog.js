@@ -23,126 +23,58 @@ export default function BeaconDialog({
   beaconId,
   beaconURL,
 }) {
-  const [beaconInfo, setBeaconInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [organizationName, setOrganizationName] = useState("Undefined");
   const [contact, setContact] = useState("Undefined");
   const [entryTypes, setEntryTypes] = useState([]);
 
-  // console.log("📝 BeaconDialog Props:", {
-  //   beaconType,
-  //   currentDataset,
-  //   individualBeaconName,
-  //   individualBeaconAPI,
-  //   individualBeaconURL,
-  //   currentDatasets,
-  //   beaconAPI,
-  //   beaconId,
-  // });
-
-  // org.ega-archive.ega-beacon   individualBeaconRegistryId
-
   const apiToFetch =
     beaconType === "individual" ? individualBeaconAPI : beaconAPI;
 
-  // console.log(
-  //   `🔍 Debugging Individual Beacons - individualBeaconRegistryId: ${individualBeaconRegistryId}`
-  // );
-
   useEffect(() => {
-    if (open && apiToFetch) {
-      const fetchBeaconInfo = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await axios.get(apiToFetch);
-          // console.log("📡 Full API Response:", response.data);
-
-          if (response.data.responses) {
-            response.data.responses.forEach((entry, index) => {
-              // console.log(
-              //   `🔍 Entry ${index} - meta.beaconId:`,
-              //   entry.meta?.beaconId
-              // );
-            });
-            // console.log(
-            //   `⚡ Comparing beaconId: ${beaconId} vs individualBeaconRegistryId: ${individualBeaconRegistryId}`
-            // );
-            // console.log(`🛠️ Beacon Type: ${beaconType}`);
-            const matchedBeacon = response.data.responses.find((entry) => {
-              const entryBeaconId = entry.meta?.beaconId;
-              // console.log(`🔍 Checking entry: ${entryBeaconId}`);
-
-              return beaconType === "individual"
-                ? entryBeaconId === individualBeaconRegistryId
-                : entryBeaconId === beaconId;
-            });
-
-            if (matchedBeacon) {
-              // console.log("✅ Matched Beacon:", matchedBeacon);
-
-              setOrganizationName(matchedBeacon.response.name || "Undefined");
-              setContact(
-                matchedBeacon.response.organization.contactUrl || "Undefined"
-              );
-            } else {
-              // console.log(
-              //   "❌ No match found for",
-              //   beaconType === "individual"
-              //     ? `individualBeaconRegistryId: ${individualBeaconRegistryId}`
-              //     : `beaconId: ${beaconId}`
-              // );
-            }
-          }
-
-          setBeaconInfo(response.data);
-        } catch (err) {
-          console.error("❌ Error fetching beacon info:", err);
-          setError("Failed to fetch beacon info.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
+    if (open) {
       fetchBeaconInfo();
-    }
-  }, [open, apiToFetch, beaconId, individualBeaconRegistryId, beaconType]);
-
-  useEffect(() => {
-    if (open && apiToFetch) {
-      const fetchEntryTypes = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await axios.get(`${apiToFetch}/entry_types`);
-          // console.log("📡 Full API Response:", response.data);
-
-          let fetchedEntryTypes = response.data?.response?.entryTypes
-            ? Object.values(response.data.response.entryTypes)
-            : [];
-
-          // console.log("📡 Extracted Entry Types Array:", fetchedEntryTypes);
-          const uniqueEntryTypes = [
-            ...new Set(
-              fetchedEntryTypes.map((type) => type.name).filter(Boolean)
-            ),
-          ];
-
-          setEntryTypes(uniqueEntryTypes);
-        } catch (err) {
-          console.error("❌ Error fetching entry types:", err);
-          setError("Failed to fetch entry types.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
       fetchEntryTypes();
     }
-  }, [open, apiToFetch]);
+  }, [open]);
 
-  if (!currentDataset || currentDataset === "N/A") return null;
+  const fetchBeaconInfo = async () => {
+    if (!apiToFetch) return;
+
+    try {
+      const response = await axios.get(apiToFetch);
+      const matchedBeacon = response.data.responses?.find((entry) =>
+        beaconType === "individual"
+          ? entry.meta?.beaconId === individualBeaconRegistryId
+          : entry.meta?.beaconId === beaconId
+      );
+
+      if (matchedBeacon) {
+        setOrganizationName(matchedBeacon.response.name || "Undefined");
+        setContact(
+          matchedBeacon.response.organization?.contactUrl || "Undefined"
+        );
+      }
+    } catch (err) {
+      console.error("Error fetching beacon info:", err);
+    }
+  };
+
+  const fetchEntryTypes = async () => {
+    if (!apiToFetch) return;
+
+    try {
+      const response = await axios.get(`${apiToFetch}/entry_types`);
+      const fetchedEntryTypes = response.data?.response?.entryTypes
+        ? Object.values(response.data.response.entryTypes)
+        : [];
+
+      setEntryTypes([
+        ...new Set(fetchedEntryTypes.map((type) => type.name).filter(Boolean)),
+      ]);
+    } catch (err) {
+      console.error("Error fetching entry types:", err);
+    }
+  };
 
   const buttonStyles = {
     width: "auto",
@@ -161,8 +93,6 @@ export default function BeaconDialog({
     marginRight: "6px",
     marginBottom: "6px",
   };
-
-  console.log("🚀 BeaconDialog rendered! Open state:", open);
 
   return (
     <Dialog
@@ -196,12 +126,7 @@ export default function BeaconDialog({
         <IconButton
           aria-label="close"
           onClick={onClose}
-          sx={{
-            position: "absolute",
-            right: 10,
-            top: 10,
-            color: "#023452",
-          }}
+          sx={{ position: "absolute", right: 10, top: 10, color: "#023452" }}
         >
           <CloseIcon />
         </IconButton>
@@ -219,83 +144,37 @@ export default function BeaconDialog({
             color: "black",
           }}
         >
-          {beaconType === "individual" ? (
-            <>
-              <b>Beacon ID:</b> {individualBeaconName} <br />
-              <b>Beacon ID ID ID ID:</b> {individualBeaconRegistryId} <br />
-              <b>Organization: </b>{" "}
-              {organizationName === "Undefined" ? (
-                <i>{organizationName}</i>
-              ) : (
-                organizationName
-              )}
-              <br />
-              <b>Beacon URL: </b>
-              <a
-                href={individualBeaconURL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {individualBeaconURL}
-              </a>
-              <br />
-              <b>Types of information:</b>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  marginTop: "8px",
-                }}
-              >
-                {entryTypes.length > 0 ? (
-                  entryTypes.map((name, index) => (
-                    <Button key={index} variant="outlined" sx={buttonStyles}>
-                      {name}
-                    </Button>
-                  ))
-                ) : (
-                  <i>No entry types available</i>
-                )}
-              </div>
-            </>
+          <b>Beacon ID:</b> {individualBeaconName || beaconId} <br />
+          <b>Organization: </b>
+          {organizationName === "Undefined" ? (
+            <i>{organizationName}</i>
           ) : (
-            <>
-              <b>Beacon ID: </b> {beaconId} <br />
-              <b>Organization: </b>{" "}
-              {organizationName === "Undefined" ? (
-                <i>{organizationName}</i>
-              ) : (
-                organizationName
-              )}
-              <br />
-              <b>Beacon URL: </b>
-              <a href={beaconURL} target="_blank" rel="noopener noreferrer">
-                {beaconURL}
-              </a>
-              <br />
-              <b>Types of information:</b>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  marginTop: "8px",
-                }}
-              >
-                {entryTypes.length > 0 ? (
-                  entryTypes.map((type, index) => (
-                    <Button key={index} variant="outlined" sx={buttonStyles}>
-                      {type}
-                    </Button>
-                  ))
-                ) : (
-                  <i>No entry types available</i>
-                )}
-              </div>
-            </>
+            organizationName
           )}
+          <br />
+          <b>Beacon URL: </b>
+          <a
+            href={individualBeaconURL || beaconURL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {individualBeaconURL || beaconURL}
+          </a>
+          <br />
+          <b>Types of information:</b>
+          <div style={{ display: "flex", flexWrap: "wrap", marginTop: "8px" }}>
+            {entryTypes.length > 0 ? (
+              entryTypes.map((name, index) => (
+                <Button key={index} variant="outlined" sx={buttonStyles}>
+                  {name}
+                </Button>
+              ))
+            ) : (
+              <i>No entry types available</i>
+            )}
+          </div>
         </Typography>
       </DialogContent>
-
       <DialogTitle
         sx={{
           m: 0,
@@ -335,13 +214,15 @@ export default function BeaconDialog({
             ) : (
               <div>
                 <b>Dataset ID:</b>
-                <i> ID undefined</i>
+                <i>ID undefined</i>
               </div>
             )}
             <b>Dataset Name:</b> Here render dataset name!
             <br />
             <b>Description:</b> <br />
             Here dataset description!
+            <br />
+            <br />
           </Typography>
         ))}
       </DialogContent>
