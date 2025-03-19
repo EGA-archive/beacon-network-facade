@@ -38,8 +38,8 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Data received:", data);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
@@ -49,18 +49,45 @@ export default function CollapsibleTable({
   const [openRows, setOpenRows] = useState({});
   const [currentBeaconApi, setCurrentBeaconApi] = useState("");
   const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
-  const [currentDatasets, setCurrentDatasets] = useState("");
+  const [currentDatasets, setCurrentDatasets] = useState([]);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
 
+  useEffect(() => {
+    console.log(
+      "🔥 useEffect triggered - Beacon Dialog Open State:",
+      beaconDialogOpen
+    );
+  }, [beaconDialogOpen]);
+
+  useEffect(() => {
+    console.log("First Render - BeaconDialog Open:", beaconDialogOpen);
+    console.log("First Render - Dialog Open:", dialogOpen);
+    console.log("First Render - Current Datasets:", currentDatasets);
+  }, []);
+  useEffect(() => {
+    console.log("🔄 useEffect triggered - Data Loaded?", data.length > 0);
+
+    // Ensure state updates properly after the first load
+    if (data.length > 0) {
+      setBeaconDialogOpen(false);
+      setDialogOpen(false);
+    }
+  }, [data]);
+
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
-    if (beaconName) {
+    if (beaconName && filteredIndividualBeacons.length > 0) {
       setCurrentBeaconName(beaconName);
       setCurrentBeaconApi(beaconAPI);
       setCurrentBeaconUrl(beaconURL);
+
+      setOpenRows((prev) => ({
+        ...prev,
+        [beaconId]: true, // 🔥 Force the row open
+      }));
 
       const matchingBeacon = registries.find(
         (registry) => registry.beaconName === beaconName
@@ -130,39 +157,6 @@ export default function CollapsibleTable({
   );
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
-  // const foundFilteredBeacons = individualBeacons.filter((beacon) => {
-  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-  //   if (uniqueIndividualBeacons.has(uniqueKey)) {
-  //     return false;
-  //   }
-  //   uniqueIndividualBeacons.add(uniqueKey);
-
-  //   if (!allowedBeaconIds.has(beacon.beaconId)) {
-  //     return false;
-  //   }
-
-  //   if (selectedFilters.includes("Found") && beacon.exists) {
-  //     // console.log("✅ Matched 'Found'");
-  //     return true;
-  //   }
-  //   if (selectedFilters.includes("Not-Found") && !beacon.exists) {
-  //     // console.log("✅ Matched 'Not-Found'");
-  //     return true;
-  //   }
-  //   return (
-  //     !selectedFilters.includes("Found") &&
-  //     !selectedFilters.includes("Not-Found")
-  //   );
-  // });
-
-  // const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
-  //   if (selectedFilters.includes("af-only")) {
-  //     const af = getFormattedAlleleFrequency(beacon);
-  //     // console.log("🧬 Checking Allele Frequency:", af);
-  //     return af !== "N/A";
-  //   }
-  //   return true;
-  // });
 
   const foundFilteredBeacons = validIndividualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
@@ -194,77 +188,6 @@ export default function CollapsibleTable({
     }
     return true;
   });
-
-  // console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
-
-  // const networkRows = registries
-  //   .filter((registry) =>
-  //     selectedFilters.includes(maturityMapping[registry.beaconMaturity])
-  //   )
-  //   .filter((registry) =>
-  //     networkBeacons.some(
-  //       (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-  //     )
-  //   )
-  //   .map((registry) => {
-  //     let history = networkBeacons
-  //       .filter(
-  //         (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-  //       )
-  //       .map((beacon) => {
-  //         let populationList = [];
-  //         beacon.results?.forEach((result) => {
-  //           result.frequencyInPopulations?.forEach((popObj) => {
-  //             popObj.frequencies?.forEach((freq) => {
-  //               if (freq.population) {
-  //                 populationList.push(freq.population);
-  //               }
-  //             });
-  //           });
-  //         });
-
-  //         let populationString =
-  //           populationList.length > 0 ? populationList.join(", ") : "(unknown)";
-
-  //         return {
-  //           beaconId: beacon.beaconId,
-  //           maturity: registry.beaconMaturity,
-  //           dataset: {
-  //             datasetId: beacon.id,
-  //             population: populationString,
-  //             alleleFrequency:
-  //               beacon.results?.[0]?.frequencyInPopulations?.[0]
-  //                 ?.frequencies?.[0]?.alleleFrequency || "N/A",
-  //             response: beacon.exists ? "Found" : "Not Found",
-  //           },
-  //         };
-  //       });
-
-  //     if (selectedFilters.includes("af-only")) {
-  //       history = history.filter(
-  //         (item) => item.dataset.alleleFrequency !== "N/A"
-  //       );
-  //     }
-
-  //     return {
-  //       name: registry.beaconName,
-  //       beaconLogo: registry.beaconLogo,
-  //       beaconURL: registry.beaconURL,
-  //       beaconAPI: registry.beaconAPI,
-  //       response: networkBeacons.some(
-  //         (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
-  //       )
-  //         ? "Found"
-  //         : "Not Found",
-  //       history,
-  //     };
-  //   })
-  //   .filter((row) => {
-  //     if (selectedFilters.includes("af-only")) {
-  //       return row.history.length > 0;
-  //     }
-  //     return true;
-  //   });
 
   const networkRows = filteredRegistries
     .filter((registry) =>
@@ -362,6 +285,20 @@ export default function CollapsibleTable({
   // console.log("beaconNetworkCount", beaconNetworkCount);
   // console.log("totalBeaconCount", totalBeaconCount);
   // console.log("totalDatasetCount", totalDatasetCount);
+
+  // useEffect(() => {
+  //   console.log(
+  //     "🔥 useEffect triggered - Dialog Open State:",
+  //     beaconDialogOpen
+  //   );
+  // }, [beaconDialogOpen]);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      setBeaconDialogOpen(false);
+      setDialogOpen(false);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (setStats) {
@@ -489,21 +426,7 @@ export default function CollapsibleTable({
                         <TableCell
                           sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
                         >
-                          <b
-                          // style={{
-                          //   cursor: "pointer",
-                          //   textDecoration: "underline",
-                          // }}
-                          // onClick={() =>
-                          //   handleBeaconDialogOpen(
-                          //     registry.beaconName,
-                          //     registry.beaconAPI,
-                          //     registry.beaconURL
-                          //   )
-                          // }
-                          >
-                            {registry.beaconName}
-                          </b>
+                          <b>{registry.beaconName}</b>
 
                           <Box
                             component="span"
@@ -525,13 +448,18 @@ export default function CollapsibleTable({
                               src={Doc}
                               alt="Doc"
                               style={{ width: "18px", height: "18px" }}
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log(
+                                  "⚡ Beacon Dialog Clicked! Opening..."
+                                );
                                 handleBeaconDialogOpen(
                                   registry.beaconName,
                                   registry.beaconAPI,
-                                  registry.beaconURL
-                                )
-                              }
+                                  registry.beaconURL,
+                                  registry.beaconId
+                                );
+                              }}
                             />
                           </Box>
                           {registry.beaconMaturity ? (
@@ -591,9 +519,7 @@ export default function CollapsibleTable({
                                         <i>No AF</i>
                                       );
                                     const clickable = rawAfValue !== "N/A";
-                                    const datasetClickable =
-                                      individualBeacon.id &&
-                                      individualBeacon.id !== "N/A";
+
                                     return (
                                       <TableRow
                                         key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
@@ -620,7 +546,7 @@ export default function CollapsibleTable({
                                           <Box>
                                             <i>Dataset: </i>
                                             <b>
-                                              {datasetClickable ? (
+                                              {individualBeacon.id ? (
                                                 individualBeacon.id
                                               ) : (
                                                 <i>ID undefined</i>
@@ -643,7 +569,8 @@ export default function CollapsibleTable({
                                               ? "#077EA6"
                                               : "inherit",
                                           }}
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             if (clickable) {
                                               handleDialogOpen(
                                                 registry,
@@ -724,8 +651,10 @@ export default function CollapsibleTable({
       <BeaconDialog
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
+        beaconType="individual"
         currentDataset={currentDataset}
         individualBeaconName={currentBeaconName}
+        individualBeaconRegistryId={currentBeaconId}
         individualBeaconAPI={currentBeaconApi}
         individualBeaconURL={currentBeaconUrl}
         currentDatasets={currentDatasets}

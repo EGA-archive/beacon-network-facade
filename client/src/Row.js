@@ -42,14 +42,15 @@ export default function Row({
       population: historyRow.dataset.population,
       alleleFrequency: historyRow.dataset.alleleFrequency,
       beaconAPI: row.beaconAPI,
+      beaconURL: row.beaconURL,
     };
   });
 
-  console.log("alleleDataNetwork", alleleDataNetwork);
+  // console.log("alleleDataNetwork", alleleDataNetwork);
 
   // console.log("📡 Received networkBeacons in Row.js:", networkBeacons);
-  console.log("📝 Current row in Row.js:", row);
-  console.log("📝 Current row in Row.js:", row.beaconAPI);
+  // console.log("📝 Current row in Row.js:", row);
+  // console.log("📝 Current row in Row.js:", row.beaconAPI);
 
   const handleDialogOpen = (historyRow) => {
     if (historyRow?.dataset?.datasetId) {
@@ -128,15 +129,17 @@ export default function Row({
     const beaconId = historyRow.beaconId;
     const beaconAPI = row.beaconAPI;
 
-    const datasetIds = alleleDataNetwork
+    let datasetIds = alleleDataNetwork
       .filter((data) => data.beaconId === beaconId)
       .map((data) => data.datasetId);
 
-    console.log("📡 Opening Beacon Dialog with:", {
-      beaconId,
-      beaconAPI,
-      datasetIds,
-    });
+    datasetIds = [...new Set(datasetIds)];
+
+    // console.log("📡 Opening Beacon Dialog with:", {
+    //   beaconId,
+    //   beaconAPI,
+    //   datasetIds,
+    // });
 
     setCurrentBeaconName(beaconId);
     setCurrentDataset(datasetIds);
@@ -386,9 +389,11 @@ export default function Row({
       <BeaconDialog
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
-        beaconAPI={row.beaconAPI} // ✅ Pass the beaconAPI
-        beaconId={currentBeaconName} // ✅ Pass the beaconId
-        currentDataset={currentDataset} // ✅ Pass the dataset IDs array
+        beaconAPI={row.beaconAPI}
+        beaconURL={row.beaconURL}
+        beaconId={currentBeaconName}
+        currentDataset={currentDataset}
+        beaconType="network"
       />
     </>
   );
