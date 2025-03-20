@@ -200,7 +200,7 @@ export default function Row({
             </Box>
           </TableCell>
 
-          <TableCell variant="lessPadding">
+          {/* <TableCell variant="lessPadding">
             {hasAlleleFrequency(deduplicatedHistory) ? (
               <img
                 src={Tick}
@@ -209,6 +209,28 @@ export default function Row({
               />
             ) : (
               <i>No AF</i>
+            )}
+          </TableCell> */}
+          <TableCell variant="lessPadding">
+            {hasAlleleFrequency(deduplicatedHistory) ? (
+              <img
+                src={Tick}
+                alt="Tick"
+                style={{ width: "18px", height: "18px" }}
+              />
+            ) : (
+              <i
+                style={{
+                  color: deduplicatedHistory.some(
+                    (hr) => hr.dataset?.response === "Found"
+                  )
+                    ? "#0099CD"
+                    : "#FF7C62",
+                  fontWeight: "bold",
+                }}
+              >
+                No AF
+              </i>
             )}
           </TableCell>
           <TableCell variant="lessPadding">
@@ -341,6 +363,13 @@ export default function Row({
                                 textDecorationColor: afClickable
                                   ? "#077EA6"
                                   : "inherit",
+                                color:
+                                  historyRow.dataset?.response === "Found"
+                                    ? "#0099CD"
+                                    : historyRow.dataset?.response ===
+                                      "Not Found"
+                                    ? "#FF7C62"
+                                    : "inherit",
                               }}
                               onClick={() => {
                                 if (afClickable) {

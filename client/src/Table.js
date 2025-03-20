@@ -446,7 +446,14 @@ export default function CollapsibleTable({
                               style={{ width: "18px", height: "18px" }}
                             />
                           ) : (
-                            <i>No AF</i>
+                            <i
+                              style={{
+                                color: hasFoundDataset ? "#0099CD" : "#FF7C62",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              No AF
+                            </i>
                           )}
                         </TableCell>
                         <TableCell>
@@ -555,7 +562,15 @@ export default function CollapsibleTable({
                                               {afValue}
                                             </b>
                                           ) : (
-                                            <i>No AF</i>
+                                            <i
+                                              style={{
+                                                color: individualBeacon.exists
+                                                  ? "#0099CD"
+                                                  : "#FF7C62",
+                                              }}
+                                            >
+                                              No AF
+                                            </i>
                                           )}
                                         </TableCell>
 
