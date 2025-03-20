@@ -44,17 +44,13 @@ export default function BeaconDialog({
 
     try {
       const response = await axios.get(`${apiToFetch}/datasets`);
-      console.log("✅ Dataset API Response:", response.data);
-      console.log("api", apiToFetch);
       if (response.data?.response?.collections) {
         const datasetList = response.data.response.collections;
-        console.log("currentDatasets".currentDatasets);
+        const datasetArray =
+          beaconType === "individual" ? currentDatasets : currentDataset;
 
-        const matchedDatasets = currentDatasets.map((datasetId) => {
+        const matchedDatasets = datasetArray.map((datasetId) => {
           const match = datasetList.find((dataset) => dataset.id === datasetId);
-
-          console.log("match.description", match?.description);
-          console.log("match.name", match?.name);
 
           return {
             id: datasetId,
@@ -63,7 +59,6 @@ export default function BeaconDialog({
           };
         });
 
-        console.log("🔍 Matched Datasets Info:", matchedDatasets);
         setDatasetsInfo(matchedDatasets);
       } else {
         console.warn("⚠️ No datasets found in API response!");

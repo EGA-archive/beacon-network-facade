@@ -57,34 +57,6 @@ export default function CollapsibleTable({
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
 
-  // const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
-  //   if (beaconName && filteredIndividualBeacons.length > 0) {
-  //     setCurrentBeaconName(beaconName);
-  //     setCurrentBeaconApi(beaconAPI);
-  //     setCurrentBeaconUrl(beaconURL);
-  //     // setCurrentBeaconId;
-
-  //     setOpenRows((prev) => ({
-  //       ...prev,
-  //       [beaconId]: true,
-  //     }));
-
-  //     const matchingBeacon = registries.find(
-  //       (registry) => registry.beaconName === beaconName
-  //     );
-
-  //     if (!matchingBeacon) {
-  //       return;
-  //     }
-  //     const beaconId = matchingBeacon.beaconId;
-  //     const datasets = filteredIndividualBeacons
-  //       .filter((beacon) => beacon.beaconId === beaconId)
-  //       .map((beacon) => beacon.id);
-  //     setCurrentDatasets(datasets);
-  //     setBeaconDialogOpen(true);
-  //   }
-  // };
-
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
       setCurrentBeaconName(beaconName);
@@ -143,8 +115,6 @@ export default function CollapsibleTable({
       setCurrentBeaconId(registry.beaconId);
       setCurrentDataset(individualBeacon.id);
       setDialogOpen(true);
-      console.log("registry", registry);
-      console.log("individualBeacon", individualBeacon);
     } else {
       console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
     }
@@ -191,13 +161,17 @@ export default function CollapsibleTable({
     );
   });
 
-  const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
-    if (selectedFilters.includes("af-only")) {
-      const af = getFormattedAlleleFrequency(beacon);
-      return af !== "N/A";
-    }
-    return true;
-  });
+  const filteredIndividualBeacons = foundFilteredBeacons
+    .filter((beacon) => {
+      if (selectedFilters.includes("af-only")) {
+        const af = getFormattedAlleleFrequency(beacon);
+        return af !== "N/A";
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      return a.exists === false ? 1 : b.exists === false ? -1 : 0;
+    });
 
   const networkRows = filteredRegistries
     .filter((registry) =>

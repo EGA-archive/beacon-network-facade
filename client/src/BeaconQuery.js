@@ -30,8 +30,6 @@ function BeaconQuery({
     if (!variant || !genome || !socket) return;
 
     setLoading(true);
-    // console.log("⏳ Loader started... waiting for WebSocket responses.");
-
     const arr = variant.split("-");
     if (arr.length !== 4) {
       console.error("❌ Invalid variant format");
@@ -40,7 +38,6 @@ function BeaconQuery({
     }
 
     const query = `/g_variants?start=${arr[1]}&alternateBases=${arr[3]}&referenceBases=${arr[2]}&referenceName=${arr[0]}&assemblyId=${genome}`;
-    console.log("My query", query);
 
     if (socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(query));
@@ -52,7 +49,6 @@ function BeaconQuery({
     const handleMessage = (event) => {
       setMessageCount((prev) => {
         const newCount = prev + 1;
-        // console.log(`📩 WebSocket Message ${newCount} of ${registriesLength}`);
 
         try {
           const response = JSON.parse(event.data);
@@ -63,7 +59,6 @@ function BeaconQuery({
             return isDuplicate ? prevData : [...prevData, response];
           });
           if (newCount >= registriesLength) {
-            // console.log("✅ All expected messages received, stopping loader.");
             setLoading(false);
           }
         } catch (err) {

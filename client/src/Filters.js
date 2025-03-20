@@ -8,8 +8,6 @@ export default function Filters({
   onOpenCloseChange,
 }) {
   const handleToggle = (event, newFilters) => {
-    console.log("🔎 MUI returned:", newFilters);
-
     if (!newFilters) {
       setSelectedFilters([]);
       return;
@@ -20,7 +18,6 @@ export default function Filters({
       : [newFilters];
 
     if (newFilters === "Open All") {
-      console.log("🚀 Open All clicked");
       onOpenCloseChange("open");
       setSelectedFilters((prev) => [
         ...prev.filter((f) => f !== "Close All"),
@@ -30,7 +27,6 @@ export default function Filters({
     }
 
     if (newFilters === "Close All") {
-      console.log("🚀 Close All clicked");
       onOpenCloseChange("close");
       setSelectedFilters((prev) => [
         ...prev.filter((f) => f !== "Open All"),
@@ -47,7 +43,6 @@ export default function Filters({
         ...newFilters.filter((f) => f !== "Open All" && f !== "Close All"),
         ...preservedOpenClose,
       ];
-      console.log("✅ Setting selectedFilters:", updatedFilters);
       return updatedFilters;
     });
   };
@@ -161,15 +156,10 @@ export default function Filters({
           exclusive
           onChange={(event, newValue) => {
             if (newValue !== null) {
-              console.log(
-                "Allele Frequency Toggle Changed. New value:",
-                newValue
-              );
               setSelectedFilters((prev) => {
                 const updated = prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue);
-                // console.log(":pushpin: Updated Allele Frequency Filter:", updated);
                 return updated;
               });
             }

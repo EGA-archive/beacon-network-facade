@@ -46,12 +46,6 @@ export default function Row({
     };
   });
 
-  // console.log("alleleDataNetwork", alleleDataNetwork);
-
-  // console.log("📡 Received networkBeacons in Row.js:", networkBeacons);
-  // console.log("📝 Current row in Row.js:", row);
-  // console.log("📝 Current row in Row.js:", row.beaconAPI);
-
   const handleDialogOpen = (historyRow) => {
     if (historyRow?.dataset?.datasetId) {
       setCurrentBeaconName(historyRow.beaconId || "");
@@ -113,6 +107,14 @@ export default function Row({
     }
   });
 
+  deduplicatedHistory.sort((a, b) => {
+    return a.dataset.response === "Not Found"
+      ? 1
+      : b.dataset.response === "Not Found"
+      ? -1
+      : 0;
+  });
+
   useEffect(() => {
     if (forceOpenAll) {
       setOpen(true);
@@ -132,8 +134,6 @@ export default function Row({
     let datasetIds = alleleDataNetwork
       .filter((data) => data.beaconId === beaconId)
       .map((data) => data.datasetId);
-
-    console.log("beaconId", beaconId);
 
     datasetIds = [...new Set(datasetIds)];
 
@@ -241,7 +241,6 @@ export default function Row({
                 >
                   <TableBody>
                     {deduplicatedHistory.map((historyRow, index) => {
-                      // console.log("HiRO", historyRow);
                       const afValue = getFormattedAlleleFrequency(
                         historyRow.dataset
                       );

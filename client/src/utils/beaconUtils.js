@@ -24,7 +24,6 @@ export function getFormattedAlleleFrequency(data) {
       })
     )
   );
-  // console.log("alleleData", alleleData);
 
   if (frequencies.length === 0) return "N/A";
 
@@ -67,7 +66,6 @@ export function getAlleleData(data) {
       })
     )
   );
-  // console.log("New alleleData", alleleData);
   return alleleData;
 }
 

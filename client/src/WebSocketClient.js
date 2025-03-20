@@ -8,7 +8,6 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
 import { useNavigate } from "react-router-dom";
-import { filterValidDatasets } from "./utils/beaconUtils";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
@@ -25,7 +24,6 @@ const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 function WebSocketClient({ setRegistries, setSocket }) {
   const [messages, setMessages] = useState([]);
   const [registries, setLocalRegistries] = useState([]);
-  // const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
@@ -37,12 +35,9 @@ function WebSocketClient({ setRegistries, setSocket }) {
 
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
-
-    console.log("🔄 Initializing WebSocket...");
     const ws = new WebSocket("ws://localhost:5700");
 
     ws.onopen = () => {
-      console.log("✅ Connected to WebSocket");
       setConnected(true);
       setSocket(ws);
 
@@ -51,9 +46,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
         ws.send(JSON.stringify("/registries"));
 
         setTimeout(() => {
-          console.log(
-            "📤 Sending second /registries request to ensure response..."
-          );
           ws.send(JSON.stringify("/registries"));
         }, 1000);
         hasRequestedRegistries.current = true;
@@ -61,7 +53,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      // console.log("📩 WebSocket Received Message", event.data);
+      console.log("📩 WebSocket Received Message", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {

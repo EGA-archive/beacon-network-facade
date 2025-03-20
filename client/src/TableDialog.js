@@ -54,7 +54,11 @@ export default function TableDialog({
         borderRadius: "6px",
         width: "80%",
         mx: "auto",
+        overflowY: "auto",
         overflowX: "hidden",
+        maxHeight: "350px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Table sx={{ minWidth: 450 }} aria-label="Allele Frequency Table">
@@ -62,6 +66,9 @@ export default function TableDialog({
           sx={{
             backgroundColor: "#dbeefd",
             borderBottom: "1px solid #023452",
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
           }}
         >
           <TableRow>

@@ -3,7 +3,6 @@ import Grid from "@mui/material/Grid2";
 import { Container } from "react-bootstrap";
 
 function NetworkMembers({ registries = [] }) {
-  // console.log("📡 Received registries in NetworkMembers:", registries);
   return (
     <Container>
       <div>
