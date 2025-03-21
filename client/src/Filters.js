@@ -27,6 +27,7 @@ export default function Filters({
     }
 
     if (newFilters === "Close All") {
+      console.log("❌ Close All Triggered");
       onOpenCloseChange("close");
       setSelectedFilters((prev) => [
         ...prev.filter((f) => f !== "Open All"),
@@ -160,6 +161,7 @@ export default function Filters({
                 const updated = prev
                   .filter((val) => val !== "all" && val !== "af-only")
                   .concat(newValue);
+
                 return updated;
               });
             }

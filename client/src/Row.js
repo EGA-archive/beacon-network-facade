@@ -17,6 +17,7 @@ import {
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
+
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
@@ -34,6 +35,64 @@ export default function Row({
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [openRows, setOpenRows] = useState({});
+
+  // console.log("🔎 openRows State:", openRows);
+  // console.log("🔎 Current Row State:", row.name, "Open:", open);
+
+  useEffect(() => {
+    if (forceCloseAll) {
+      console.log("❌ Force Closing All Rows");
+
+      setOpen(false); // ✅ Close this row
+
+      setOpenRows((prevRows) => {
+        const updatedRows = Object.keys(prevRows).reduce((acc, key) => {
+          acc[key] = false; // ❌ Set all rows to false
+          return acc;
+        }, {});
+        return updatedRows;
+      });
+    } else if (forceOpenAll) {
+      console.log("✅ Force Opening All Rows");
+
+      setOpen(true); // ✅ Open this row
+
+      setOpenRows((prevRows) => ({
+        ...prevRows,
+        [row.name]: true, // ✅ Mark this row as open
+      }));
+    }
+  }, [forceOpenAll, forceCloseAll]);
+
+  const toggleRow = () => {
+    setOpen((prev) => {
+      const newState = !prev;
+
+      setOpenRows((prevRows) => ({
+        ...prevRows,
+        [row.name]: newState,
+      }));
+
+      console.log("🔄 Toggling row:", row.name, "New state:", newState);
+      return newState;
+    });
+  };
+
+  // useEffect(() => {
+  //   if (forceCloseAll) {
+  //     setOpen(false);
+  //   } else if (forceOpenAll) {
+  //     setOpen(true);
+  //   }
+  // }, [forceOpenAll, forceCloseAll]);
+  // const toggleRow = () => {
+  //   setOpen((prev) => {
+  //     const newState = !prev;
+
+  //     return newState;
+  //   });
+  // };
 
   const alleleDataNetwork = row.history.map((historyRow) => {
     return {
@@ -115,14 +174,6 @@ export default function Row({
       : 0;
   });
 
-  useEffect(() => {
-    if (forceOpenAll) {
-      setOpen(true);
-    } else if (forceCloseAll) {
-      setOpen(false);
-    }
-  }, [forceOpenAll, forceCloseAll]);
-
   const hasAlleleFrequency = (historyData) => {
     return historyData.some((item) => item.dataset.alleleFrequency !== "N/A");
   };
@@ -158,7 +209,7 @@ export default function Row({
             <IconButton
               aria-label="expand row"
               size="small"
-              onClick={() => setOpen((prev) => !prev)}
+              onClick={toggleRow}
             >
               {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
             </IconButton>

@@ -19,10 +19,11 @@ function BeaconQuery({
     totalDatasetCount: 0,
   });
   const [messageCount, setMessageCount] = useState(0);
-
   useEffect(() => {
     if (stats && setStats) {
-      setStats(stats);
+      setTimeout(() => {
+        setStats(stats);
+      }, 0);
     }
   }, [stats, setStats]);
 
@@ -58,12 +59,8 @@ function BeaconQuery({
             );
             return isDuplicate ? prevData : [...prevData, response];
           });
-          if (newCount >= registriesLength) {
-            setLoading(false);
-          }
         } catch (err) {
           console.error("❌ Error parsing WebSocket message:", err);
-          setLoading(false);
         }
 
         return newCount;
@@ -77,6 +74,14 @@ function BeaconQuery({
       socket.removeEventListener("message", handleMessage);
     };
   }, [variant, genome, socket, registriesLength]);
+
+  useEffect(() => {
+    if (messageCount >= registriesLength) {
+      setTimeout(() => {
+        setLoading(false);
+      }, 0);
+    }
+  }, [messageCount, registriesLength, setLoading]);
 
   return (
     <div>

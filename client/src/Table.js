@@ -52,6 +52,9 @@ export default function CollapsibleTable({
   const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
   const [currentDatasets, setCurrentDatasets] = useState([]);
 
+  // console.log("openRows", openRows);
+  // console.log("selectedFilters", selectedFilters);
+
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
@@ -274,12 +277,15 @@ export default function CollapsibleTable({
 
   useEffect(() => {
     if (selectedFilters.includes("Open All")) {
+      console.log("✅ Opening All Rows");
       const openState = {};
       registries.forEach((registry) => {
         openState[registry.beaconId] = true;
       });
       setOpenRows(openState);
+      console.log("openState", openState);
     } else if (selectedFilters.includes("Close All")) {
+      console.log("❌ Closing All Rows");
       setOpenRows({});
     }
   }, [selectedFilters, registries]);
@@ -610,6 +616,8 @@ export default function CollapsibleTable({
                   selectedFilters={selectedFilters}
                   forceOpenAll={selectedFilters.includes("Open All")}
                   forceCloseAll={selectedFilters.includes("Close All")}
+                  openRows={openRows}
+                  setOpenRows={setOpenRows}
                 />
               ))}
             </>
