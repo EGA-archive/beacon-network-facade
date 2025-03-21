@@ -83,3 +83,15 @@ services:
       - POSTGRES_PASSWORD=secret
     networks:
       - auth
+  nginx:
+    image: nginx
+    container_name: "gbn-proxy"
+    depends_on:
+      - beacon-network-facade
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - gbn
+    ports:
+      - '5050:5050'
