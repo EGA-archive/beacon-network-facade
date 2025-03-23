@@ -92,18 +92,42 @@ const customTheme = createTheme({
           style: {
             padding: "6px 16px 16px 16px",
             borderBottom: "1px solid #3176B1",
-            // borderTop: "1px solid #3176B1",
           },
-          // props: { variant: "lessPaddingCell" },
-          // style: {
-          //   padding: "6px 16px 16px 16px",
-          //   borderBottom: "1px solid #3176B1",
-          // },
         },
         {
           props: { variant: "noBorder" },
           style: {
             border: "none",
+          },
+        },
+        {
+          props: { variant: "width90" },
+          style: {
+            width: "90px !important",
+            minWidth: "90px !important",
+            maxWidth: "90px !important",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          },
+        },
+        {
+          props: { variant: "width356" },
+          style: {
+            width: "356px !important",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            minWidth: "356px !important",
+            maxWidth: "356px !important",
+          },
+        },
+        {
+          props: { variant: "width146" },
+          style: {
+            width: "146px !important",
+            minWidth: "146px !important",
+            maxWidth: "146px !important",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
           },
         },
       ],

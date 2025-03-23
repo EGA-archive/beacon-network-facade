@@ -277,15 +277,15 @@ export default function CollapsibleTable({
 
   useEffect(() => {
     if (selectedFilters.includes("Open All")) {
-      console.log("✅ Opening All Rows");
+      // console.log("✅ Opening All Rows");
       const openState = {};
       registries.forEach((registry) => {
         openState[registry.beaconId] = true;
       });
       setOpenRows(openState);
-      console.log("openState", openState);
+      // console.log("openState", openState);
     } else if (selectedFilters.includes("Close All")) {
-      console.log("❌ Closing All Rows");
+      // console.log("❌ Closing All Rows");
       setOpenRows({});
     }
   }, [selectedFilters, registries]);
@@ -300,7 +300,7 @@ export default function CollapsibleTable({
   return (
     <>
       <TableContainer
-        component={Paper}
+        // component={Paper}
         sx={{ marginTop: "48px", marginBottom: "48px" }}
         className="table-container"
       >
@@ -323,9 +323,10 @@ export default function CollapsibleTable({
         <Table
           aria-label="collapsible table"
           sx={{
-            tableLayout: "fixed",
-            width: "100%",
-            // borderBottom: "1px solid black !important",
+            tableLayout: "fixed !important",
+            width: "100% !important",
+            minWidth: "100% !important",
+            maxWidth: "100% !important",
           }}
         >
           <TableHead>
@@ -473,7 +474,12 @@ export default function CollapsibleTable({
                           <Collapse in={rowIsOpen} timeout="auto" unmountOnExit>
                             <Table
                               size="small"
-                              sx={{ tableLayout: "fixed", width: "100%" }}
+                              sx={{
+                                tableLayout: "fixed !important",
+                                width: "100% !important",
+                                minWidth: "100% !important",
+                                maxWidth: "100% !important",
+                              }}
                             >
                               <TableBody>
                                 {filteredIndividualBeacons
@@ -502,20 +508,17 @@ export default function CollapsibleTable({
                                         <TableCell
                                           sx={{
                                             width: "90px !important",
-                                            // backgroundColor: "red",
                                           }}
                                         />
 
                                         <TableCell
                                           sx={{
-                                            width: "154px !important",
-                                            // backgroundColor: "green",
+                                            width: "149px !important",
                                           }}
                                         />
                                         <TableCell
                                           sx={{
-                                            width: "356px !important",
-                                            // backgroundColor: "pink",
+                                            width: "340px !important",
                                           }}
                                         >
                                           <Box>
@@ -531,12 +534,11 @@ export default function CollapsibleTable({
                                         </TableCell>
                                         <TableCell
                                           sx={{
-                                            // backgroundColor: "salmon",
-                                            width: "146px !important",
+                                            width: "148px !important",
                                             cursor: clickable
                                               ? "pointer"
                                               : "default",
-                                            padding: "16px",
+                                            padding: "16px 16px 16px 20px",
                                             textDecoration: clickable
                                               ? "underline"
                                               : "none",
@@ -583,7 +585,6 @@ export default function CollapsibleTable({
                                         <TableCell
                                           sx={{
                                             width: "146px !important",
-                                            // backgroundColor: "grey",
                                           }}
                                         >
                                           <StatusButton

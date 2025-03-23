@@ -35,7 +35,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
 
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
-    const ws = new WebSocket("ws://localhost:5700");
+    // const ws = new WebSocket("ws://localhost:5700");
+    const ws = new WebSocket("ws://127.0.0.1:5700");
 
     ws.onopen = () => {
       setConnected(true);
