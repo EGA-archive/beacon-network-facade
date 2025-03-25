@@ -372,13 +372,11 @@ export default function Row({
                             <TableCell />
                             <TableCell>
                               <Box>
-                                <i>Dataset: </i>
+                                <i>Dataset ID: </i>
                                 {historyRow.dataset?.datasetId ? (
                                   <b>{historyRow.dataset.datasetId}</b>
                                 ) : (
-                                  <b>
-                                    <i>ID undefined</i>
-                                  </b>
+                                  <b>Undefined</b>
                                 )}
                               </Box>
                             </TableCell>

@@ -7,7 +7,6 @@ import {
   TableHead,
   Collapse,
   TableRow,
-  Paper,
   Box,
   IconButton,
 } from "@mui/material";
@@ -38,12 +37,11 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  // console.log("📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Data received:", data);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
-
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
@@ -368,6 +366,8 @@ export default function CollapsibleTable({
                   );
                   const beaconType = isNetwork ? "network" : "single";
 
+                  // const beaconType = isNetwork && response.beaconNetworkId ? "network" : "single";
+
                   const hasFoundDataset = filteredIndividualBeacons.some(
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
@@ -520,13 +520,11 @@ export default function CollapsibleTable({
                                           }}
                                         >
                                           <Box>
-                                            <i>Dataset: </i>
+                                            Dataset ID:{" "}
                                             <b>
-                                              {individualBeacon.id ? (
-                                                individualBeacon.id
-                                              ) : (
-                                                <i>ID undefined</i>
-                                              )}
+                                              {individualBeacon.id
+                                                ? individualBeacon.id
+                                                : "Undefined"}
                                             </b>
                                           </Box>
                                         </TableCell>

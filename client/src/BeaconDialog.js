@@ -279,6 +279,20 @@ export default function BeaconDialog({
             </Typography>
           );
         })}
+
+        <Typography
+          component="div"
+          sx={{
+            fontFamily: "Open Sans, sans-serif",
+            fontSize: "14px",
+            fontStyle: "italic",
+            marginBottom: "16px",
+            color: "black",
+          }}
+        >
+          Note: Datasets information is unavailable for beacons with Boolean or
+          Counts response types.
+        </Typography>
       </DialogContent>
 
       <div style={{ padding: "20px", textAlign: "right" }}>
