@@ -24,7 +24,6 @@ export function getFormattedAlleleFrequency(data) {
       })
     )
   );
-  // console.log("alleleData", alleleData);
 
   if (frequencies.length === 0) return "N/A";
 
@@ -67,7 +66,6 @@ export function getAlleleData(data) {
       })
     )
   );
-  // console.log("New alleleData", alleleData);
   return alleleData;
 }
 
@@ -87,20 +85,6 @@ export function separateBeacons(data) {
   return { individualBeacons, networkBeacons };
 }
 
-// const testData = {
-//   id: "test1",
-//   beaconId: "beacon1",
-//   results: [
-//     {
-//       frequencyInPopulations: [
-//         {
-//           frequencies: [
-//             { alleleFrequency: 0.12345, population: "TestPopulation" },
-//           ],
-//         },
-//       ],
-//     },
-//   ],
-// };
-
-// console.log("Test getAlleleData:", getAlleleData(testData));
+export const filterValidBeacons = (beacons) => {
+  return beacons.filter((beacon) => !beacon.info?.error);
+};

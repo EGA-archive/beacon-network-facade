@@ -5,11 +5,14 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  Collapse,
   TableRow,
   Paper,
   Box,
+  IconButton,
 } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Filters from "./Filters";
 import Row from "./Row";
 import {
@@ -17,11 +20,16 @@ import {
   getFormattedAlleleFrequency,
   getAlleleData,
 } from "./utils/beaconUtils";
-import Dash from "../src/dash.svg";
 import Tick from "../src/tick.svg";
-import { StatusButton, MaturityButton } from "./ButtonComponents";
+import {
+  StatusButton,
+  MaturityButton,
+  BeaconTypeButton,
+} from "./ButtonComponents";
 import Dialog from "./Dialog";
-import DatasetDialog from "./DatasetDialog";
+import BeaconDialog from "./BeaconDialog";
+import Doc from "../src/document.svg";
+import { filterValidBeacons } from "./utils/beaconUtils";
 
 export default function CollapsibleTable({
   data,
@@ -34,22 +42,56 @@ export default function CollapsibleTable({
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
+
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
-  const [datasetDialogOpen, setDatasetDialogOpen] = useState(false);
+  const [openRows, setOpenRows] = useState({});
+  const [currentBeaconApi, setCurrentBeaconApi] = useState("");
+  const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
+  const [currentDatasets, setCurrentDatasets] = useState([]);
+
+  // console.log("openRows", openRows);
+  // console.log("selectedFilters", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
-  const handleDatasetDialogOpen = (datasetId) => {
-    if (datasetId) {
-      setCurrentDataset(datasetId);
-      setDatasetDialogOpen(true);
+  const validIndividualBeacons = filterValidBeacons(individualBeacons);
+  const validNetworkBeacons = filterValidBeacons(networkBeacons);
+
+  const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
+    if (beaconName && filteredIndividualBeacons.length > 0) {
+      setCurrentBeaconName(beaconName);
+      setCurrentBeaconApi(beaconAPI);
+      setCurrentBeaconUrl(beaconURL);
+      const matchingBeacon = registries.find(
+        (registry) => registry.beaconName === beaconName
+      );
+
+      if (!matchingBeacon) {
+        console.warn("No matching beacon found in registries.");
+        return;
+      }
+
+      const beaconId = matchingBeacon.beaconId;
+      setCurrentBeaconId(beaconId);
+      setOpenRows((prev) => ({
+        ...prev,
+        [beaconId]: true,
+      }));
+
+      const datasets = filteredIndividualBeacons
+        .filter((beacon) => beacon.beaconId === beaconId)
+        .map((beacon) => beacon.id);
+
+      setCurrentDatasets(datasets);
+      setBeaconDialogOpen(true);
     }
   };
 
-  const handleDatasetDialogClose = () => {
-    setDatasetDialogOpen(false);
+  const handleBeaconDialogClose = () => {
+    setBeaconDialogOpen(false);
   };
 
   let individualAlleleData = [];
@@ -70,6 +112,21 @@ export default function CollapsibleTable({
     );
   }
 
+  const handleDialogOpen = (registry, individualBeacon) => {
+    if ((registry, individualBeacon)) {
+      setCurrentBeaconName(registry.beaconName);
+      setCurrentBeaconId(registry.beaconId);
+      setCurrentDataset(individualBeacon.id);
+      setDialogOpen(true);
+    } else {
+      console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
   const maturityMapping = {
     prod: "Prod-Beacon",
     test: "Test-Beacon",
@@ -84,90 +141,7 @@ export default function CollapsibleTable({
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
 
-  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
-  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
-  //   uniqueIndividualBeacons.add(uniqueKey);
-  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
-
-  //   if (selectedFilters.includes("Found") && beacon.exists) return true;
-  //   if (selectedFilters.includes("Not Found") && !beacon.exists) return true;
-
-  //   if (selectedFilters.includes("af-only")) {
-  //     const af = getFormattedAlleleFrequency(beacon);
-  //     return af !== "N/A";
-  //   }
-
-  //   if (selectedFilters.includes("all")) {
-  //     return true;
-  //   }
-  //   return false;
-  // });
-
-  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
-  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-  //   if (uniqueIndividualBeacons.has(uniqueKey)) return false;
-  //   uniqueIndividualBeacons.add(uniqueKey);
-  //   if (!allowedBeaconIds.has(beacon.beaconId)) return false;
-
-  //   if (selectedFilters.includes("af-only")) {
-  //     const af = getFormattedAlleleFrequency(beacon);
-  //     return af !== "N/A";
-  //   }
-
-  //   if (selectedFilters.includes("all")) {
-  //     return true;
-  //   }
-  //   if (selectedFilters.includes("Found") && beacon.exists === "true")
-  //     return true;
-  //   if (selectedFilters.includes("Not Found") && beacon.exists === "false")
-  //     return true;
-  //   return false;
-  // });
-  // console.log("filteredIndividualBeacons", filteredIndividualBeacons);
-
-  // const filteredIndividualBeacons = individualBeacons.filter((beacon) => {
-  //   console.log("beacon.results", beacon);
-  //   // console.log("💁🏼 Checking Beacon:", beacon);
-  //   // console.log("📍 Exists:", beacon.exists);
-  //   // console.log("🔎 Selected Filters:", selectedFilters);
-
-  //   const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
-  //   if (uniqueIndividualBeacons.has(uniqueKey)) {
-  //     return false;
-  //   }
-  //   uniqueIndividualBeacons.add(uniqueKey);
-
-  //   if (!allowedBeaconIds.has(beacon.beaconId)) {
-  //     return false;
-  //   }
-
-  //   if (selectedFilters.includes("Found") && beacon.exists) {
-  //     console.log("✅ Matched 'Found'");
-  //     return true;
-  //   }
-
-  //   if (selectedFilters.includes("Not-Found") && !beacon.exists) {
-  //     console.log("✅ Matched 'Not-Found'");
-  //     return true;
-  //   }
-
-  //   // if (selectedFilters.includes("af-only") && beacon.exists) {
-  //   //   const af = getFormattedAlleleFrequency(beacon);
-  //   //   console.log("🧬 Checking Allele Frequency:", af);
-  //   //   return af !== "N/A";
-  //   // }
-
-  //   // if (selectedFilters.includes("all")) {
-  //   //   console.log("✅ Matched 'all' filter");
-  //   //   return true;
-  //   // }
-
-  //   console.log(2222222, beacon);
-  //   return false;
-  // });
-
-  const foundFilteredBeacons = individualBeacons.filter((beacon) => {
+  const foundFilteredBeacons = validIndividualBeacons.filter((beacon) => {
     const uniqueKey = `${beacon.beaconId}_${beacon.id}`;
     if (uniqueIndividualBeacons.has(uniqueKey)) {
       return false;
@@ -179,11 +153,9 @@ export default function CollapsibleTable({
     }
 
     if (selectedFilters.includes("Found") && beacon.exists) {
-      // console.log("✅ Matched 'Found'");
       return true;
     }
     if (selectedFilters.includes("Not-Found") && !beacon.exists) {
-      // console.log("✅ Matched 'Not-Found'");
       return true;
     }
     return (
@@ -192,28 +164,26 @@ export default function CollapsibleTable({
     );
   });
 
-  const filteredIndividualBeacons = foundFilteredBeacons.filter((beacon) => {
-    if (selectedFilters.includes("af-only")) {
-      const af = getFormattedAlleleFrequency(beacon);
-      // console.log("🧬 Checking Allele Frequency:", af);
-      return af !== "N/A";
-    }
-    return true;
-  });
+  const filteredIndividualBeacons = foundFilteredBeacons
+    .filter((beacon) => {
+      if (selectedFilters.includes("af-only")) {
+        const af = getFormattedAlleleFrequency(beacon);
+        return af !== "N/A";
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      return a.exists === false ? 1 : b.exists === false ? -1 : 0;
+    });
 
-  // console.log("📝 Final filteredIndividualBeacons:", filteredIndividualBeacons);
-
-  const networkRows = registries
+  const networkRows = filteredRegistries
     .filter((registry) =>
-      selectedFilters.includes(maturityMapping[registry.beaconMaturity])
-    )
-    .filter((registry) =>
-      networkBeacons.some(
+      validNetworkBeacons.some(
         (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
       )
     )
     .map((registry) => {
-      let history = networkBeacons
+      let history = validNetworkBeacons
         .filter(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -256,7 +226,8 @@ export default function CollapsibleTable({
         name: registry.beaconName,
         beaconLogo: registry.beaconLogo,
         beaconURL: registry.beaconURL,
-        response: networkBeacons.some(
+        beaconAPI: registry.beaconAPI,
+        response: validNetworkBeacons.some(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
           ? "Found"
@@ -270,19 +241,6 @@ export default function CollapsibleTable({
       }
       return true;
     });
-
-  const handleDialogOpen = (registry, individualBeacon) => {
-    if ((registry, individualBeacon)) {
-      setCurrentBeaconName(registry.beaconName);
-      setCurrentBeaconId(registry.beaconId);
-      setCurrentDataset(individualBeacon.id);
-      setDialogOpen(true);
-    }
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-  };
 
   const beaconNetworkCount = networkRows.length;
   const uniqueIndividualBeaconIds = new Set(
@@ -311,40 +269,82 @@ export default function CollapsibleTable({
 
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
 
-  // console.log("beaconNetworkCount", beaconNetworkCount);
-  // console.log("totalBeaconCount", totalBeaconCount);
-  // console.log("totalDatasetCount", totalDatasetCount);
-
   useEffect(() => {
     if (setStats) {
       setStats({ beaconNetworkCount, totalBeaconCount, totalDatasetCount });
     }
   }, [setStats, beaconNetworkCount, totalBeaconCount, totalDatasetCount]);
 
+  useEffect(() => {
+    if (selectedFilters.includes("Open All")) {
+      // console.log("✅ Opening All Rows");
+      const openState = {};
+      registries.forEach((registry) => {
+        openState[registry.beaconId] = true;
+      });
+      setOpenRows(openState);
+      console.log("openState", openState);
+    } else if (selectedFilters.includes("Close All")) {
+      // console.log("❌ Closing All Rows");
+      setOpenRows({});
+    }
+  }, [selectedFilters, registries]);
+
+  const toggleRow = (beaconId) => {
+    setOpenRows((prev) => ({
+      ...prev,
+      [beaconId]: !prev[beaconId],
+    }));
+  };
+
   return (
     <>
       <TableContainer
-        component={Paper}
+        // component={Paper}
         sx={{ marginTop: "48px", marginBottom: "48px" }}
         className="table-container"
       >
         <Filters
           selectedFilters={selectedFilters}
           setSelectedFilters={setSelectedFilters}
+          onOpenCloseChange={(mode) => {
+            if (mode === "open") {
+              const openState = {};
+              registries.forEach((registry) => {
+                openState[registry.beaconId] = true;
+              });
+              setOpenRows(openState);
+            } else if (mode === "close") {
+              setOpenRows({});
+            }
+          }}
         />
 
         <Table
           aria-label="collapsible table"
-          sx={{ tableLayout: "fixed", width: "100%" }}
+          sx={{
+            tableLayout: "fixed !important",
+            width: "100% !important",
+            minWidth: "100% !important",
+            maxWidth: "100% !important",
+          }}
         >
           <TableHead>
             <TableRow className="title-row">
-              <TableCell />
-              <TableCell colSpan={3}>
-                <b>Beacon Network</b> <KeyboardArrowRightIcon />
-                <b>Beacon Name</b> <KeyboardArrowRightIcon />
-                <b>Dataset</b>
+              <TableCell colSpan={3} sx={{ pl: 6.5 }}>
+                <Box
+                  sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+                >
+                  <b>Beacon Network</b>
+                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
+                  <b>Beacon Name</b>
+                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
+                  <i>
+                    <b>Dataset</b>
+                  </i>
+                </Box>
               </TableCell>
+              <TableCell />
               <TableCell colSpan={1}>
                 <b>Allele Frequency</b>
               </TableCell>
@@ -355,23 +355,19 @@ export default function CollapsibleTable({
           </TableHead>
           <TableBody>
             <>
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  style={{ backgroundColor: "#3276b1", color: "white" }}
-                >
-                  <b>Individual Beacons</b>
-                </TableCell>
-              </TableRow>
               {registries
                 .filter((registry) =>
                   filteredIndividualBeacons.some(
-                    (individualBeacon) =>
-                      individualBeacon.beaconId === registry.beaconId
+                    (ib) => ib.beaconId === registry.beaconId
                   )
                 )
                 .map((registry) => {
+                  const rowIsOpen = !!openRows[registry.beaconId];
+                  const isNetwork = networkBeacons.some(
+                    (nb) => nb.beaconNetworkId === registry.beaconId
+                  );
+                  const beaconType = isNetwork ? "network" : "single";
+
                   const hasFoundDataset = filteredIndividualBeacons.some(
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
@@ -383,23 +379,72 @@ export default function CollapsibleTable({
                         )
                       )
                   );
-
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
-                        <TableCell />
-                        <TableCell>
+                        <TableCell sx={{ pr: 0 }}>
+                          <IconButton
+                            aria-label="expand row"
+                            size="small"
+                            onClick={() => toggleRow(registry.beaconId)}
+                          >
+                            {rowIsOpen ? (
+                              <KeyboardArrowDownIcon />
+                            ) : (
+                              <KeyboardArrowRightIcon />
+                            )}
+                          </IconButton>
+                          <BeaconTypeButton type={beaconType} />
+                        </TableCell>
+                        <TableCell
+                          sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
+                        >
+                          <b>{registry.beaconName}</b>
+
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              cursor: "pointer",
+                              marginLeft: "16px",
+                              "&:hover": {
+                                backgroundColor: "#DBEEFD",
+                              },
+                            }}
+                          >
+                            <img
+                              src={Doc}
+                              alt="Doc"
+                              style={{ width: "18px", height: "18px" }}
+                              onClick={() => {
+                                handleBeaconDialogOpen(
+                                  registry.beaconName,
+                                  registry.beaconAPI,
+                                  registry.beaconURL,
+                                  registry.beaconId
+                                );
+                              }}
+                            />
+                          </Box>
                           {registry.beaconMaturity ? (
                             <MaturityButton
                               maturity={registry.beaconMaturity}
                             />
                           ) : (
                             "N/A"
-                          )}{" "}
+                          )}
                         </TableCell>
-                        <TableCell colSpan={2}>
-                          <b>{registry.beaconName}</b>
-                        </TableCell>
+                        <TableCell
+                          colSpan={2}
+                          sx={{
+                            pl: 0,
+                          }}
+                        ></TableCell>
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
@@ -408,11 +453,14 @@ export default function CollapsibleTable({
                               style={{ width: "18px", height: "18px" }}
                             />
                           ) : (
-                            <img
-                              src={Dash}
-                              alt="Dash"
-                              style={{ width: "18px", height: "18px" }}
-                            />
+                            <i
+                              style={{
+                                color: hasFoundDataset ? "#0099CD" : "#FF7C62",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              No AF
+                            </i>
                           )}
                         </TableCell>
                         <TableCell>
@@ -421,133 +469,154 @@ export default function CollapsibleTable({
                           />
                         </TableCell>
                       </TableRow>
-                      {filteredIndividualBeacons
-                        .filter(
-                          (individualBeacon) =>
-                            individualBeacon.beaconId === registry.beaconId
-                        )
-                        .map((individualBeacon) => {
-                          const datasetClickable =
-                            individualBeacon.id &&
-                            individualBeacon.id !== "N/A";
-
-                          const afValue =
-                            getFormattedAlleleFrequency(individualBeacon);
-                          const clickable = afValue !== "N/A";
-                          return (
-                            <TableRow
-                              key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+                      <TableRow variant="emptyRow">
+                        <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
+                          <Collapse in={rowIsOpen} timeout="auto" unmountOnExit>
+                            <Table
+                              size="small"
+                              sx={{
+                                tableLayout: "fixed",
+                                width: "100%",
+                              }}
                             >
-                              <TableCell />
-                              <TableCell />
-                              <TableCell colSpan={2}>
-                                <Box sx={{ marginLeft: "50px" }}>
-                                  <i>Dataset: </i>
-                                  {/* <b>
-                                    {individualBeacon.id ||
-                                      individualBeacon.beaconId}
-                                  </b> */}
-                                  <b
-                                    onClick={() => {
-                                      if (datasetClickable) {
-                                        handleDatasetDialogOpen(
-                                          individualBeacon.id
-                                        );
-                                      }
-                                    }}
-                                    style={{
-                                      cursor: datasetClickable
-                                        ? "pointer"
-                                        : "default",
-                                      textDecoration: datasetClickable
-                                        ? "underline"
-                                        : "none",
-                                    }}
-                                  >
-                                    {datasetClickable ? (
-                                      individualBeacon.id
-                                    ) : (
-                                      <img
-                                        src={Dash}
-                                        alt="Dash"
-                                        style={{
-                                          width: "18px",
-                                          height: "18px",
-                                        }}
-                                      />
-                                    )}
-                                  </b>
-                                </Box>
-                              </TableCell>
-                              <TableCell
-                                sx={{
-                                  width: "154px",
-                                  cursor: clickable ? "pointer" : "default",
-                                  fontWeight: "bold",
-                                  padding: "16px",
-                                  textDecoration: clickable
-                                    ? "underline"
-                                    : "none",
-                                }}
-                                onClick={() => {
-                                  if (clickable) {
-                                    handleDialogOpen(
-                                      registry,
-                                      individualBeacon
+                              <TableBody>
+                                {filteredIndividualBeacons
+                                  .filter(
+                                    (individualBeacon) =>
+                                      individualBeacon.beaconId ===
+                                      registry.beaconId
+                                  )
+                                  .map((individualBeacon) => {
+                                    const rawAfValue =
+                                      getFormattedAlleleFrequency(
+                                        individualBeacon
+                                      );
+                                    const afValue =
+                                      rawAfValue !== "N/A" ? (
+                                        rawAfValue
+                                      ) : (
+                                        <i>No AF</i>
+                                      );
+                                    const clickable = rawAfValue !== "N/A";
+
+                                    return (
+                                      <TableRow
+                                        key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
+                                      >
+                                        <TableCell
+                                          sx={{
+                                            width: "90px !important",
+                                          }}
+                                        />
+
+                                        <TableCell
+                                          sx={{
+                                            width: "149px !important",
+                                          }}
+                                        />
+                                        <TableCell
+                                          sx={{
+                                            width: "340px !important",
+                                          }}
+                                        >
+                                          <Box>
+                                            <i>Dataset: </i>
+                                            <b>
+                                              {individualBeacon.id ? (
+                                                individualBeacon.id
+                                              ) : (
+                                                <i>ID undefined</i>
+                                              )}
+                                            </b>
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            width: "148px !important",
+                                            cursor: clickable
+                                              ? "pointer"
+                                              : "default",
+                                            padding: "16px 16px 16px 20px",
+                                            textDecoration: clickable
+                                              ? "underline"
+                                              : "none",
+                                            textDecorationColor: clickable
+                                              ? "#077EA6"
+                                              : "inherit",
+                                          }}
+                                          onClick={() => {
+                                            if (clickable) {
+                                              handleDialogOpen(
+                                                registry,
+                                                individualBeacon
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          {individualBeacon.results?.some(
+                                            (result) =>
+                                              result.frequencyInPopulations?.some(
+                                                (pop) =>
+                                                  pop.frequencies?.some(
+                                                    (f) =>
+                                                      f.alleleFrequency !==
+                                                      undefined
+                                                  )
+                                              )
+                                          ) ? (
+                                            <b style={{ color: "#077EA6" }}>
+                                              {afValue}
+                                            </b>
+                                          ) : (
+                                            <i
+                                              style={{
+                                                color: individualBeacon.exists
+                                                  ? "#0099CD"
+                                                  : "#FF7C62",
+                                              }}
+                                            >
+                                              No AF
+                                            </i>
+                                          )}
+                                        </TableCell>
+
+                                        <TableCell
+                                          sx={{
+                                            width: "146px !important",
+                                          }}
+                                        >
+                                          <StatusButton
+                                            status={
+                                              individualBeacon.exists
+                                                ? "Found"
+                                                : "Not Found"
+                                            }
+                                          />
+                                        </TableCell>
+                                      </TableRow>
                                     );
-                                  }
-                                }}
-                              >
-                                <b>
-                                  {individualBeacon.results?.some((result) =>
-                                    result.frequencyInPopulations?.some((pop) =>
-                                      pop.frequencies?.some(
-                                        (f) => f.alleleFrequency !== undefined
-                                      )
-                                    )
-                                  ) ? (
-                                    afValue
-                                  ) : (
-                                    <img
-                                      src={Dash}
-                                      alt="Dash"
-                                      style={{ width: "18px", height: "18px" }}
-                                    />
-                                  )}
-                                </b>
-                              </TableCell>
-                              <TableCell>
-                                <StatusButton
-                                  status={
-                                    individualBeacon.exists
-                                      ? "Found"
-                                      : "Not Found"
-                                  }
-                                />
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
+                                  })}
+                              </TableBody>
+                            </Table>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
                     </React.Fragment>
                   );
                 })}
             </>
             <>
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  style={{ backgroundColor: "#023452", color: "white" }}
-                >
-                  <b>Beacon Networks</b>
-                </TableCell>
-              </TableRow>
-              {networkRows.map((row) => (
+              {networkRows.map((row, index) => (
                 <Row
                   key={row.name}
                   row={row}
                   isNetwork={true}
+                  isFirstRow={index === 0}
                   selectedFilters={selectedFilters}
+                  forceOpenAll={selectedFilters.includes("Open All")}
+                  forceCloseAll={selectedFilters.includes("Close All")}
+                  openRows={openRows}
+                  setOpenRows={setOpenRows}
                 />
               ))}
             </>
@@ -562,10 +631,16 @@ export default function CollapsibleTable({
         individualBeaconRegistryId={currentBeaconId}
         individualAlleleData={individualAlleleData}
       />
-      <DatasetDialog
-        open={datasetDialogOpen}
-        onClose={handleDatasetDialogClose}
+      <BeaconDialog
+        open={beaconDialogOpen}
+        onClose={handleBeaconDialogClose}
+        beaconType="individual"
         currentDataset={currentDataset}
+        individualBeaconName={currentBeaconName}
+        individualBeaconRegistryId={currentBeaconId}
+        individualBeaconAPI={currentBeaconApi}
+        individualBeaconURL={currentBeaconUrl}
+        currentDatasets={currentDatasets}
       />
     </>
   );

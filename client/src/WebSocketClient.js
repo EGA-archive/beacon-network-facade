@@ -24,7 +24,6 @@ const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 function WebSocketClient({ setRegistries, setSocket }) {
   const [messages, setMessages] = useState([]);
   const [registries, setLocalRegistries] = useState([]);
-  // const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
@@ -34,41 +33,12 @@ function WebSocketClient({ setRegistries, setSocket }) {
     connectWebSocket();
   }, []);
 
-  // const connectWebSocket = () => {
-  //   if (reconnectRef.current) return;
-
-  //   console.log("🔄 Initializing WebSocket...");
-  //   const ws = new WebSocket("ws://localhost:5700");
-
-  //   ws.onopen = () => {
-  //     console.log("✅ Connected to WebSocket");
-  //     setConnected(true);
-  //     setSocket(ws);
-
-  //     //   reconnectRef.current = setTimeout(() => {
-  //     //     setSocket(null);
-  //     //     connectWebSocket();
-  //     //     reconnectRef.current = null;
-  //     //   }, 9000);
-  //     // };
-
-  //     if (!hasRequestedRegistries.current) {
-  //       ws.send(JSON.stringify("/registries"));
-  //       setTimeout(() => {
-  //         ws.send(JSON.stringify("/registries"));
-  //       }, 300);
-  //       hasRequestedRegistries.current = true;
-  //     }
-  //   };
-
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
-
-    console.log("🔄 Initializing WebSocket...");
-    const ws = new WebSocket("ws://localhost:5700");
+    // const ws = new WebSocket("ws://localhost:5700");
+    const ws = new WebSocket("ws://127.0.0.1:5700");
 
     ws.onopen = () => {
-      console.log("✅ Connected to WebSocket");
       setConnected(true);
       setSocket(ws);
 
@@ -77,24 +47,19 @@ function WebSocketClient({ setRegistries, setSocket }) {
         ws.send(JSON.stringify("/registries"));
 
         setTimeout(() => {
-          console.log(
-            "📤 Sending second /registries request to ensure response..."
-          );
           ws.send(JSON.stringify("/registries"));
-        }, 3000);
+        }, 1000);
         hasRequestedRegistries.current = true;
       }
     };
 
     ws.onmessage = (event) => {
-      // console.log("📩 WebSocket Received Message:", event.data);
+      // console.log("📩 WebSocket Received Message", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
-          console.log("✅ Updating Registries:", data.response.registries);
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
-          // setLoading(false);
         } else {
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -110,21 +75,17 @@ function WebSocketClient({ setRegistries, setSocket }) {
     ws.onerror = (error) => console.error("❌ WebSocket error:", error);
 
     ws.onclose = () => {
-      console.log("⚠️ WebSocket Disconnected - Reconnecting in 15 seconds...");
       setConnected(false);
-      // reconnectRef.current = setTimeout(() => {
-      //   console.log("🔄 Attempting WebSocket Reconnection...");
-      //   setSocket(null);
-      //   connectWebSocket();
-      //   reconnectRef.current = null;
-      // }, 15000);
     };
 
     return () => ws.close();
   };
   const handleSearch = (values) => {
     const { variant, genome } = values;
-    navigate(`/search/${variant}/${genome}`);
+
+    navigate(`/search/${variant}/${genome}`, {
+      state: { registriesLength: registries.length },
+    });
   };
 
   return (
@@ -150,7 +111,20 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     <Grid size={{ xs: 12, sm: 7 }}>
                       <Form.Label>
                         <b className="variant-query">Variant query</b>
-                        <Tooltip title="Enter variant in format: chr-position-ref-alt">
+                        <Tooltip
+                          title={
+                            <ul className="tooltip-bullets">
+                              <li>
+                                Type your variant or copy from Excel with this
+                                specific structure: chr / position / ref. base /
+                                alt. base.
+                              </li>
+                              <li>Queries need to be in 0-based format.</li>
+                            </ul>
+                          }
+                          placement="top-start"
+                          arrow
+                        >
                           <b className="infovariant">i</b>
                         </Tooltip>
                       </Form.Label>

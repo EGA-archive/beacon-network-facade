@@ -16,21 +16,36 @@ export default function TableDialog({
   individualAlleleData,
 }) {
   let matchedData = [];
+  const seen = new Set();
+
   if (alleleDataNetwork && alleleDataNetwork.length > 0) {
-    matchedData = alleleDataNetwork.filter((item) => {
-      return (
+    alleleDataNetwork.forEach((item) => {
+      if (
         item.beaconId === beaconNetworkBeaconName &&
         item.datasetId === beaconNetworkDataset
-      );
+      ) {
+        const key = `${item.beaconId}--${item.datasetId}--${item.population}--${item.alleleFrequency}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          matchedData.push(item);
+        }
+      }
     });
   } else if (individualAlleleData && individualAlleleData.length > 0) {
-    matchedData = individualAlleleData.filter((item) => {
-      return (
+    individualAlleleData.forEach((item) => {
+      if (
         item.beaconId === individualBeaconRegistryId &&
         item.id === individualDataset
-      );
+      ) {
+        const key = `${item.beaconId}--${item.id}--${item.population}--${item.alleleFrequency}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          matchedData.push(item);
+        }
+      }
     });
   }
+
   return (
     <TableContainer
       component={Paper}
@@ -39,6 +54,11 @@ export default function TableDialog({
         borderRadius: "6px",
         width: "80%",
         mx: "auto",
+        overflowY: "auto",
+        overflowX: "hidden",
+        maxHeight: "350px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Table sx={{ minWidth: 450 }} aria-label="Allele Frequency Table">
@@ -46,6 +66,9 @@ export default function TableDialog({
           sx={{
             backgroundColor: "#dbeefd",
             borderBottom: "1px solid #023452",
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
           }}
         >
           <TableRow>
