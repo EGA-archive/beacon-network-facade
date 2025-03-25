@@ -82,7 +82,7 @@ function SearchResults({
             <span>
               Found Results: <b>{stats.beaconNetworkCount} Beacon Networks</b> /{" "}
               <b>{stats.totalBeaconCount} Beacons</b> /
-              <b>{stats.totalDatasetCount} Datasets</b>
+              <b> {stats.totalDatasetCount} Datasets</b>
             </span>
           </p>
         </Grid>

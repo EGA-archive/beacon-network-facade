@@ -368,9 +368,9 @@ export default function Row({
                             <TableCell sx={{ width: "154px" }} />
                           </TableRow>
                           <TableRow key={`sub-${index}`}>
-                            <TableCell variant="width90" />
-                            <TableCell variant="width90" />
-                            <TableCell variant="width356">
+                            <TableCell />
+                            <TableCell />
+                            <TableCell>
                               <Box>
                                 <i>Dataset: </i>
                                 {historyRow.dataset?.datasetId ? (
@@ -383,7 +383,6 @@ export default function Row({
                               </Box>
                             </TableCell>
                             <TableCell
-                              variant="width146"
                               sx={{
                                 cursor: afClickable ? "pointer" : "default",
                                 padding: "10px 16px 10px 16px",
@@ -413,7 +412,7 @@ export default function Row({
                                 <i>No AF</i>
                               )}
                             </TableCell>
-                            <TableCell variant="width146">
+                            <TableCell>
                               <StatusButton
                                 status={historyRow.dataset?.response || "N/A"}
                               />

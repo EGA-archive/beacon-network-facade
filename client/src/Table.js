@@ -283,7 +283,7 @@ export default function CollapsibleTable({
         openState[registry.beaconId] = true;
       });
       setOpenRows(openState);
-      // console.log("openState", openState);
+      console.log("openState", openState);
     } else if (selectedFilters.includes("Close All")) {
       // console.log("❌ Closing All Rows");
       setOpenRows({});
@@ -475,10 +475,8 @@ export default function CollapsibleTable({
                             <Table
                               size="small"
                               sx={{
-                                tableLayout: "fixed !important",
-                                width: "100% !important",
-                                minWidth: "100% !important",
-                                maxWidth: "100% !important",
+                                tableLayout: "fixed",
+                                width: "100%",
                               }}
                             >
                               <TableBody>

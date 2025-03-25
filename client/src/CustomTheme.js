@@ -100,36 +100,6 @@ const customTheme = createTheme({
             border: "none",
           },
         },
-        {
-          props: { variant: "width90" },
-          style: {
-            width: "90px !important",
-            minWidth: "90px !important",
-            maxWidth: "90px !important",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-          },
-        },
-        {
-          props: { variant: "width356" },
-          style: {
-            width: "356px !important",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            minWidth: "356px !important",
-            maxWidth: "356px !important",
-          },
-        },
-        {
-          props: { variant: "width146" },
-          style: {
-            width: "146px !important",
-            minWidth: "146px !important",
-            maxWidth: "146px !important",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-          },
-        },
       ],
     },
   },

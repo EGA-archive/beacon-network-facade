@@ -101,6 +101,7 @@ export default function BeaconDialog({
 
   const fetchEntryTypes = async () => {
     if (!apiToFetch) return;
+    console.log(apiToFetch);
 
     try {
       const response = await axios.get(`${apiToFetch}/entry_types`);
@@ -160,9 +161,7 @@ export default function BeaconDialog({
           color: "#023452",
         }}
       >
-        {beaconType === "individual"
-          ? "Individual Beacon Information"
-          : "Network Beacon Information"}
+        Beacon information
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -186,11 +185,7 @@ export default function BeaconDialog({
         >
           <b>Beacon ID:</b> {individualBeaconName || beaconId} <br />
           <b>Organization: </b>
-          {organizationName === "Undefined" ? (
-            <i>{organizationName}</i>
-          ) : (
-            organizationName
-          )}
+          {organizationName}
           <br />
           <b>Beacon URL: </b>
           <a
@@ -201,18 +196,26 @@ export default function BeaconDialog({
             {individualBeaconURL || beaconURL}
           </a>
           <br />
-          <b>Types of information:</b>
-          <div style={{ display: "flex", flexWrap: "wrap", marginTop: "8px" }}>
-            {entryTypes.length > 0 ? (
-              entryTypes.map((name, index) => (
-                <Button key={index} variant="outlined" sx={buttonStyles}>
+          <b>Types of information:</b> {entryTypes.length === 0 && "Undefined"}
+          {entryTypes.length > 0 && (
+            <div
+              style={{ display: "flex", flexWrap: "wrap", marginTop: "8px" }}
+            >
+              {entryTypes.map((name, index) => (
+                <Button
+                  key={index}
+                  variant="outlined"
+                  sx={{
+                    ...buttonStyles,
+                    cursor: "default",
+                    pointerEvents: "none",
+                  }}
+                >
                   {name}
                 </Button>
-              ))
-            ) : (
-              <i>No entry types available</i>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </Typography>
       </DialogContent>
       <DialogTitle
@@ -237,6 +240,9 @@ export default function BeaconDialog({
         ].map((datasetId, index) => {
           const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
 
+          const datasetName = datasetInfo?.name || "Undefined";
+          const datasetDescription = datasetInfo?.description || "Undefined";
+
           return (
             <Typography
               key={index}
@@ -248,24 +254,28 @@ export default function BeaconDialog({
                 lineHeight: "24px",
                 letterSpacing: "0.5px",
                 color: "black",
+                marginBottom: "16px",
               }}
             >
-              {datasetId ? (
-                <div>
-                  <b>Dataset ID:</b> {datasetId}
-                </div>
-              ) : (
-                <div>
-                  <b>Dataset ID:</b> <i>undefined</i>
-                </div>
-              )}
-              <b>Dataset Name:</b>{" "}
-              {datasetInfo ? datasetInfo.name : <i>undefined</i>}
-              <br />
-              <b>Description:</b> <br />
-              {datasetInfo ? datasetInfo.description : <i>undefined</i>}
-              <br />
-              <br />
+              <div>
+                <b>Dataset ID:</b> {datasetId || "Undefined"}
+              </div>
+
+              <div>
+                <b>Dataset Name:</b> {datasetName}
+              </div>
+
+              <div>
+                <b>Description:</b>{" "}
+                {datasetDescription !== "Undefined" ? (
+                  <>
+                    <br />
+                    {datasetDescription}
+                  </>
+                ) : (
+                  "Undefined"
+                )}
+              </div>
             </Typography>
           );
         })}
@@ -314,11 +324,7 @@ export default function BeaconDialog({
               fontSize: "20px",
             }}
           />
-          {contact && contact.startsWith("mailto:") ? (
-            "Contact"
-          ) : (
-            <i>Undefined</i>
-          )}
+          {contact && contact.startsWith("mailto:") ? "Contact" : "Undefined"}
         </Button>
       </div>
     </Dialog>

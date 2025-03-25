@@ -83,7 +83,7 @@ export default function AFDialog({
           <b>Beacon: </b>
           {individualBeaconName || beaconNetworkBeaconName}
           <br></br>
-          <b>Dataset: </b>
+          <b>Dataset ID: </b>
 
           {individualDataset || beaconNetworkDataset}
         </Typography>
