@@ -95,6 +95,7 @@ export default function Row({
   // };
 
   const alleleDataNetwork = row.history.map((historyRow) => {
+    console.log("historyRow.beaconId", historyRow.beaconId);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
@@ -206,38 +207,31 @@ export default function Row({
             ...(isFirstRow && { borderTop: "1px solid #3176B1" }),
           }}
         >
-          <TableCell variant="lessPadding">
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={toggleRow}
-            >
-              {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-            </IconButton>
-
-            <BeaconTypeButton type={isNetwork ? "network" : "single"} />
-          </TableCell>
           <TableCell
-            colSpan={3}
             variant="lessPadding"
-            style={{ verticalAlign: "middle", paddingLeft: "4px" }}
+            style={{ verticalAlign: "middle" }}
+            colSpan={4}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Box component="span">
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton
+                aria-label="expand row"
+                size="small"
+                onClick={toggleRow}
+              >
+                {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              </IconButton>
+
+              <BeaconTypeButton type={isNetwork ? "network" : "single"} />
+
+              <Box component="span" style={{ paddingLeft: "25px" }}>
                 <b>{row.name}</b>
-                {/* <br />
-                <span>Organization: </span> */}
               </Box>
 
               <a
                 href={row.beaconURL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginLeft: "20px",
-                }}
+                style={{ marginLeft: "20px" }}
               >
                 <img
                   src={row.beaconLogo}
@@ -251,6 +245,7 @@ export default function Row({
               </a>
             </Box>
           </TableCell>
+
           <TableCell variant="lessPadding">
             {hasAlleleFrequency(deduplicatedHistory) ? (
               <img
@@ -309,6 +304,7 @@ export default function Row({
                 >
                   <TableBody>
                     {deduplicatedHistory.map((historyRow, index) => {
+                      console.log("historyRow.beaconId:", historyRow.beaconId);
                       const afValue = getFormattedAlleleFrequency(
                         historyRow.dataset
                       );

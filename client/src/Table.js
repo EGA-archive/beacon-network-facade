@@ -321,10 +321,7 @@ export default function CollapsibleTable({
         <Table
           aria-label="collapsible table"
           sx={{
-            tableLayout: "fixed !important",
-            width: "100% !important",
-            minWidth: "100% !important",
-            maxWidth: "100% !important",
+            tableLayout: "fixed",
           }}
         >
           <TableHead>
@@ -520,7 +517,7 @@ export default function CollapsibleTable({
                                           }}
                                         >
                                           <Box>
-                                            Dataset ID:{" "}
+                                            <i>Dataset ID: </i>
                                             <b>
                                               {individualBeacon.id
                                                 ? individualBeacon.id

@@ -66,7 +66,7 @@ const customTheme = createTheme({
     MuiTableRow: {
       styleOverrides: {
         root: {
-          height: "61px",
+          height: "52px",
         },
       },
       variants: [
