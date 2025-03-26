@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
@@ -11,9 +11,10 @@ function SearchResults({
   selectedFilters,
   setSelectedFilters,
 }) {
-  // console.log("✅ Registries prop received:", registries);
   const { variant, genome } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const registriesLength = location.state?.registriesLength || 0;
   const reconnectRef = useRef(null);
 
   const [stats, setStats] = useState({
@@ -34,7 +35,7 @@ function SearchResults({
       >
         <Grid item xs={12} sm={9} style={{ marginTop: "30px" }}>
           <p className="d-flex" style={{ marginTop: "36px" }}>
-            <b>Results</b>{" "}
+            <b>Results</b>
           </p>
         </Grid>
         {loading && (
@@ -47,11 +48,13 @@ function SearchResults({
               marginTop: "20px",
               display: "flex",
               justifyContent: "center",
+              marginLeft: "7%",
             }}
           >
-            <CircularProgress size={50} />
+            <CircularProgress size={40} />
           </Grid>
         )}
+
         <Grid item xs={12} sm={2} className="d-flex justify-content-end">
           <button className="searchbutton" onClick={() => navigate("/")}>
             <div>
@@ -60,6 +63,7 @@ function SearchResults({
           </button>
         </Grid>
       </Grid>
+
       <Grid
         container
         spacing={2}
@@ -78,13 +82,12 @@ function SearchResults({
             <span>
               Found Results: <b>{stats.beaconNetworkCount} Beacon Networks</b> /{" "}
               <b>{stats.totalBeaconCount} Beacons</b> /
-              <b>{stats.totalDatasetCount} Datasets</b>
+              <b> {stats.totalDatasetCount} Datasets</b>
             </span>
           </p>
         </Grid>
-
-        <Grid item xs={12} sm={2} className="d-flex justify-content-end"></Grid>
       </Grid>
+
       <BeaconQuery
         variant={variant}
         genome={genome}
@@ -94,6 +97,7 @@ function SearchResults({
         setSelectedFilters={setSelectedFilters}
         setStats={setStats}
         setLoading={setLoading}
+        registriesLength={registriesLength}
       />
     </Container>
   );

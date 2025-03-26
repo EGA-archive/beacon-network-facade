@@ -5,7 +5,6 @@ const StatusButton = ({ status }) => {
   const statusStyles = {
     Found: { backgroundColor: "#0099CD", color: "white" },
     "Not Found": { backgroundColor: "#FF7C62", color: "white" },
-    Offline: { backgroundColor: "#949494", color: "white" },
   };
 
   return (
@@ -16,7 +15,7 @@ const StatusButton = ({ status }) => {
         justifyContent: "center",
         width: "100px",
         height: "28px",
-        padding: "6px 12px",
+        padding: "12px",
         borderRadius: "6px",
         fontWeight: "bold",
         textAlign: "center",
@@ -37,21 +36,9 @@ const MaturityButton = ({ maturity }) => {
   };
 
   const maturityStyles = {
-    "Prod Beacon": {
-      backgroundColor: "#ECFAE8",
-      color: "black",
-      border: "1px solid #47AC2B",
-    },
-    "Test Beacon": {
-      backgroundColor: "#FFF7E5",
-      color: "black",
-      border: "1px solid #DDA425",
-    },
-    "Dev Beacon": {
-      backgroundColor: "#F8E8DB",
-      color: "black",
-      border: "1px solid #F47D20",
-    },
+    "Prod Beacon": {},
+    "Test Beacon": {},
+    "Dev Beacon": {},
   };
 
   const displayMaturity = maturityMap[maturity] || "Unknown";
@@ -62,12 +49,10 @@ const MaturityButton = ({ maturity }) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "auto",
-        height: "28px",
         fontFamily: '"Open Sans", sans-serif',
-        padding: "6px 12px",
-        borderRadius: "6px",
         textAlign: "center",
+        fontStyle: "italic",
+        marginLeft: "15%",
         ...maturityStyles[displayMaturity],
       }}
     >
@@ -76,4 +61,41 @@ const MaturityButton = ({ maturity }) => {
   );
 };
 
-export { StatusButton, MaturityButton };
+const BeaconTypeButton = ({ type }) => {
+  const typeMap = {
+    single: {
+      label: "Single Beacon",
+      backgroundColor: "#E1F2FF",
+      border: "1px solid #3176B1",
+      color: "black",
+    },
+    network: {
+      label: "Beacon Network",
+      backgroundColor: "#597E9D40",
+      border: "1px solid #023452",
+      color: "black",
+    },
+  };
+
+  const { label, ...styleProps } = typeMap[type] || typeMap.single;
+
+  return (
+    <Box
+      sx={{
+        display: "inline-flex",
+        borderRadius: "8px",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "6px",
+        padding: "4px 8px",
+        fontFamily: '"Open Sans", sans-serif',
+        fontSize: "14px",
+        ...styleProps,
+      }}
+    >
+      {label}
+    </Box>
+  );
+};
+
+export { StatusButton, MaturityButton, BeaconTypeButton };

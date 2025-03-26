@@ -63,7 +63,7 @@ async def registry(self, burl, is_v2):
             async with aiohttp.ClientSession(timeout=my_timeout) as session:
                 default_v2_response={"meta": {}, "response": {"organization": {}}}
                 default_v2_response["meta"]["beaconId"]="beacon.network.org"
-                default_v2_response["response"]["name"]="Beacon Network"
+                default_v2_response["response"]["name"]="Beacon v1 Network"
                 default_v2_response["response"]["environment"]="prod"
                 default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
                 default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"

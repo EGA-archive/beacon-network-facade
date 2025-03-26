@@ -63,6 +63,7 @@ export default function AFDialog({
       <DialogContent
         sx={{
           padding: "20px",
+          minHeight: "120px",
           maxHeight: "150px",
         }}
       >
@@ -82,7 +83,8 @@ export default function AFDialog({
           <b>Beacon: </b>
           {individualBeaconName || beaconNetworkBeaconName}
           <br></br>
-          <b>Dataset: </b>
+          <b>Dataset ID: </b>
+
           {individualDataset || beaconNetworkDataset}
         </Typography>
       </DialogContent>

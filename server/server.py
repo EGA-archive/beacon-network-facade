@@ -162,7 +162,7 @@ async def registry(websocket, burl, is_v2):
             async with aiohttp.ClientSession(timeout=my_timeout) as session:
                 default_v2_response={"meta": {}, "response": {"organization": {}}}
                 default_v2_response["meta"]["beaconId"]="beacon.network.org"
-                default_v2_response["response"]["name"]="Beacon Network"
+                default_v2_response["response"]["name"]="Beacon v1 Network"
                 default_v2_response["response"]["environment"]="prod"
                 default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
                 default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"
@@ -180,7 +180,7 @@ async def registry(websocket, burl, is_v2):
 async def returning(websocket):
     await asyncio.sleep(10)
     response_obj = {'timeout': 'more than 10 seconds'}
-    LOG.warning(json.dumps(response_obj))
+    #LOG.warning(json.dumps(response_obj))
     #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
     return response_obj
 
@@ -272,7 +272,7 @@ async def ws_server(websocket):
             for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
                 response = await task
                 response = json.loads(response)
-                LOG.warning(response)
+                #LOG.warning(response)
                 try:
                     beaconId=response["meta"]["beaconId"]
                 except Exception:
@@ -292,6 +292,8 @@ async def ws_server(websocket):
                         try:
                             if response1["beaconId"]!=beaconId:
                                 response1["beaconNetworkId"]=beaconId
+                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                                response1["beaconNetworkId"]=beaconId
                             else:
                                 response1["beaconId"]=beaconId
                             dict_response["response"]["resultSets"].append(response1)
@@ -299,11 +301,14 @@ async def ws_server(websocket):
                             response1["beaconId"]=beaconId
                             dict_response["response"]["resultSets"].append(response1)
                 except Exception:
-                    dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
+                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                        dict_response["response"]["resultSets"].append({"beaconNetworkId": beaconId, "exists": False})
+                    else:
+                        dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
                 if dict_response["responseSummary"]["numTotalResults"] > 0 or dict_response["responseSummary"]["exists"] == True:
                     dict_response["responseSummary"]["exists"]=True
                 dict_response = json.dumps(dict_response)
-                #LOG.warning(dict_response)
+                LOG.warning(dict_response)
                 await websocket.send(f"{dict_response}")
             
  
