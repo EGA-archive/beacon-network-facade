@@ -2,3 +2,4 @@ node_modules
 .DS_Store
 *.vcf
 *.env
+server/websocket_checker.py
