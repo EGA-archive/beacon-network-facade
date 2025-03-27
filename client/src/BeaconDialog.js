@@ -244,39 +244,110 @@ export default function BeaconDialog({
           const datasetDescription = datasetInfo?.description || "Undefined";
 
           return (
-            <Typography
-              key={index}
-              gutterBottom
-              sx={{
-                fontFamily: "Open Sans, sans-serif",
-                fontSize: "14px",
-                fontWeight: 400,
-                lineHeight: "24px",
-                letterSpacing: "0.5px",
-                color: "black",
-                marginBottom: "16px",
-              }}
-            >
-              <div>
-                <b>Dataset ID:</b> {datasetId || "Undefined"}
-              </div>
+            //     <Typography
+            //       key={index}
+            //       gutterBottom
+            //       sx={{
+            //         fontFamily: "Open Sans, sans-serif",
+            //         fontSize: "14px",
+            //         fontWeight: 400,
+            //         lineHeight: "24px",
+            //         letterSpacing: "0.5px",
+            //         color: "black",
+            //         marginBottom: "16px",
+            //       }}
+            //     >
+            //       <div>
+            //         <b>Dataset ID:</b> {datasetId || "Undefined"}
+            //       </div>
 
-              <div>
-                <b>Dataset Name:</b> {datasetName}
-              </div>
+            //       <div>
+            //         <b>Dataset Name:</b> {datasetName}
+            //       </div>
 
-              <div>
-                <b>Description:</b>{" "}
-                {datasetDescription !== "Undefined" ? (
-                  <>
-                    <br />
-                    {datasetDescription}
-                  </>
-                ) : (
-                  "Undefined"
-                )}
-              </div>
-            </Typography>
+            //       <div>
+            //         <b>Description:</b>{" "}
+            //         {datasetDescription !== "Undefined" ? (
+            //           <>
+            //             <br />
+            //             {datasetDescription}
+            //           </>
+            //         ) : (
+            //           "Undefined"
+            //         )}
+            //       </div>
+            //     </Typography>
+            //   );
+            // })}
+
+            // {(datasetName === "Undefined" ||
+            //   datasetDescription === "Undefined") && (
+            //   <Typography
+            //     component="div"
+            //     sx={{
+            //       fontFamily: "Open Sans, sans-serif",
+            //       fontSize: "14px",
+            //       fontStyle: "italic",
+            //       marginBottom: "16px",
+            //       color: "black",
+            //     }}
+            //   >
+            //     Note: Datasets information is unavailable for beacons with Boolean
+            //     or Counts response types.
+            //   </Typography>
+            // )}
+            <React.Fragment key={index}>
+              <Typography
+                gutterBottom
+                sx={{
+                  fontFamily: "Open Sans, sans-serif",
+                  fontSize: "14px",
+                  fontWeight: 400,
+                  lineHeight: "24px",
+                  letterSpacing: "0.5px",
+                  color: "black",
+                  marginBottom: "16px",
+                }}
+              >
+                <div>
+                  <b>Dataset ID:</b> {datasetId || "Undefined"}
+                </div>
+
+                <div>
+                  <b>Dataset Name:</b> {datasetName}
+                </div>
+
+                <div>
+                  <b>Description:</b>{" "}
+                  {datasetDescription !== "Undefined" ? (
+                    <>
+                      <br />
+                      {datasetDescription}
+                    </>
+                  ) : (
+                    "Undefined"
+                  )}
+                </div>
+              </Typography>
+
+              {(datasetName === "Undefined" ||
+                datasetDescription === "Undefined") && (
+                <Typography
+                  component="div"
+                  sx={{
+                    fontFamily: "Open Sans, sans-serif",
+                    fontSize: "14px",
+                    fontStyle: "italic",
+                    marginBottom: "16px",
+                    color: "black",
+                  }}
+                >
+                  Note: This is a work in progress and the information about{" "}
+                  {datasetId ? datasetId : "this dataset"} will be available in
+                  the next release
+                </Typography>
+              )}
+            </React.Fragment>
           );
         })}
       </DialogContent>

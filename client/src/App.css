@@ -453,11 +453,6 @@ body {
   z-index: 2;
 }
 
-.table-container {
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
 .title-row {
   background-color: #023452;
   border-top: 1px solid #3176b1;

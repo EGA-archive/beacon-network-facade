@@ -7,7 +7,6 @@ import {
   TableHead,
   Collapse,
   TableRow,
-  Paper,
   Box,
   IconButton,
 } from "@mui/material";
@@ -39,11 +38,10 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
-
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
@@ -227,6 +225,7 @@ export default function CollapsibleTable({
         beaconLogo: registry.beaconLogo,
         beaconURL: registry.beaconURL,
         beaconAPI: registry.beaconAPI,
+        numberOfBeacons: registry.numberOfBeacons,
         response: validNetworkBeacons.some(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -323,10 +322,7 @@ export default function CollapsibleTable({
         <Table
           aria-label="collapsible table"
           sx={{
-            tableLayout: "fixed !important",
-            width: "100% !important",
-            minWidth: "100% !important",
-            maxWidth: "100% !important",
+            tableLayout: "fixed",
           }}
         >
           <TableHead>
@@ -368,6 +364,8 @@ export default function CollapsibleTable({
                   );
                   const beaconType = isNetwork ? "network" : "single";
 
+                  // const beaconType = isNetwork && response.beaconNetworkId ? "network" : "single";
+
                   const hasFoundDataset = filteredIndividualBeacons.some(
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
@@ -382,69 +380,78 @@ export default function CollapsibleTable({
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
-                        <TableCell sx={{ pr: 0 }}>
-                          <IconButton
-                            aria-label="expand row"
-                            size="small"
-                            onClick={() => toggleRow(registry.beaconId)}
-                          >
-                            {rowIsOpen ? (
-                              <KeyboardArrowDownIcon />
-                            ) : (
-                              <KeyboardArrowRightIcon />
-                            )}
-                          </IconButton>
-                          <BeaconTypeButton type={beaconType} />
-                        </TableCell>
                         <TableCell
-                          sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
+                          variant="lessPaddingSingle"
+                          style={{ verticalAlign: "middle" }}
+                          colSpan={4}
                         >
-                          <b>{registry.beaconName}</b>
-
                           <Box
-                            component="span"
                             sx={{
-                              display: "inline-flex",
+                              display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              width: 24,
-                              height: 24,
-                              borderRadius: "50%",
-                              cursor: "pointer",
-                              marginLeft: "16px",
-                              "&:hover": {
-                                backgroundColor: "#DBEEFD",
-                              },
+                              gap: 1,
                             }}
                           >
-                            <img
-                              src={Doc}
-                              alt="Doc"
-                              style={{ width: "18px", height: "18px" }}
-                              onClick={() => {
-                                handleBeaconDialogOpen(
-                                  registry.beaconName,
-                                  registry.beaconAPI,
-                                  registry.beaconURL,
-                                  registry.beaconId
-                                );
+                            <IconButton
+                              aria-label="expand row"
+                              size="small"
+                              onClick={() => toggleRow(registry.beaconId)}
+                            >
+                              {rowIsOpen ? (
+                                <KeyboardArrowDownIcon />
+                              ) : (
+                                <KeyboardArrowRightIcon />
+                              )}
+                            </IconButton>
+                            <BeaconTypeButton type={beaconType} />
+
+                            <Box
+                              component="span"
+                              style={{ paddingLeft: "7.2%" }}
+                            >
+                              <b>{registry.beaconName}</b>
+                            </Box>
+
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                                marginLeft: "16px",
+                                "&:hover": {
+                                  backgroundColor: "#DBEEFD",
+                                },
                               }}
-                            />
+                            >
+                              <img
+                                src={Doc}
+                                alt="Doc"
+                                style={{ width: "18px", height: "18px" }}
+                                onClick={() => {
+                                  handleBeaconDialogOpen(
+                                    registry.beaconName,
+                                    registry.beaconAPI,
+                                    registry.beaconURL,
+                                    registry.beaconId
+                                  );
+                                }}
+                              />
+                            </Box>
+                            {registry.beaconMaturity ? (
+                              <MaturityButton
+                                maturity={registry.beaconMaturity}
+                              />
+                            ) : (
+                              "N/A"
+                            )}
                           </Box>
-                          {registry.beaconMaturity ? (
-                            <MaturityButton
-                              maturity={registry.beaconMaturity}
-                            />
-                          ) : (
-                            "N/A"
-                          )}
                         </TableCell>
-                        <TableCell
-                          colSpan={2}
-                          sx={{
-                            pl: 0,
-                          }}
-                        ></TableCell>
+
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
@@ -520,13 +527,11 @@ export default function CollapsibleTable({
                                           }}
                                         >
                                           <Box>
-                                            <i>Dataset: </i>
+                                            <i>Dataset ID: </i>
                                             <b>
-                                              {individualBeacon.id ? (
-                                                individualBeacon.id
-                                              ) : (
-                                                <i>ID undefined</i>
-                                              )}
+                                              {individualBeacon.id
+                                                ? individualBeacon.id
+                                                : "Undefined"}
                                             </b>
                                           </Box>
                                         </TableCell>

@@ -66,7 +66,7 @@ const customTheme = createTheme({
     MuiTableRow: {
       styleOverrides: {
         root: {
-          height: "61px",
+          height: "52px",
         },
       },
       variants: [
@@ -90,8 +90,14 @@ const customTheme = createTheme({
         {
           props: { variant: "lessPadding" },
           style: {
-            padding: "6px 16px 16px 16px",
+            padding: "6px 16px 6px 16px",
             borderBottom: "1px solid #3176B1",
+          },
+        },
+        {
+          props: { variant: "lessPaddingSingle" },
+          style: {
+            padding: "6px 16px 6px 16px",
           },
         },
         {
