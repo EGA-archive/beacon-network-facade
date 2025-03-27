@@ -95,7 +95,7 @@ export default function Row({
   // };
 
   const alleleDataNetwork = row.history.map((historyRow) => {
-    console.log("historyRow.beaconId", historyRow.beaconId);
+    // console.log("historyRow.beaconId", historyRow.beaconId);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
@@ -160,7 +160,9 @@ export default function Row({
 
   filteredHistory?.forEach((historyRow) => {
     const freq = getFormattedAlleleFrequency(historyRow.dataset);
-    const key = `${historyRow.beaconId}--${historyRow.dataset.datasetId}--${freq}`;
+    const key = `${historyRow.beaconId}--${
+      historyRow.dataset.datasetId || "undefined"
+    }--${freq}`;
     if (!seen.has(key)) {
       seen.add(key);
       deduplicatedHistory.push(historyRow);
@@ -198,6 +200,53 @@ export default function Row({
     setBeaconDialogOpen(false);
   };
 
+  const isUncollapsibleRow = (row) => {
+    return row.history?.some(
+      (item) =>
+        item.beaconId === undefined && // Undefined beaconId
+        item.dataset?.datasetId === undefined && // No real dataset ID
+        item.dataset?.response === "Not Found" // Failed response
+    );
+  };
+
+  // Add this debug function at the top of Row.js
+  // const debugRow = (row) => {
+  //   console.group("[DEBUG] Row Analysis");
+  //   console.log("Full row data:", row);
+
+  //   if (row.history) {
+  //     console.log("History items:", row.history);
+  //     row.history.forEach((item, i) => {
+  //       console.log(`History item ${i}:`, item);
+  //       console.log(
+  //         `Is simple?`,
+  //         item.beaconNetworkId &&
+  //           typeof item.exists === "boolean" &&
+  //           !item.dataset
+  //       );
+  //     });
+  //   } else {
+  //     console.warn("No history array found in row");
+  //   }
+
+  //   console.groupEnd();
+  // };
+
+  // // Then modify your isUncollapsibleRow function:
+  // const isUncollapsibleRow = (row) => {
+  //   debugRow(row); // Add this line to debug each row
+
+  //   const result = row.history?.some(
+  //     (item) =>
+  //       item.beaconNetworkId &&
+  //       typeof item.exists === "boolean" &&
+  //       !item.dataset
+  //   );
+
+  //   console.log(`Row "${row.name}" is uncollapsible:`, result);
+  //   return result;
+  // };
+
   return (
     <React.Fragment>
       {deduplicatedHistory.length > 0 && (
@@ -212,19 +261,36 @@ export default function Row({
             style={{ verticalAlign: "middle" }}
             colSpan={4}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton
-                aria-label="expand row"
-                size="small"
-                onClick={toggleRow}
-              >
-                {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-              </IconButton>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexWrap: "nowrap",
+              }}
+            >
+              {isUncollapsibleRow(row) && <Box sx={{ width: 35 }} />}
+
+              {!isUncollapsibleRow(row) && (
+                <IconButton
+                  aria-label="expand row"
+                  size="small"
+                  onClick={toggleRow}
+                >
+                  {open ? (
+                    <KeyboardArrowDownIcon />
+                  ) : (
+                    <KeyboardArrowRightIcon />
+                  )}
+                </IconButton>
+              )}
 
               <BeaconTypeButton type={isNetwork ? "network" : "single"} />
 
-              <Box component="span" style={{ paddingLeft: "25px" }}>
+              <Box component="span" style={{ paddingLeft: "5%" }}>
                 <b>{row.name}</b>
+                <br />
+                <span>{row.numberOfBeacons}</span> beacons
               </Box>
 
               <a
@@ -245,7 +311,6 @@ export default function Row({
               </a>
             </Box>
           </TableCell>
-
           <TableCell variant="lessPadding">
             {hasAlleleFrequency(deduplicatedHistory) ? (
               <img
@@ -282,6 +347,7 @@ export default function Row({
         </TableRow>
       )}
       {isNetwork &&
+        !isUncollapsibleRow(row) &&
         row.history?.length > 0 &&
         deduplicatedHistory.length > 0 && (
           <TableRow
@@ -304,7 +370,7 @@ export default function Row({
                 >
                   <TableBody>
                     {deduplicatedHistory.map((historyRow, index) => {
-                      console.log("historyRow.beaconId:", historyRow.beaconId);
+                      // console.log("historyRow.beaconId:", historyRow.beaconId);
                       const afValue = getFormattedAlleleFrequency(
                         historyRow.dataset
                       );

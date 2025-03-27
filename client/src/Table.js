@@ -37,7 +37,7 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  console.log("📊 Data received:", data);
+  // console.log("📊 Data received:", data);
   console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -225,6 +225,7 @@ export default function CollapsibleTable({
         beaconLogo: registry.beaconLogo,
         beaconURL: registry.beaconURL,
         beaconAPI: registry.beaconAPI,
+        numberOfBeacons: registry.numberOfBeacons,
         response: validNetworkBeacons.some(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -379,69 +380,78 @@ export default function CollapsibleTable({
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
-                        <TableCell sx={{ pr: 0 }}>
-                          <IconButton
-                            aria-label="expand row"
-                            size="small"
-                            onClick={() => toggleRow(registry.beaconId)}
-                          >
-                            {rowIsOpen ? (
-                              <KeyboardArrowDownIcon />
-                            ) : (
-                              <KeyboardArrowRightIcon />
-                            )}
-                          </IconButton>
-                          <BeaconTypeButton type={beaconType} />
-                        </TableCell>
                         <TableCell
-                          sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
+                          variant="lessPaddingSingle"
+                          style={{ verticalAlign: "middle" }}
+                          colSpan={4}
                         >
-                          <b>{registry.beaconName}</b>
-
                           <Box
-                            component="span"
                             sx={{
-                              display: "inline-flex",
+                              display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              width: 24,
-                              height: 24,
-                              borderRadius: "50%",
-                              cursor: "pointer",
-                              marginLeft: "16px",
-                              "&:hover": {
-                                backgroundColor: "#DBEEFD",
-                              },
+                              gap: 1,
                             }}
                           >
-                            <img
-                              src={Doc}
-                              alt="Doc"
-                              style={{ width: "18px", height: "18px" }}
-                              onClick={() => {
-                                handleBeaconDialogOpen(
-                                  registry.beaconName,
-                                  registry.beaconAPI,
-                                  registry.beaconURL,
-                                  registry.beaconId
-                                );
+                            <IconButton
+                              aria-label="expand row"
+                              size="small"
+                              onClick={() => toggleRow(registry.beaconId)}
+                            >
+                              {rowIsOpen ? (
+                                <KeyboardArrowDownIcon />
+                              ) : (
+                                <KeyboardArrowRightIcon />
+                              )}
+                            </IconButton>
+                            <BeaconTypeButton type={beaconType} />
+
+                            <Box
+                              component="span"
+                              style={{ paddingLeft: "7.2%" }}
+                            >
+                              <b>{registry.beaconName}</b>
+                            </Box>
+
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                                marginLeft: "16px",
+                                "&:hover": {
+                                  backgroundColor: "#DBEEFD",
+                                },
                               }}
-                            />
+                            >
+                              <img
+                                src={Doc}
+                                alt="Doc"
+                                style={{ width: "18px", height: "18px" }}
+                                onClick={() => {
+                                  handleBeaconDialogOpen(
+                                    registry.beaconName,
+                                    registry.beaconAPI,
+                                    registry.beaconURL,
+                                    registry.beaconId
+                                  );
+                                }}
+                              />
+                            </Box>
+                            {registry.beaconMaturity ? (
+                              <MaturityButton
+                                maturity={registry.beaconMaturity}
+                              />
+                            ) : (
+                              "N/A"
+                            )}
                           </Box>
-                          {registry.beaconMaturity ? (
-                            <MaturityButton
-                              maturity={registry.beaconMaturity}
-                            />
-                          ) : (
-                            "N/A"
-                          )}
                         </TableCell>
-                        <TableCell
-                          colSpan={2}
-                          sx={{
-                            pl: 0,
-                          }}
-                        ></TableCell>
+
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
