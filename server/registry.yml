@@ -2,6 +2,6 @@ v2_Beacons:
   - https://af-gdi-bn-api-demo.ega-archive.org/beacon-network/v2.0.0
   - https://af-ega-beacon-demo.ega-archive.org/api
   - https://beacon-network-backend-demo.ega-archive.org/beacon-network/v2.0.0
-  - https://impact-beacon-network-backend-demo.ega-archive.org/beacon-network/v2.0.0
+  - https://beacon-network-backend-test.ega-archive.org/beacon-network/v2.0.0
 v1_Beacons:
   - https://beacon-network.org/api

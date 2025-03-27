@@ -381,7 +381,7 @@ async def ws_server(websocket):
                         try:
                             if response1["beaconId"]!=beaconId:
                                 response1["beaconNetworkId"]=beaconId
-                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                                 response1["beaconNetworkId"]=beaconId
                             else:
                                 response1["beaconId"]=beaconId
@@ -390,7 +390,7 @@ async def ws_server(websocket):
                             response1["beaconId"]=beaconId
                             dict_response["response"]["resultSets"].append(response1)
                 except Exception:
-                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                         dict_response["response"]["resultSets"].append({"beaconNetworkId": beaconId, "exists": False})
                     else:
                         dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
