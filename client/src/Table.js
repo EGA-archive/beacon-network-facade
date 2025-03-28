@@ -18,6 +18,7 @@ import {
   separateBeacons,
   getFormattedAlleleFrequency,
   getAlleleData,
+  // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
 import Tick from "../src/tick.svg";
 import {
@@ -38,7 +39,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -57,6 +58,11 @@ export default function CollapsibleTable({
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
+
+  // const { individualBeacons, networkBeacons } = separateBeacons(data);
+  // const networkBeaconsWithFallbacks = ensureNetworkVisibility(networkBeacons);
+  // const validIndividualBeacons = filterValidBeacons(individualBeacons);
+  // const validNetworkBeacons = filterValidBeacons(networkBeaconsWithFallbacks);
 
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
@@ -240,6 +246,101 @@ export default function CollapsibleTable({
       }
       return true;
     });
+
+  // const networkRows = filteredRegistries
+  //   .filter((registry) =>
+  //     validNetworkBeacons.some(
+  //       (networkBeacon) =>
+  //         networkBeacon.beaconNetworkId === registry.beaconId ||
+  //         (networkBeacon.isFallback &&
+  //           networkBeacon.beaconNetworkId === registry.beaconId)
+  //     )
+  //   )
+  //   .map((registry) => {
+  //     // Check if this is a fallback network
+  //     const isFallbackNetwork = validNetworkBeacons.some(
+  //       (b) => b.beaconNetworkId === registry.beaconId && b.isFallback
+  //     );
+
+  //     if (isFallbackNetwork) {
+  //       console.log(`Showing fallback for network ${registry.beaconName}`);
+  //     }
+
+  //     if (isFallbackNetwork) {
+  //       console.log(`Showing fallback for network ${registry.beaconName}`);
+  //       return {
+  //         name: registry.beaconName,
+  //         beaconLogo: registry.beaconLogo,
+  //         beaconURL: registry.beaconURL,
+  //         beaconAPI: registry.beaconAPI,
+  //         numberOfBeacons: registry.numberOfBeacons,
+  //         response: "Not Found", // Force "Not Found" for fallback networks
+  //         history: [], // Empty history for fallback networks
+  //         isFallback: true, // Mark as fallback
+  //       };
+  //     }
+
+  //     // Original network processing for non-fallback networks
+  //     let history = validNetworkBeacons
+  //       .filter(
+  //         (networkBeacon) =>
+  //           networkBeacon.beaconNetworkId === registry.beaconId &&
+  //           !networkBeacon.isFallback // Exclude fallback beacons from history
+  //       )
+  //       .map((beacon) => {
+  //         let populationList = [];
+  //         beacon.results?.forEach((result) => {
+  //           result.frequencyInPopulations?.forEach((popObj) => {
+  //             popObj.frequencies?.forEach((freq) => {
+  //               if (freq.population) {
+  //                 populationList.push(freq.population);
+  //               }
+  //             });
+  //           });
+  //         });
+
+  //         let populationString =
+  //           populationList.length > 0 ? populationList.join(", ") : "(unknown)";
+
+  //         return {
+  //           beaconId: beacon.beaconId,
+  //           maturity: registry.beaconMaturity,
+  //           dataset: {
+  //             datasetId: beacon.id,
+  //             population: populationString,
+  //             alleleFrequency:
+  //               beacon.results?.[0]?.frequencyInPopulations?.[0]
+  //                 ?.frequencies?.[0]?.alleleFrequency || "N/A",
+  //             response: beacon.exists ? "Found" : "Not Found",
+  //           },
+  //         };
+  //       });
+
+  //     if (selectedFilters.includes("af-only")) {
+  //       history = history.filter(
+  //         (item) => item.dataset.alleleFrequency !== "N/A"
+  //       );
+  //     }
+
+  //     return {
+  //       name: registry.beaconName,
+  //       beaconLogo: registry.beaconLogo,
+  //       beaconURL: registry.beaconURL,
+  //       beaconAPI: registry.beaconAPI,
+  //       numberOfBeacons: registry.numberOfBeacons,
+  //       response: history.some((item) => item.dataset.response === "Found")
+  //         ? "Found"
+  //         : "Not Found",
+  //       history,
+  //       isFallback: false,
+  //     };
+  //   })
+  //   .filter((row) => {
+  //     if (selectedFilters.includes("af-only")) {
+  //       return row.history.length > 0 || row.isFallback;
+  //     }
+  //     return true;
+  //   });
 
   const beaconNetworkCount = networkRows.length;
   const uniqueIndividualBeaconIds = new Set(
@@ -617,6 +718,7 @@ export default function CollapsibleTable({
                   row={row}
                   isNetwork={true}
                   isFirstRow={index === 0}
+                  isFallback={row.isFallback}
                   selectedFilters={selectedFilters}
                   forceOpenAll={selectedFilters.includes("Open All")}
                   forceCloseAll={selectedFilters.includes("Close All")}

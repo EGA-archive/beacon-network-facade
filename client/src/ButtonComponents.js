@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 
-const StatusButton = ({ status }) => {
+const StatusButton = ({ status, isFallback = false }) => {
   const statusStyles = {
     Found: { backgroundColor: "#0099CD", color: "white" },
     "Not Found": { backgroundColor: "#FF7C62", color: "white" },

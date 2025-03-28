@@ -16,7 +16,10 @@ import {
   BeaconTypeButton,
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
-import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
+import {
+  getFormattedAlleleFrequency,
+  ensureNetworkVisibility,
+} from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
@@ -79,6 +82,7 @@ export default function Row({
   };
 
   const alleleDataNetwork = row.history.map((historyRow) => {
+    // console.log("historyRow.beaconId", historyRow.beaconId);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
