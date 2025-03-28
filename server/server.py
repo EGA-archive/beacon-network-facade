@@ -166,6 +166,90 @@ async def registry(websocket, burl, is_v2):
                 default_v2_response["response"]["environment"]="prod"
                 default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
                 default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"
+                default_v2_response["responses"]=['tsri-civic',
+                                                    'aauh-proseqs',
+                                                    'tsri-clinvars',
+                                                    'tsri-cosmics',
+                                                    'tsri-geno2mps',
+                                                    'tsri-dbsnps',
+                                                    'tsri-snpedias',
+                                                    'tsri-grasps',
+                                                    'tsri-uniprots',
+                                                    'aauh-retroseq',
+                                                    'tsri-wellderlys',
+                                                    'tsri-gnomad_exomes',
+                                                    'phenomecentrals',
+                                                    'tsri-exacs',
+                                                    'tsri-dbnsfps',
+                                                    'tsri-gnomad_genomes',
+                                                    'tsri-gwassnpss',
+                                                    'tsri-mutdb',
+                                                    'tsri-emv',
+                                                    'rdconnects',
+                                                    'cogr-queenss',
+                                                    'broads',
+                                                    'cogr-sinais',
+                                                    'bipmed',
+                                                    'tsri-docm',
+                                                    'tsri-evss',
+                                                    'myvariants',
+                                                    'ega',
+                                                    'ucscs',
+                                                    'vicc',
+                                                    'swefreqs',
+                                                    'hgmds',
+                                                    'bemgi',
+                                                    'sahgps',
+                                                    'scilifelabs',
+                                                    'curoverse',
+                                                    'nbdc-humandbss',
+                                                    'cogr-bc-cancers',
+                                                    'cytognomix',
+                                                    'scilifelab-clingens',
+                                                    'cafe-cardiokits',
+                                                    'ACpops',
+                                                    'lovd',
+                                                    'gigascience-2s',
+                                                    'wgs',
+                                                    'wtsis',
+                                                    'altruists',
+                                                    'elixir-fis',
+                                                    'cafe-central',
+                                                    'variant-matcher',
+                                                    'icgcs',
+                                                    'amplab',
+                                                    'molgenis-emx2',
+                                                    'cogr-consensus',
+                                                    'ebis',
+                                                    'tsri-cgi',
+                                                    'clinbioinfosspa',
+                                                    'cosmics',
+                                                    'tsri-cadd',
+                                                    'kaviars',
+                                                    'thousandgenomes-phase3',
+                                                    'conglomerate',
+                                                    'mssng-db6',
+                                                    'cafe-variome',
+                                                    'cell_liness',
+                                                    'ncbis',
+                                                    'cosmic-alls',
+                                                    'mygene2',
+                                                    'brca-exchanges',
+                                                    'aghas',
+                                                    'narcissome',
+                                                    'prism',
+                                                    'agha-somatic',
+                                                    'thousandgenomes',
+                                                    'bob',
+                                                    'agha-germline',
+                                                    'cmh',
+                                                    'inmegens',
+                                                    'garvans',
+                                                    'gigascience',
+                                                    'bioreference',
+                                                    'google',
+                                                    'platinum',
+                                                    'gigascience-1']
                 end_time = perf_counter()
                 response_obj=default_v2_response
                 final_time=end_time-start_time
@@ -228,6 +312,10 @@ async def ws_server(websocket):
                     beaconURL=inforesponse["response"]["alternativeUrl"]
                     beaconLogo=inforesponse["response"]["organization"]["logoUrl"]
                     try:
+                        numberOfBeacons=len(inforesponse["responses"])
+                    except Exception:
+                        numberOfBeacons=1
+                    try:
                         beaconAPI=inforesponse["api"]
                     except Exception:
                         beaconAPI="https://beacon-network.org/api"
@@ -237,6 +325,7 @@ async def ws_server(websocket):
                     finalinforesponse["beaconURL"]=beaconURL
                     finalinforesponse["beaconLogo"]=beaconLogo
                     finalinforesponse["beaconAPI"]=beaconAPI
+                    finalinforesponse["numberOfBeacons"]=numberOfBeacons
                     list_of_beacons.append(finalinforesponse)
                     with open('/responses/registries.json') as registries_file:
                         dict_registries = json.load(registries_file)
@@ -292,7 +381,7 @@ async def ws_server(websocket):
                         try:
                             if response1["beaconId"]!=beaconId:
                                 response1["beaconNetworkId"]=beaconId
-                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                                 response1["beaconNetworkId"]=beaconId
                             else:
                                 response1["beaconId"]=beaconId
@@ -301,7 +390,7 @@ async def ws_server(websocket):
                             response1["beaconId"]=beaconId
                             dict_response["response"]["resultSets"].append(response1)
                 except Exception:
-                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network':
+                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                         dict_response["response"]["resultSets"].append({"beaconNetworkId": beaconId, "exists": False})
                     else:
                         dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})

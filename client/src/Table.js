@@ -18,6 +18,7 @@ import {
   separateBeacons,
   getFormattedAlleleFrequency,
   getAlleleData,
+  // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
 import Tick from "../src/tick.svg";
 import {
@@ -37,8 +38,8 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Data received:", data);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -57,6 +58,11 @@ export default function CollapsibleTable({
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
+
+  // const { individualBeacons, networkBeacons } = separateBeacons(data);
+  // const networkBeaconsWithFallbacks = ensureNetworkVisibility(networkBeacons);
+  // const validIndividualBeacons = filterValidBeacons(individualBeacons);
+  // const validNetworkBeacons = filterValidBeacons(networkBeaconsWithFallbacks);
 
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
@@ -225,6 +231,7 @@ export default function CollapsibleTable({
         beaconLogo: registry.beaconLogo,
         beaconURL: registry.beaconURL,
         beaconAPI: registry.beaconAPI,
+        numberOfBeacons: registry.numberOfBeacons,
         response: validNetworkBeacons.some(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
@@ -239,6 +246,101 @@ export default function CollapsibleTable({
       }
       return true;
     });
+
+  // const networkRows = filteredRegistries
+  //   .filter((registry) =>
+  //     validNetworkBeacons.some(
+  //       (networkBeacon) =>
+  //         networkBeacon.beaconNetworkId === registry.beaconId ||
+  //         (networkBeacon.isFallback &&
+  //           networkBeacon.beaconNetworkId === registry.beaconId)
+  //     )
+  //   )
+  //   .map((registry) => {
+  //     // Check if this is a fallback network
+  //     const isFallbackNetwork = validNetworkBeacons.some(
+  //       (b) => b.beaconNetworkId === registry.beaconId && b.isFallback
+  //     );
+
+  //     if (isFallbackNetwork) {
+  //       console.log(`Showing fallback for network ${registry.beaconName}`);
+  //     }
+
+  //     if (isFallbackNetwork) {
+  //       console.log(`Showing fallback for network ${registry.beaconName}`);
+  //       return {
+  //         name: registry.beaconName,
+  //         beaconLogo: registry.beaconLogo,
+  //         beaconURL: registry.beaconURL,
+  //         beaconAPI: registry.beaconAPI,
+  //         numberOfBeacons: registry.numberOfBeacons,
+  //         response: "Not Found", // Force "Not Found" for fallback networks
+  //         history: [], // Empty history for fallback networks
+  //         isFallback: true, // Mark as fallback
+  //       };
+  //     }
+
+  //     // Original network processing for non-fallback networks
+  //     let history = validNetworkBeacons
+  //       .filter(
+  //         (networkBeacon) =>
+  //           networkBeacon.beaconNetworkId === registry.beaconId &&
+  //           !networkBeacon.isFallback // Exclude fallback beacons from history
+  //       )
+  //       .map((beacon) => {
+  //         let populationList = [];
+  //         beacon.results?.forEach((result) => {
+  //           result.frequencyInPopulations?.forEach((popObj) => {
+  //             popObj.frequencies?.forEach((freq) => {
+  //               if (freq.population) {
+  //                 populationList.push(freq.population);
+  //               }
+  //             });
+  //           });
+  //         });
+
+  //         let populationString =
+  //           populationList.length > 0 ? populationList.join(", ") : "(unknown)";
+
+  //         return {
+  //           beaconId: beacon.beaconId,
+  //           maturity: registry.beaconMaturity,
+  //           dataset: {
+  //             datasetId: beacon.id,
+  //             population: populationString,
+  //             alleleFrequency:
+  //               beacon.results?.[0]?.frequencyInPopulations?.[0]
+  //                 ?.frequencies?.[0]?.alleleFrequency || "N/A",
+  //             response: beacon.exists ? "Found" : "Not Found",
+  //           },
+  //         };
+  //       });
+
+  //     if (selectedFilters.includes("af-only")) {
+  //       history = history.filter(
+  //         (item) => item.dataset.alleleFrequency !== "N/A"
+  //       );
+  //     }
+
+  //     return {
+  //       name: registry.beaconName,
+  //       beaconLogo: registry.beaconLogo,
+  //       beaconURL: registry.beaconURL,
+  //       beaconAPI: registry.beaconAPI,
+  //       numberOfBeacons: registry.numberOfBeacons,
+  //       response: history.some((item) => item.dataset.response === "Found")
+  //         ? "Found"
+  //         : "Not Found",
+  //       history,
+  //       isFallback: false,
+  //     };
+  //   })
+  //   .filter((row) => {
+  //     if (selectedFilters.includes("af-only")) {
+  //       return row.history.length > 0 || row.isFallback;
+  //     }
+  //     return true;
+  //   });
 
   const beaconNetworkCount = networkRows.length;
   const uniqueIndividualBeaconIds = new Set(
@@ -321,10 +423,7 @@ export default function CollapsibleTable({
         <Table
           aria-label="collapsible table"
           sx={{
-            tableLayout: "fixed !important",
-            width: "100% !important",
-            minWidth: "100% !important",
-            maxWidth: "100% !important",
+            tableLayout: "fixed",
           }}
         >
           <TableHead>
@@ -382,69 +481,78 @@ export default function CollapsibleTable({
                   return (
                     <React.Fragment key={registry.beaconId}>
                       <TableRow>
-                        <TableCell sx={{ pr: 0 }}>
-                          <IconButton
-                            aria-label="expand row"
-                            size="small"
-                            onClick={() => toggleRow(registry.beaconId)}
-                          >
-                            {rowIsOpen ? (
-                              <KeyboardArrowDownIcon />
-                            ) : (
-                              <KeyboardArrowRightIcon />
-                            )}
-                          </IconButton>
-                          <BeaconTypeButton type={beaconType} />
-                        </TableCell>
                         <TableCell
-                          sx={{ pl: 0.5, pr: 0, whiteSpace: "nowrap" }}
+                          variant="lessPaddingSingle"
+                          style={{ verticalAlign: "middle" }}
+                          colSpan={4}
                         >
-                          <b>{registry.beaconName}</b>
-
                           <Box
-                            component="span"
                             sx={{
-                              display: "inline-flex",
+                              display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              width: 24,
-                              height: 24,
-                              borderRadius: "50%",
-                              cursor: "pointer",
-                              marginLeft: "16px",
-                              "&:hover": {
-                                backgroundColor: "#DBEEFD",
-                              },
+                              gap: 1,
                             }}
                           >
-                            <img
-                              src={Doc}
-                              alt="Doc"
-                              style={{ width: "18px", height: "18px" }}
-                              onClick={() => {
-                                handleBeaconDialogOpen(
-                                  registry.beaconName,
-                                  registry.beaconAPI,
-                                  registry.beaconURL,
-                                  registry.beaconId
-                                );
+                            <IconButton
+                              aria-label="expand row"
+                              size="small"
+                              onClick={() => toggleRow(registry.beaconId)}
+                            >
+                              {rowIsOpen ? (
+                                <KeyboardArrowDownIcon />
+                              ) : (
+                                <KeyboardArrowRightIcon />
+                              )}
+                            </IconButton>
+                            <BeaconTypeButton type={beaconType} />
+
+                            <Box
+                              component="span"
+                              style={{ paddingLeft: "7.2%" }}
+                            >
+                              <b>{registry.beaconName}</b>
+                            </Box>
+
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                                marginLeft: "16px",
+                                "&:hover": {
+                                  backgroundColor: "#DBEEFD",
+                                },
                               }}
-                            />
+                            >
+                              <img
+                                src={Doc}
+                                alt="Doc"
+                                style={{ width: "18px", height: "18px" }}
+                                onClick={() => {
+                                  handleBeaconDialogOpen(
+                                    registry.beaconName,
+                                    registry.beaconAPI,
+                                    registry.beaconURL,
+                                    registry.beaconId
+                                  );
+                                }}
+                              />
+                            </Box>
+                            {registry.beaconMaturity ? (
+                              <MaturityButton
+                                maturity={registry.beaconMaturity}
+                              />
+                            ) : (
+                              "N/A"
+                            )}
                           </Box>
-                          {registry.beaconMaturity ? (
-                            <MaturityButton
-                              maturity={registry.beaconMaturity}
-                            />
-                          ) : (
-                            "N/A"
-                          )}
                         </TableCell>
-                        <TableCell
-                          colSpan={2}
-                          sx={{
-                            pl: 0,
-                          }}
-                        ></TableCell>
+
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
@@ -520,7 +628,7 @@ export default function CollapsibleTable({
                                           }}
                                         >
                                           <Box>
-                                            Dataset ID:{" "}
+                                            <i>Dataset ID: </i>
                                             <b>
                                               {individualBeacon.id
                                                 ? individualBeacon.id
@@ -610,6 +718,7 @@ export default function CollapsibleTable({
                   row={row}
                   isNetwork={true}
                   isFirstRow={index === 0}
+                  isFallback={row.isFallback}
                   selectedFilters={selectedFilters}
                   forceOpenAll={selectedFilters.includes("Open All")}
                   forceCloseAll={selectedFilters.includes("Close All")}

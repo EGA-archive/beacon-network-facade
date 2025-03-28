@@ -16,8 +16,10 @@ import {
   BeaconTypeButton,
 } from "./ButtonComponents";
 import Dialog from "./Dialog";
-import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
-import { TableSortLabel } from "@mui/material";
+import {
+  getFormattedAlleleFrequency,
+  ensureNetworkVisibility,
+} from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
@@ -79,22 +81,8 @@ export default function Row({
     });
   };
 
-  // useEffect(() => {
-  //   if (forceCloseAll) {
-  //     setOpen(false);
-  //   } else if (forceOpenAll) {
-  //     setOpen(true);
-  //   }
-  // }, [forceOpenAll, forceCloseAll]);
-  // const toggleRow = () => {
-  //   setOpen((prev) => {
-  //     const newState = !prev;
-
-  //     return newState;
-  //   });
-  // };
-
   const alleleDataNetwork = row.history.map((historyRow) => {
+    // console.log("historyRow.beaconId", historyRow.beaconId);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
@@ -159,7 +147,9 @@ export default function Row({
 
   filteredHistory?.forEach((historyRow) => {
     const freq = getFormattedAlleleFrequency(historyRow.dataset);
-    const key = `${historyRow.beaconId}--${historyRow.dataset.datasetId}--${freq}`;
+    const key = `${historyRow.beaconId}--${
+      historyRow.dataset.datasetId || "undefined"
+    }--${freq}`;
     if (!seen.has(key)) {
       seen.add(key);
       deduplicatedHistory.push(historyRow);
@@ -197,6 +187,22 @@ export default function Row({
     setBeaconDialogOpen(false);
   };
 
+  const isUncollapsibleRow = (row) => {
+    if (!row.history?.length) return false;
+    return row.history.every((item) => item.dataset?.response === "Not Found");
+  };
+
+  const groupByBeaconId = (history) => {
+    const grouped = {};
+    history.forEach((item) => {
+      if (!grouped[item.beaconId]) {
+        grouped[item.beaconId] = [];
+      }
+      grouped[item.beaconId].push(item);
+    });
+    return grouped;
+  };
+
   return (
     <React.Fragment>
       {deduplicatedHistory.length > 0 && (
@@ -206,38 +212,48 @@ export default function Row({
             ...(isFirstRow && { borderTop: "1px solid #3176B1" }),
           }}
         >
-          <TableCell variant="lessPadding">
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={toggleRow}
-            >
-              {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-            </IconButton>
-
-            <BeaconTypeButton type={isNetwork ? "network" : "single"} />
-          </TableCell>
           <TableCell
-            colSpan={3}
             variant="lessPadding"
-            style={{ verticalAlign: "middle", paddingLeft: "4px" }}
+            style={{ verticalAlign: "middle" }}
+            colSpan={4}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Box component="span">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                flexWrap: "nowrap",
+              }}
+            >
+              {isUncollapsibleRow(row) && <Box sx={{ width: 35 }} />}
+
+              {!isUncollapsibleRow(row) && (
+                <IconButton
+                  aria-label="expand row"
+                  size="small"
+                  onClick={toggleRow}
+                >
+                  {open ? (
+                    <KeyboardArrowDownIcon />
+                  ) : (
+                    <KeyboardArrowRightIcon />
+                  )}
+                </IconButton>
+              )}
+
+              <BeaconTypeButton type={isNetwork ? "network" : "single"} />
+
+              <Box component="span" style={{ paddingLeft: "5%" }}>
                 <b>{row.name}</b>
-                {/* <br />
-                <span>Organization: </span> */}
+                <br />
+                <span>{row.numberOfBeacons}</span> beacons
               </Box>
 
               <a
                 href={row.beaconURL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginLeft: "20px",
-                }}
+                style={{ marginLeft: "20px" }}
               >
                 <img
                   src={row.beaconLogo}
@@ -287,6 +303,7 @@ export default function Row({
         </TableRow>
       )}
       {isNetwork &&
+        !isUncollapsibleRow(row) &&
         row.history?.length > 0 &&
         deduplicatedHistory.length > 0 && (
           <TableRow
@@ -308,117 +325,125 @@ export default function Row({
                   }}
                 >
                   <TableBody>
-                    {deduplicatedHistory.map((historyRow, index) => {
-                      const afValue = getFormattedAlleleFrequency(
-                        historyRow.dataset
-                      );
-
-                      const afClickable = afValue !== "N/A";
-
-                      return (
-                        <React.Fragment key={`history-${index}`}>
-                          <TableRow key={`main-${index}`}>
-                            <TableCell sx={{ width: "160px !important" }} />
-                            <TableCell
+                    {Object.entries(
+                      deduplicatedHistory.reduce((acc, historyRow) => {
+                        if (!acc[historyRow.beaconId]) {
+                          acc[historyRow.beaconId] = [];
+                        }
+                        acc[historyRow.beaconId].push(historyRow);
+                        return acc;
+                      }, {})
+                    ).map(([beaconId, beaconDatasets], beaconIndex) => (
+                      <React.Fragment key={`beacon-${beaconIndex}`}>
+                        <TableRow>
+                          <TableCell sx={{ width: "160px !important" }} />
+                          <TableCell
+                            sx={{
+                              width: "94px",
+                              whiteSpace: "nowrap",
+                              paddingLeft: "4px",
+                            }}
+                          >
+                            <b>{beaconId}</b>
+                            <Box
+                              component="span"
                               sx={{
-                                width: "94px",
-                                whiteSpace: "nowrap",
-                                paddingLeft: "4px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                                marginLeft: "16px",
+                                marginRight: "16px",
+                                "&:hover": {
+                                  backgroundColor: "#DBEEFD",
+                                },
                               }}
+                              onClick={() =>
+                                handleBeaconDialogOpen(beaconDatasets[0])
+                              }
                             >
-                              <b>{historyRow.beaconId}</b>
-                              <Box
-                                component="span"
-                                sx={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: "50%",
-                                  cursor: "pointer",
-                                  marginLeft: "16px",
-                                  marginRight: "16px",
-                                  "&:hover": {
-                                    backgroundColor: "#DBEEFD",
-                                  },
-                                }}
-                                onClick={() =>
-                                  handleBeaconDialogOpen(historyRow)
-                                }
-                              >
-                                <img
-                                  src={Doc}
-                                  alt="Doc"
-                                  style={{ width: "18px", height: "18px" }}
-                                />
-                              </Box>
-                              {historyRow.maturity && (
-                                <MaturityButton
-                                  maturity={historyRow.maturity}
-                                />
-                              )}
-                            </TableCell>
-                            <TableCell
-                              sx={{
-                                width: "368px",
-                              }}
-                            ></TableCell>
-                            <TableCell sx={{ width: "155px" }} />
-                            <TableCell sx={{ width: "154px" }} />
-                          </TableRow>
-                          <TableRow key={`sub-${index}`}>
-                            <TableCell />
-                            <TableCell />
-                            <TableCell>
-                              <Box>
-                                <i>Dataset ID: </i>
-                                {historyRow.dataset?.datasetId ? (
-                                  <b>{historyRow.dataset.datasetId}</b>
-                                ) : (
-                                  <b>Undefined</b>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell
-                              sx={{
-                                cursor: afClickable ? "pointer" : "default",
-                                padding: "10px 16px 10px 16px",
-                                textDecoration: afClickable
-                                  ? "underline"
-                                  : "none",
-                                textDecorationColor: afClickable
-                                  ? "#077EA6"
-                                  : "inherit",
-                                color:
-                                  historyRow.dataset?.response === "Found"
-                                    ? "#0099CD"
-                                    : historyRow.dataset?.response ===
-                                      "Not Found"
-                                    ? "#FF7C62"
-                                    : "inherit",
-                              }}
-                              onClick={() => {
-                                if (afClickable) {
-                                  handleDialogOpen(historyRow);
-                                }
-                              }}
-                            >
-                              {historyRow.dataset?.alleleFrequency !== "N/A" ? (
-                                <b style={{ color: "#077EA6" }}>{afValue}</b>
-                              ) : (
-                                <i>No AF</i>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <StatusButton
-                                status={historyRow.dataset?.response || "N/A"}
+                              <img
+                                src={Doc}
+                                alt="Doc"
+                                style={{ width: "18px", height: "18px" }}
                               />
-                            </TableCell>
-                          </TableRow>
-                        </React.Fragment>
-                      );
-                    })}
+                            </Box>
+                            {beaconDatasets[0].maturity && (
+                              <MaturityButton
+                                maturity={beaconDatasets[0].maturity}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ width: "368px" }} />
+                          <TableCell sx={{ width: "155px" }} />
+                          <TableCell sx={{ width: "154px" }} />
+                        </TableRow>
+                        {beaconDatasets.map((historyRow, datasetIndex) => {
+                          const afValue = getFormattedAlleleFrequency(
+                            historyRow.dataset
+                          );
+                          const afClickable = afValue !== "N/A";
+
+                          return (
+                            <TableRow
+                              key={`dataset-${beaconIndex}-${datasetIndex}`}
+                            >
+                              <TableCell />
+                              <TableCell />
+                              <TableCell>
+                                <Box>
+                                  <i>Dataset ID: </i>
+                                  {historyRow.dataset?.datasetId ? (
+                                    <b>{historyRow.dataset.datasetId}</b>
+                                  ) : (
+                                    <b>Undefined</b>
+                                  )}
+                                </Box>
+                              </TableCell>
+                              <TableCell
+                                sx={{
+                                  cursor: afClickable ? "pointer" : "default",
+                                  padding: "10px 16px 10px 16px",
+                                  textDecoration: afClickable
+                                    ? "underline"
+                                    : "none",
+                                  textDecorationColor: afClickable
+                                    ? "#077EA6"
+                                    : "inherit",
+                                  color:
+                                    historyRow.dataset?.response === "Found"
+                                      ? "#0099CD"
+                                      : historyRow.dataset?.response ===
+                                        "Not Found"
+                                      ? "#FF7C62"
+                                      : "inherit",
+                                }}
+                                onClick={() => {
+                                  if (afClickable) {
+                                    handleDialogOpen(historyRow);
+                                  }
+                                }}
+                              >
+                                {historyRow.dataset?.alleleFrequency !==
+                                "N/A" ? (
+                                  <b style={{ color: "#077EA6" }}>{afValue}</b>
+                                ) : (
+                                  <i>No AF</i>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <StatusButton
+                                  status={historyRow.dataset?.response || "N/A"}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))}
                   </TableBody>
                 </Table>
               </Collapse>
