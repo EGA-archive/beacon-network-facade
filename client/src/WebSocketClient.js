@@ -53,7 +53,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      // console.log("📩 WebSocket Received Message", event.data);
+      console.log("📩 WebSocket Received Message", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
