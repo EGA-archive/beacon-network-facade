@@ -8,8 +8,20 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import yaml
+from aiohttp_client_cache import CachedSession, SQLiteBackend
 
 LOG = logging.getLogger(__name__)
+
+cache = SQLiteBackend(
+    cache_name='~/.cache/aiohttp-requests.db',  # For SQLite, this will be used as the filename
+    expire_after=60*60,                         # By default, cached responses expire in an hour
+    urls_expire_after={'*.fillmurray.com': -1}, # Requests for any subdomain on this site will never expire
+    allowed_codes=(200, 418),                   # Cache responses with these status codes
+    allowed_methods=['GET', 'POST'],            # Cache requests with these HTTP methods
+    include_headers=True,                       # Cache requests with different headers separately
+    ignored_params=['auth_token'],              # Keep using the cached response even if this param changes
+    timeout=0.004,                                # Connection timeout for SQLite backend
+)
 
 async def beacon_request(session, url, data):
     async with session.get(url) as response:
@@ -26,7 +38,7 @@ async def requesting(websocket, burl, query, is_v2):
     sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
 )
     query = query.replace('"', '')
-    async with aiohttp.ClientSession(timeout=my_timeout) as session:
+    async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
         if is_v2 == True:
             try:
                 url = burl + query
@@ -145,7 +157,7 @@ async def registry(websocket, burl, is_v2):
 )   
     if is_v2 == True:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 url = burl + '/info'
                 response_obj = await beacon_request(session, url, data)
                 end_time = perf_counter()
@@ -159,7 +171,7 @@ async def registry(websocket, burl, is_v2):
             return json.dumps({"beacon": burl})
     elif is_v2 == False:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 default_v2_response={"meta": {}, "response": {"organization": {}}}
                 default_v2_response["meta"]["beaconId"]="beacon.network.org"
                 default_v2_response["response"]["name"]="Beacon v1 Network"
