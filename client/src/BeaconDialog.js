@@ -101,8 +101,6 @@ export default function BeaconDialog({
 
   const fetchEntryTypes = async () => {
     if (!apiToFetch) return;
-    console.log(apiToFetch);
-
     try {
       const response = await axios.get(`${apiToFetch}/entry_types`);
       const fetchedEntryTypes = response.data?.response?.entryTypes

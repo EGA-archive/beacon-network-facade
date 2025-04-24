@@ -18,6 +18,7 @@ import {
   separateBeacons,
   getFormattedAlleleFrequency,
   getAlleleData,
+  // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
 import Tick from "../src/tick.svg";
 import {
@@ -54,7 +55,6 @@ export default function CollapsibleTable({
   // console.log("selectedFilters", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
-
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
 
@@ -363,9 +363,6 @@ export default function CollapsibleTable({
                     (nb) => nb.beaconNetworkId === registry.beaconId
                   );
                   const beaconType = isNetwork ? "network" : "single";
-
-                  // const beaconType = isNetwork && response.beaconNetworkId ? "network" : "single";
-
                   const hasFoundDataset = filteredIndividualBeacons.some(
                     (individualBeacon) =>
                       individualBeacon.beaconId === registry.beaconId &&
@@ -617,6 +614,7 @@ export default function CollapsibleTable({
                   row={row}
                   isNetwork={true}
                   isFirstRow={index === 0}
+                  isFallback={row.isFallback}
                   selectedFilters={selectedFilters}
                   forceOpenAll={selectedFilters.includes("Open All")}
                   forceCloseAll={selectedFilters.includes("Close All")}

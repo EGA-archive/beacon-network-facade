@@ -36,14 +36,13 @@ function WebSocketClient({ setRegistries, setSocket }) {
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
     // const ws = new WebSocket("ws://localhost:5700");
-    const ws = new WebSocket("ws://127.0.0.1:5700");
+    const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
 
     ws.onopen = () => {
       setConnected(true);
       setSocket(ws);
 
       if (!hasRequestedRegistries.current) {
-        console.log("📤 Requesting /registries...");
         ws.send(JSON.stringify("/registries"));
 
         setTimeout(() => {
@@ -54,7 +53,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
     };
 
     ws.onmessage = (event) => {
-      // console.log("📩 WebSocket Received Message", event.data);
+      console.log("📩 WebSocket Received Message", event.data);
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {

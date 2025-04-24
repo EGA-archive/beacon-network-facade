@@ -70,7 +70,7 @@ function BeaconQuery({
     socket.addEventListener("message", handleMessage);
 
     return () => {
-      console.log("🔄 Removing WebSocket event listener.");
+      // console.log("🔄 Removing WebSocket event listener.");
       socket.removeEventListener("message", handleMessage);
     };
   }, [variant, genome, socket, registriesLength]);
