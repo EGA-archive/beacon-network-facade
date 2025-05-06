@@ -12,6 +12,8 @@ services:
     ports:
       - "5700:5700"
     entrypoint: ["python", "server.py"]
+    volumes:
+      - ./server/cache/:/cache
     networks:
       - gbn
 

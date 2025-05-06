@@ -35,8 +35,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
 
   const connectWebSocket = () => {
     if (reconnectRef.current) return;
-    // const ws = new WebSocket("ws://localhost:5700");
-    const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
+    const ws = new WebSocket("ws://localhost:5700");
+    // const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
 
     ws.onopen = () => {
       setConnected(true);

@@ -8,8 +8,47 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import yaml
+from aiohttp_client_cache import CachedSession, SQLiteBackend
 
 LOG = logging.getLogger(__name__)
+
+cache = SQLiteBackend(
+    cache_name='~/.cache/aiohttp-requests.db',  # For SQLite, this will be used as the filename
+    expire_after=60*60,                         # By default, cached responses expire in an hour
+    allowed_codes=(200, 418),                   # Cache responses with these status codes
+    allowed_methods=['GET', 'POST'],            # Cache requests with these HTTP methods
+    include_headers=True,                       # Cache requests with different headers separately
+    ignored_params=['auth_token'],              # Keep using the cached response even if this param changes
+    timeout=0.004,                                # Connection timeout for SQLite backend
+)
+
+async def dataset_request(session, url, data):
+    async with session.get(url) as response:
+        response_obj = await response.json()
+        return response_obj
+    
+async def datasets_requesting(websocket, burl, is_v2):
+    start_time = perf_counter()
+    data={}
+    my_timeout = aiohttp.ClientTimeout(
+    total=15, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
+    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+)
+    async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
+        if is_v2 == True:
+            try:
+                url = burl + '/datasets'
+                response_obj = await dataset_request(session, url, data)
+                end_time = perf_counter()
+                final_time=end_time-start_time
+                LOG.warning("{} response for datasets took {} seconds".format(burl, final_time))
+                #LOG.warning(json.dumps(response_obj))
+                return json.dumps(response_obj)
+            except Exception as e:
+                LOG.warning("Couldn't retrieve datasets for beacon {}".format(url))
+                return {}
+            #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 async def beacon_request(session, url, data):
     async with session.get(url) as response:
@@ -39,14 +78,14 @@ async def requesting(websocket, burl, query, is_v2):
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 #LOG.warning(json.dumps(response_obj))
-                return json.dumps(response_obj)
+                return json.dumps(response_obj), burl
             except Exception as e:
                 LOG.warning(e)
                 response_obj = await registry(websocket, burl, is_v2)
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
-                return response_obj
+                return response_obj, burl
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
         elif is_v2 == False:
             try:
@@ -121,18 +160,18 @@ async def requesting(websocket, burl, query, is_v2):
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 #LOG.warning(json.dumps(response_obj))
-                return json.dumps(default_v2_response)
+                return json.dumps(default_v2_response), burl
             except Exception as e:
-                LOG.warning('que siiii')
+                LOG.warning('beacon timed out')
                 LOG.warning(e)
                 response_obj = await registry(websocket, burl, is_v2)
                 end_time = perf_counter()
                 final_time=end_time-start_time
                 LOG.warning("{} response took {} seconds".format(burl, final_time))
                 if default_v2_response != {}:
-                    return json.dumps(default_v2_response)
+                    return json.dumps(default_v2_response), burl
                 else:
-                    return response_obj
+                    return response_obj, burl
             #return web.Response(text=json.dumps(response_obj), status=200, content_type='application/json')
 
 async def registry(websocket, burl, is_v2):
@@ -342,6 +381,7 @@ async def ws_server(websocket):
             LOG.warning(f"Token: {token}")
             loop=asyncio.get_running_loop()
             tasks=[]
+            dataset_tasks=[]
             with open('registry.yml', 'r') as f:
                 data = yaml.load(f, Loader=yaml.SafeLoader)
 
@@ -359,7 +399,7 @@ async def ws_server(websocket):
                 dict_response = json.load(json_file)
 
             for task in itertools.islice(asyncio.as_completed(tasks), len(tasks)):
-                response = await task
+                response, burl = await task
                 response = json.loads(response)
                 #LOG.warning(response)
                 try:
@@ -376,6 +416,11 @@ async def ws_server(websocket):
                 except Exception:
                     pass
                 dict_response["responseSummary"]["numTotalResults"]+=count
+                datasets = await datasets_requesting(websocket, burl, True)
+                try:
+                    datasets = json.loads(datasets)
+                except Exception:
+                    datasets={}
                 try:
                     for response1 in response["response"]["resultSets"]:
                         try:
@@ -385,6 +430,14 @@ async def ws_server(websocket):
                                 response1["beaconNetworkId"]=beaconId
                             else:
                                 response1["beaconId"]=beaconId
+                            try:
+                                if response1["id"]:
+                                    collection_datasets = datasets["response"]["collections"]
+                                    for collection in collection_datasets:
+                                        if collection["id"] == response1["id"]:
+                                            response1["datasetName"] = collection["name"]
+                            except Exception:
+                                pass
                             dict_response["response"]["resultSets"].append(response1)
                         except Exception:
                             response1["beaconId"]=beaconId
