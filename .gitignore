@@ -3,3 +3,4 @@ node_modules
 *.vcf
 *.env
 server/websocket_checker.py
+*.sqlite
