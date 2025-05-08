@@ -29,7 +29,7 @@ function NetworkMembers({ registries = [] }) {
     <Container>
       <div>
         <p className="lead mt-5 mb-4">
-          <b>Global Beacon Network Members</b>
+          <b>Global Beacon Atlas Members</b>
         </p>
 
         {registriesWithValidLogos.length > 0 ? (

@@ -1,20 +1,20 @@
 {
-    "id": "es.crg.global-beacon-network",
-    "name": "CRG Global Beacon Network",
-    "type": {
+  "id": "es.crg.global-beacon-network",
+  "name": "CRG Global Beacon Atlas",
+  "type": {
     "group": "org.ga4gh",
     "artifact": "beacon",
     "version": "2.0"
-    },
-    "description": "This Global Beacon Network hosts beacons and beacon networks from all around the world.",
-    "organization": {
+  },
+  "description": "This Global Beacon Atlas hosts beacons and beacon networks from all around the world.",
+  "organization": {
     "name": "CRG",
     "url": ""
-    },
-    "contactUrl": "mailto:beacon.ega@crg.eu",
-    "documentationUrl": "https://b2ri-documentation-demo.ega-archive.org/",
-    "createdAt": "2021-11-29T12:00:00.000000",
-    "updatedAt": "2024-12-19T11:02:20.219126",
-    "environment": "test",
-    "version": "v2.0-8cf3d04"
-    }
+  },
+  "contactUrl": "mailto:beacon.ega@crg.eu",
+  "documentationUrl": "https://b2ri-documentation-demo.ega-archive.org/",
+  "createdAt": "2021-11-29T12:00:00.000000",
+  "updatedAt": "2024-12-19T11:02:20.219126",
+  "environment": "test",
+  "version": "v2.0-8cf3d04"
+}

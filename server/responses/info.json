@@ -1,50 +1,49 @@
 {
-    "$schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconInfoResponse.json",
-    "meta": {
-        "apiVersion": "v2.0.0",
-        "beaconId": "es.crg.global-beacon-network",
-        "isAggregated": true,
-        "testMode": false,
-        "returnedSchemas": [
-            {
-                "entityType": "boolean",
-                "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconBooleanResponse.json"
-            },
-            {
-                "entityType": "count",
-                "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconCountResponse.json"
-            },
-            {
-                "entityType": "record",
-                "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconResultsetsResponse.json"
-            }
-
-        ]
+  "$schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-framework-v2/main/responses/beaconInfoResponse.json",
+  "meta": {
+    "apiVersion": "v2.0.0",
+    "beaconId": "es.crg.global-beacon-network",
+    "isAggregated": true,
+    "testMode": false,
+    "returnedSchemas": [
+      {
+        "entityType": "boolean",
+        "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconBooleanResponse.json"
+      },
+      {
+        "entityType": "count",
+        "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconCountResponse.json"
+      },
+      {
+        "entityType": "record",
+        "schema": "https://raw.githubusercontent.com/ga4gh-beacon/beacon-v2/main/framework/json/responses/beaconResultsetsResponse.json"
+      }
+    ]
+  },
+  "response": {
+    "alternativeUrl": "https://www.crg.eu",
+    "apiVersion": "v2.0.0",
+    "beaconId": "es.crg.global-beacon-network",
+    "createDateTime": "2025-01-29T00:00:00",
+    "datasets": [],
+    "description": "Global Beacon Atlas hosted at CRG",
+    "environment": "prod",
+    "id": "es.crg.global-beacon-network",
+    "name": "Global Beacon Atlas",
+    "organization": {
+      "address": "C/ Dr. Aiguader, 88 PRBB Building 08003 Barcelona, Spain",
+      "contactUrl": "mailto:beacon.ega@crg.eu",
+      "description": "The Centre for Genomic Regulation (CRG) is an international biomedical research institute of excellence, created in July 2000. It is a non-profit foundation funded by the Catalan Government through the Department of Business & Knowledge and the Department of Health, the Spanish Ministry of Science & Innovation, the la Caixa Banking Foundation, and includes the participation of Pompeu Fabra University.",
+      "id": "CRG",
+      "info": {
+        "updateDateTime": "2025-01-29"
+      },
+      "logoUrl": "https://protrein.eu/wp-content/uploads/2018/09/logo-crg.png",
+      "name": "Centre for Genomic Regulation (CRG)",
+      "welcomeUrl": "https://www.crg.eu"
     },
-    "response": {
-        "alternativeUrl": "https://www.crg.eu",
-        "apiVersion": "v2.0.0",
-        "beaconId": "es.crg.global-beacon-network",
-        "createDateTime": "2025-01-29T00:00:00",
-        "datasets": [],
-        "description": "Global Beacon Network hosted at CRG",
-        "environment": "prod",
-        "id": "es.crg.global-beacon-network",
-        "name": "Global Beacon Network",
-        "organization": {
-            "address": "C/ Dr. Aiguader, 88 PRBB Building 08003 Barcelona, Spain",
-            "contactUrl": "mailto:beacon.ega@crg.eu",
-            "description": "The Centre for Genomic Regulation (CRG) is an international biomedical research institute of excellence, created in July 2000. It is a non-profit foundation funded by the Catalan Government through the Department of Business & Knowledge and the Department of Health, the Spanish Ministry of Science & Innovation, the la Caixa Banking Foundation, and includes the participation of Pompeu Fabra University.",
-            "id": "CRG",
-            "info": {
-                "updateDateTime": "2025-01-29"
-            },
-            "logoUrl": "https://protrein.eu/wp-content/uploads/2018/09/logo-crg.png",
-            "name": "Centre for Genomic Regulation (CRG)",
-            "welcomeUrl": "https://www.crg.eu"
-        },
-        "updateDateTime": "2025-01-29T00:00:00",
-        "version": "v2",
-        "welcomeUrl": "https://www.crg.eu"
-    }
+    "updateDateTime": "2025-01-29T00:00:00",
+    "version": "v2",
+    "welcomeUrl": "https://www.crg.eu"
+  }
 }

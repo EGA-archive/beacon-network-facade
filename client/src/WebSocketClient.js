@@ -189,10 +189,10 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     <a
                       type="reset"
                       onClick={() =>
-                        setFieldValue("variant", "21-34716788-T-G")
+                        setFieldValue("variant", "12-113357192-G-A")
                       }
                     >
-                      <u className="example">21-34716788-T-G</u>
+                      <u className="example">12-113357192-G-A</u>
                     </a>
                   </Grid>
                 </Grid>
