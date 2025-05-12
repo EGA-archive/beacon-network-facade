@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import { MaturityButton } from "./ButtonComponents";
 
 export default function BeaconDialog({
   open,
@@ -22,11 +23,14 @@ export default function BeaconDialog({
   beaconAPI,
   beaconId,
   beaconURL,
+  beaconMaturity,
+  currentBeaconMaturity,
 }) {
   const [organizationName, setOrganizationName] = useState("Undefined");
   const [contact, setContact] = useState("Undefined");
   const [entryTypes, setEntryTypes] = useState([]);
   const [datasetsInfo, setDatasetsInfo] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const apiToFetch =
     beaconType === "individual" ? individualBeaconAPI : beaconAPI;
@@ -101,18 +105,33 @@ export default function BeaconDialog({
 
   const fetchEntryTypes = async () => {
     if (!apiToFetch) return;
-    try {
-      const response = await axios.get(`${apiToFetch}/entry_types`);
-      const fetchedEntryTypes = response.data?.response?.entryTypes
-        ? Object.values(response.data.response.entryTypes)
-        : [];
 
-      setEntryTypes([
-        ...new Set(fetchedEntryTypes.map((type) => type.name).filter(Boolean)),
-      ]);
+    try {
+      const response = await axios.get(`${apiToFetch}/map`);
+      const endpointSets = response.data?.response?.endpointSets || {};
+
+      const sortedEntryTypes = Object.entries(endpointSets)
+        .map(([key, value]) => {
+          const pathSegment = value.rootUrl?.split("/").pop();
+          return { id: key, pathSegment };
+        })
+        .sort((a, b) => a.pathSegment.localeCompare(b.pathSegment));
+
+      setEntryTypes(sortedEntryTypes);
     } catch (err) {
       console.error("Error fetching entry types:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const formatEntryLabel = (segment) => {
+    if (!segment) return "Unknown";
+
+    if (segment === "g_variants") return "Genomic Variants";
+
+    const label = segment.replace(/_/g, " ");
+    return label.charAt(0).toUpperCase() + label.slice(1);
   };
 
   const buttonStyles = {
@@ -168,186 +187,163 @@ export default function BeaconDialog({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-
-      <DialogContent sx={{ padding: "20px", maxHeight: "300px" }}>
-        <Typography
-          gutterBottom
+      <DialogContent sx={{ p: 0 }}>
+        <DialogContent
           sx={{
-            fontFamily: "Open Sans, sans-serif",
-            fontSize: "14px",
-            fontWeight: 400,
-            lineHeight: "24px",
-            letterSpacing: "0.5px",
-            color: "black",
+            padding: "20px",
+            overflowY: "hidden",
           }}
         >
-          <b>Beacon ID:</b> {individualBeaconName || beaconId} <br />
-          <b>Organization: </b>
-          {organizationName}
-          <br />
-          <b>Beacon URL: </b>
-          <a
-            href={individualBeaconURL || beaconURL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Typography
+            gutterBottom
+            sx={{
+              fontFamily: "Open Sans, sans-serif",
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: "24px",
+              letterSpacing: "0.5px",
+              color: "black",
+            }}
           >
-            {individualBeaconURL || beaconURL}
-          </a>
-          <br />
-          <b>Types of information:</b> {entryTypes.length === 0 && "Undefined"}
-          {entryTypes.length > 0 && (
-            <div
-              style={{ display: "flex", flexWrap: "wrap", marginTop: "8px" }}
+            <b>Beacon Name: </b>
+            {/* {organizationName} */}
+            <br />
+            <b>Beacon ID:</b> {individualBeaconName || beaconId} <br />
+            <b>Organization: </b>
+            {organizationName}
+            <br />
+            <b>Beacon URL: </b>
+            <a
+              href={individualBeaconURL || beaconURL}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {entryTypes.map((name, index) => (
-                <Button
-                  key={index}
-                  variant="outlined"
-                  sx={{
-                    ...buttonStyles,
-                    cursor: "default",
-                    pointerEvents: "none",
-                  }}
-                >
-                  {name}
-                </Button>
-              ))}
-            </div>
-          )}
-        </Typography>
-      </DialogContent>
-      <DialogTitle
-        sx={{
-          m: 0,
-          p: 2,
-          fontFamily: "Open Sans, sans-serif",
-          fontSize: "16px",
-          fontWeight: 700,
-          lineHeight: "24px",
-          letterSpacing: "0.5px",
-          color: "#023452",
-        }}
-      >
-        Datasets Information
-      </DialogTitle>
-      <DialogContent sx={{ padding: "20px", maxHeight: "300px" }}>
-        {[
-          ...new Set(
-            beaconType === "individual" ? currentDatasets : currentDataset || []
-          ),
-        ].map((datasetId, index) => {
-          const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
-
-          const datasetName = datasetInfo?.name || "Undefined";
-          const datasetDescription = datasetInfo?.description || "Undefined";
-
-          return (
-            //     <Typography
-            //       key={index}
-            //       gutterBottom
-            //       sx={{
-            //         fontFamily: "Open Sans, sans-serif",
-            //         fontSize: "14px",
-            //         fontWeight: 400,
-            //         lineHeight: "24px",
-            //         letterSpacing: "0.5px",
-            //         color: "black",
-            //         marginBottom: "16px",
-            //       }}
-            //     >
-            //       <div>
-            //         <b>Dataset ID:</b> {datasetId || "Undefined"}
-            //       </div>
-
-            //       <div>
-            //         <b>Dataset Name:</b> {datasetName}
-            //       </div>
-
-            //       <div>
-            //         <b>Description:</b>{" "}
-            //         {datasetDescription !== "Undefined" ? (
-            //           <>
-            //             <br />
-            //             {datasetDescription}
-            //           </>
-            //         ) : (
-            //           "Undefined"
-            //         )}
-            //       </div>
-            //     </Typography>
-            //   );
-            // })}
-
-            // {(datasetName === "Undefined" ||
-            //   datasetDescription === "Undefined") && (
-            //   <Typography
-            //     component="div"
-            //     sx={{
-            //       fontFamily: "Open Sans, sans-serif",
-            //       fontSize: "14px",
-            //       fontStyle: "italic",
-            //       marginBottom: "16px",
-            //       color: "black",
-            //     }}
-            //   >
-            //     Note: Datasets information is unavailable for beacons with Boolean
-            //     or Counts response types.
-            //   </Typography>
-            // )}
-            <React.Fragment key={index}>
-              <Typography
-                gutterBottom
-                sx={{
-                  fontFamily: "Open Sans, sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 400,
-                  lineHeight: "24px",
-                  letterSpacing: "0.5px",
-                  color: "black",
-                  marginBottom: "16px",
+              {individualBeaconURL || beaconURL}
+            </a>
+            <br />
+            <b>Beacon Maturity: </b>
+            {beaconMaturity ? (
+              <MaturityButton maturity={beaconMaturity} />
+            ) : (
+              <MaturityButton maturity={currentBeaconMaturity} />
+            )}
+            <br />
+            <b>Types of information:</b>{" "}
+            {entryTypes.length === 0 && "Undefined"}
+            {entryTypes.length > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  marginTop: "8px",
+                  gap: "4px",
                 }}
               >
-                <div>
-                  <b>Dataset ID:</b> {datasetId || "Undefined"}
-                </div>
+                {entryTypes.map(({ id, pathSegment }) => (
+                  <Button
+                    key={id}
+                    variant="outlined"
+                    sx={{
+                      ...buttonStyles,
+                      cursor: "default",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {formatEntryLabel(pathSegment)}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </Typography>
+        </DialogContent>
+        <DialogTitle
+          sx={{
+            m: 0,
+            p: 2,
+            fontFamily: "Open Sans, sans-serif",
+            fontSize: "16px",
+            fontWeight: 700,
+            lineHeight: "24px",
+            letterSpacing: "0.5px",
+            color: "#023452",
+          }}
+        >
+          Datasets Information
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            padding: "20px",
+            maxHeight: "300px",
+          }}
+        >
+          {[
+            ...new Set(
+              beaconType === "individual"
+                ? currentDatasets
+                : currentDataset || []
+            ),
+          ].map((datasetId, index) => {
+            const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
 
-                <div>
-                  <b>Dataset Name:</b> {datasetName}
-                </div>
+            const datasetName = datasetInfo?.name || "Undefined";
+            const datasetDescription = datasetInfo?.description || "Undefined";
 
-                <div>
-                  <b>Description:</b>{" "}
-                  {datasetDescription !== "Undefined" ? (
-                    <>
-                      <br />
-                      {datasetDescription}
-                    </>
-                  ) : (
-                    "Undefined"
-                  )}
-                </div>
-              </Typography>
-
-              {(datasetName === "Undefined" ||
-                datasetDescription === "Undefined") && (
+            return (
+              <React.Fragment key={index}>
                 <Typography
-                  component="div"
+                  gutterBottom
                   sx={{
                     fontFamily: "Open Sans, sans-serif",
                     fontSize: "14px",
-                    fontStyle: "italic",
-                    marginBottom: "16px",
+                    fontWeight: 400,
+                    lineHeight: "24px",
+                    letterSpacing: "0.5px",
                     color: "black",
+                    marginBottom: "16px",
                   }}
                 >
-                  Note: This is a work in progress and the information about{" "}
-                  {datasetId ? datasetId : "this dataset"} will be available in
-                  the next release
+                  <div>
+                    <b>Dataset ID:</b> {datasetId || "Undefined"}
+                  </div>
+
+                  <div>
+                    <b>Dataset Name:</b> {datasetName}
+                  </div>
+
+                  <div>
+                    <b>Description:</b>{" "}
+                    {datasetDescription !== "Undefined" ? (
+                      <>
+                        <br />
+                        {datasetDescription}
+                      </>
+                    ) : (
+                      "Undefined"
+                    )}
+                  </div>
                 </Typography>
-              )}
-            </React.Fragment>
-          );
-        })}
+
+                {(datasetName === "Undefined" ||
+                  datasetDescription === "Undefined") && (
+                  <Typography
+                    component="div"
+                    sx={{
+                      fontFamily: "Open Sans, sans-serif",
+                      fontSize: "14px",
+                      fontStyle: "italic",
+                      marginBottom: "16px",
+                      color: "black",
+                    }}
+                  >
+                    Note: This is a work in progress and the information about{" "}
+                    {datasetId ? datasetId : "this dataset"} will be available
+                    in the next release
+                  </Typography>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </DialogContent>
       </DialogContent>
 
       <div style={{ padding: "20px", textAlign: "right" }}>

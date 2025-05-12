@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
 import Grid from "@mui/material/Grid2";
@@ -11,7 +11,6 @@ function SearchResults({
   selectedFilters,
   setSelectedFilters,
 }) {
-  const { variant, genome } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const registriesLength = location.state?.registriesLength || 0;
@@ -24,6 +23,10 @@ function SearchResults({
   });
 
   const [loading, setLoading] = useState(false);
+
+  const searchParams = new URLSearchParams(location.search);
+  const variant = searchParams.get("pos");
+  const genome = searchParams.get("assembly");
 
   return (
     <Container>

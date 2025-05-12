@@ -10,16 +10,9 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import {
-  StatusButton,
-  MaturityButton,
-  BeaconTypeButton,
-} from "./ButtonComponents";
+import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
-import {
-  getFormattedAlleleFrequency,
-  ensureNetworkVisibility,
-} from "./utils/beaconUtils";
+import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
@@ -37,10 +30,13 @@ export default function Row({
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [openRows, setOpenRows] = useState({});
 
   // console.log("🔎 openRows State:", openRows);
   // console.log("🔎 Current Row State:", row.name, "Open:", open);
+
+  // console.log("row", row);
 
   useEffect(() => {
     if (forceCloseAll) {
@@ -82,7 +78,9 @@ export default function Row({
   };
 
   const alleleDataNetwork = row.history.map((historyRow) => {
+    console.log("row.history", row.history);
     // console.log("historyRow.beaconId", historyRow.beaconId);
+    // console.log("alleleFrequency", historyRow.dataset.alleleFrequency);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
@@ -93,6 +91,7 @@ export default function Row({
     };
   });
 
+  console.log("alleleDataNetwork", alleleDataNetwork);
   const handleDialogOpen = (historyRow) => {
     if (historyRow?.dataset?.datasetId) {
       setCurrentBeaconName(historyRow.beaconId || "");
@@ -107,6 +106,7 @@ export default function Row({
     setDialogOpen(false);
   };
   const filteredHistory = row.history?.filter((historyRow) => {
+    // console.log("historyRow", historyRow);
     if (!selectedFilters || selectedFilters.length === 0) return true;
 
     const maturityMapping = {
@@ -170,6 +170,10 @@ export default function Row({
 
   const handleBeaconDialogOpen = (historyRow) => {
     const beaconId = historyRow.beaconId;
+
+    const maturity = historyRow.maturity;
+    // console.log("historyRow", historyRow);
+    // console.log("historyRow Maturity", historyRow.maturity);
     // const beaconAPI = row.beaconAPI;
 
     let datasetIds = alleleDataNetwork
@@ -179,6 +183,7 @@ export default function Row({
     datasetIds = [...new Set(datasetIds)];
 
     setCurrentBeaconName(beaconId);
+    setCurrentBeaconMaturity(maturity);
     setCurrentDataset(datasetIds);
     setBeaconDialogOpen(true);
   };
@@ -282,10 +287,9 @@ export default function Row({
                   )
                     ? "#0099CD"
                     : "#FF7C62",
-                  fontWeight: "bold",
                 }}
               >
-                No AF
+                Not Available
               </i>
             )}
           </TableCell>
@@ -342,6 +346,7 @@ export default function Row({
                               width: "94px",
                               whiteSpace: "nowrap",
                               paddingLeft: "4px",
+                              backgroundColor: "burlywood",
                             }}
                           >
                             <b>{beaconId}</b>
@@ -371,13 +376,21 @@ export default function Row({
                                 style={{ width: "18px", height: "18px" }}
                               />
                             </Box>
-                            {beaconDatasets[0].maturity && (
-                              <MaturityButton
-                                maturity={beaconDatasets[0].maturity}
-                              />
-                            )}
                           </TableCell>
-                          <TableCell sx={{ width: "368px" }} />
+                          <TableCell sx={{ width: "368px" }}>
+                            {/* TODO: Here the dataset will go! */}
+                            {/* <Box>
+                              {historyRow.dataset?.datasetId ? (
+                                <b>
+                                  {historyRow.dataset.datasetName ||
+                                    historyRow.dataset.datasetId}
+                                </b>
+                              ) : (
+                                <b>Undefined</b>
+                              )}
+                            </Box> */}
+                          </TableCell>
+
                           <TableCell sx={{ width: "155px" }} />
                           <TableCell sx={{ width: "154px" }} />
                         </TableRow>
@@ -395,9 +408,11 @@ export default function Row({
                               <TableCell />
                               <TableCell>
                                 <Box>
-                                  <i>Dataset ID: </i>
                                   {historyRow.dataset?.datasetId ? (
-                                    <b>{historyRow.dataset.datasetId}</b>
+                                    <b>
+                                      {historyRow.dataset.datasetName ||
+                                        historyRow.dataset.datasetId}
+                                    </b>
                                   ) : (
                                     <b>Undefined</b>
                                   )}
@@ -431,7 +446,7 @@ export default function Row({
                                 "N/A" ? (
                                   <b style={{ color: "#077EA6" }}>{afValue}</b>
                                 ) : (
-                                  <i>No AF</i>
+                                  <i>Not Available</i>
                                 )}
                               </TableCell>
                               <TableCell>
@@ -465,6 +480,7 @@ export default function Row({
         beaconId={currentBeaconName}
         currentDataset={currentDataset}
         beaconType="network"
+        currentBeaconMaturity={currentBeaconMaturity}
       />
     </React.Fragment>
   );

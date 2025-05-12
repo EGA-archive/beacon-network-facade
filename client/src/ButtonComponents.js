@@ -30,9 +30,9 @@ const StatusButton = ({ status, isFallback = false }) => {
 
 const MaturityButton = ({ maturity }) => {
   const maturityMap = {
-    prod: "Prod Beacon",
+    prod: "Production Beacon",
     test: "Test Beacon",
-    dev: "Dev Beacon",
+    dev: "Development Beacon",
   };
 
   const maturityStyles = {
@@ -51,8 +51,6 @@ const MaturityButton = ({ maturity }) => {
         justifyContent: "center",
         fontFamily: '"Open Sans", sans-serif',
         textAlign: "center",
-        fontStyle: "italic",
-        marginLeft: "15%",
         ...maturityStyles[displayMaturity],
       }}
     >

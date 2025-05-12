@@ -39,8 +39,19 @@ function App() {
                   />
                 }
               />
-              <Route
+              {/* <Route
                 path="/search/:variant/:genome"
+                element={
+                  <SearchResults
+                    registries={registries}
+                    socket={socket}
+                    selectedFilters={selectedFilters}
+                    setSelectedFilters={setSelectedFilters}
+                  />
+                }
+              /> */}
+              <Route
+                path="/search"
                 element={
                   <SearchResults
                     registries={registries}

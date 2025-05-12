@@ -105,10 +105,10 @@ export default function Filters({
   // };
 
   const handleToggle = (event, newSelectedFilters) => {
-    console.log("👉 01 - Received:", newSelectedFilters);
+    // console.log("👉 01 - Received:", newSelectedFilters);
 
     if (!newSelectedFilters) {
-      console.log("👉 02 - No selection made, clearing all filters.");
+      // console.log("👉 02 - No selection made, clearing all filters.");
       setSelectedFilters([]);
       return;
     }
@@ -117,59 +117,59 @@ export default function Filters({
       ? newSelectedFilters
       : [newSelectedFilters];
 
-    console.log("👉 03 - Normalized (Array) filters:", updatedFilters);
+    // console.log("👉 03 - Normalized (Array) filters:", updatedFilters);
 
     if (newSelectedFilters === "Open All") {
-      console.log("👉 04 - 'Open All' clicked");
+      // console.log("👉 04 - 'Open All' clicked");
       onOpenCloseChange("open");
 
       setSelectedFilters((prevFilter) => {
-        console.log("👉 05 - Previous filters before Open All:", prevFilter);
+        // console.log("👉 05 - Previous filters before Open All:", prevFilter);
         const filtered = prevFilter.filter(
           (filterName) => filterName !== "Close All"
         );
-        console.log("👉 06 - After removing 'Close All':", filtered);
+        // console.log("👉 06 - After removing 'Close All':", filtered);
         const result = [...filtered, "Open All"];
-        console.log("👉 07 - New filters with 'Open All':", result);
+        // console.log("👉 07 - New filters with 'Open All':", result);
         return result;
       });
       return;
     }
 
     if (newSelectedFilters === "Close All") {
-      console.log("👉 08 - 'Close All' clicked");
+      // console.log("👉 08 - 'Close All' clicked");
       onOpenCloseChange("close");
 
       setSelectedFilters((prevFilter) => {
-        console.log("👉 09 - Previous filters before Close All:", prevFilter);
+        // console.log("👉 09 - Previous filters before Close All:", prevFilter);
         const filtered = prevFilter.filter(
           (filterName) => filterName !== "Open All"
         );
-        console.log("👉 10 - After removing 'Open All':", filtered);
+        // console.log("👉 10 - After removing 'Open All':", filtered);
         const result = [...filtered, "Close All"];
-        console.log("👉 11 - New filters with 'Close All':", result);
+        // console.log("👉 11 - New filters with 'Close All':", result);
         return result;
       });
       return;
     }
 
     setSelectedFilters((prevFilter) => {
-      console.log("👉 12 - Previous filters in normal toggle:", prevFilter);
+      // console.log("👉 12 - Previous filters in normal toggle:", prevFilter);
       const preservedOpenClose = prevFilter.filter(
         (filterName) => filterName === "Open All" || filterName === "Close All"
       );
-      console.log("👉 13 - Preserved Open/Close buttons:", preservedOpenClose);
+      // console.log("👉 13 - Preserved Open/Close buttons:", preservedOpenClose);
 
       const cleanedNewFilters = newSelectedFilters.filter(
         (filterName) => filterName !== "Open All" && filterName !== "Close All"
       );
-      console.log(
-        "👉 14 - New filters cleaned (no Open/Close):",
-        cleanedNewFilters
-      );
+      // console.log(
+      //   "👉 14 - New filters cleaned (no Open/Close):",
+      //   cleanedNewFilters
+      // );
 
       const result = [...cleanedNewFilters, ...preservedOpenClose];
-      console.log("👉 15 - Final updated filters:", result);
+      // console.log("👉 15 - Final updated filters:", result);
       return result;
     });
   };

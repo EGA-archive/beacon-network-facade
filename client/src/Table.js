@@ -45,6 +45,7 @@ export default function CollapsibleTable({
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
+  const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
   const [openRows, setOpenRows] = useState({});
   const [currentBeaconApi, setCurrentBeaconApi] = useState("");
@@ -72,15 +73,23 @@ export default function CollapsibleTable({
         return;
       }
 
+      // setCurrentBeaconId(matchingBeacon.beaconId);
+      setCurrentBeaconMaturity(matchingBeacon.beaconMaturity);
+
       const beaconId = matchingBeacon.beaconId;
       setCurrentBeaconId(beaconId);
+
       setOpenRows((prev) => ({
         ...prev,
         [beaconId]: true,
       }));
 
+      // const datasets = filteredIndividualBeacons
+      //   .filter((beacon) => beacon.beaconId === beaconId)
+      //   .map((beacon) => beacon.id);
+
       const datasets = filteredIndividualBeacons
-        .filter((beacon) => beacon.beaconId === beaconId)
+        .filter((beacon) => beacon.beaconId === matchingBeacon.beaconId)
         .map((beacon) => beacon.id);
 
       setCurrentDatasets(datasets);
@@ -114,6 +123,7 @@ export default function CollapsibleTable({
     if ((registry, individualBeacon)) {
       setCurrentBeaconName(registry.beaconName);
       setCurrentBeaconId(registry.beaconId);
+      setCurrentBeaconMaturity(registry.beaconMaturity);
       setCurrentDataset(individualBeacon.id);
       setDialogOpen(true);
     } else {
@@ -205,6 +215,7 @@ export default function CollapsibleTable({
             maturity: registry.beaconMaturity,
             dataset: {
               datasetId: beacon.id,
+              datasetName: beacon.datasetName,
               population: populationString,
               alleleFrequency:
                 beacon.results?.[0]?.frequencyInPopulations?.[0]
@@ -331,13 +342,7 @@ export default function CollapsibleTable({
                 <Box
                   sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
                 >
-                  <b>Beacon Network</b>
-                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
-                  <b>Beacon Name</b>
-                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
-                  <i>
-                    <b>Dataset</b>
-                  </i>
+                  <b>Beacon Network / Beacon</b>
                 </Box>
               </TableCell>
               <TableCell />
@@ -439,16 +444,8 @@ export default function CollapsibleTable({
                                 }}
                               />
                             </Box>
-                            {registry.beaconMaturity ? (
-                              <MaturityButton
-                                maturity={registry.beaconMaturity}
-                              />
-                            ) : (
-                              "N/A"
-                            )}
                           </Box>
                         </TableCell>
-
                         <TableCell>
                           {hasFoundDataset ? (
                             <img
@@ -463,7 +460,7 @@ export default function CollapsibleTable({
                                 fontWeight: "bold",
                               }}
                             >
-                              No AF
+                              Not Available
                             </i>
                           )}
                         </TableCell>
@@ -499,7 +496,7 @@ export default function CollapsibleTable({
                                       rawAfValue !== "N/A" ? (
                                         rawAfValue
                                       ) : (
-                                        <i>No AF</i>
+                                        <i>Not Available</i>
                                       );
                                     const clickable = rawAfValue !== "N/A";
 
@@ -524,11 +521,10 @@ export default function CollapsibleTable({
                                           }}
                                         >
                                           <Box>
-                                            <i>Dataset ID: </i>
                                             <b>
-                                              {individualBeacon.id
-                                                ? individualBeacon.id
-                                                : "Undefined"}
+                                              {individualBeacon?.datasetName ||
+                                                individualBeacon?.id ||
+                                                "Undefined"}
                                             </b>
                                           </Box>
                                         </TableCell>
@@ -577,7 +573,7 @@ export default function CollapsibleTable({
                                                   : "#FF7C62",
                                               }}
                                             >
-                                              No AF
+                                              Not Available
                                             </i>
                                           )}
                                         </TableCell>
@@ -644,6 +640,7 @@ export default function CollapsibleTable({
         individualBeaconAPI={currentBeaconApi}
         individualBeaconURL={currentBeaconUrl}
         currentDatasets={currentDatasets}
+        beaconMaturity={currentBeaconMaturity}
       />
     </>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
 import { Container, Form } from "react-bootstrap";
 import TextField from "@mui/material/TextField";
@@ -7,7 +8,6 @@ import Grid from "@mui/material/Grid2";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
-import { useNavigate } from "react-router-dom";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
@@ -28,6 +28,11 @@ function WebSocketClient({ setRegistries, setSocket }) {
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const variant = searchParams.get("pos");
+  const genome = searchParams.get("assembly");
 
   useEffect(() => {
     connectWebSocket();
@@ -79,10 +84,11 @@ function WebSocketClient({ setRegistries, setSocket }) {
 
     return () => ws.close();
   };
+
   const handleSearch = (values) => {
     const { variant, genome } = values;
 
-    navigate(`/search/${variant}/${genome}`, {
+    navigate(`/search?pos=${variant}&assembly=${genome}`, {
       state: { registriesLength: registries.length },
     });
   };
