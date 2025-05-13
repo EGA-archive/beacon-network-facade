@@ -8,28 +8,24 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 export default function TableDialog({
-  alleleDataNetwork,
   beaconNetworkDataset,
   beaconNetworkBeaconName,
   individualDataset,
   individualBeaconRegistryId,
   individualAlleleData,
+  networkAlleleData = [],
 }) {
   let matchedData = [];
   const seen = new Set();
 
-  if (alleleDataNetwork && alleleDataNetwork.length > 0) {
-    alleleDataNetwork.forEach((item) => {
-      if (
-        item.beaconId === beaconNetworkBeaconName &&
-        item.datasetId === beaconNetworkDataset
-      ) {
-        const key = `${item.beaconId}--${item.datasetId}--${item.population}--${item.alleleFrequency}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          matchedData.push(item);
-        }
+  if (networkAlleleData && networkAlleleData.length > 0) {
+    matchedData = networkAlleleData.filter((item) => {
+      const key = `${item.population}--${item.alleleFrequency}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        return true;
       }
+      return false;
     });
   } else if (individualAlleleData && individualAlleleData.length > 0) {
     individualAlleleData.forEach((item) => {
@@ -83,9 +79,7 @@ export default function TableDialog({
         <TableBody>
           {matchedData.map((item, index) => (
             <TableRow key={index}>
-              <TableCell align="center" component="th" scope="row">
-                {item.population}
-              </TableCell>
+              <TableCell align="center">{item.population}</TableCell>
               <TableCell align="center">
                 {typeof item.alleleFrequency === "number"
                   ? item.alleleFrequency.toFixed(5)

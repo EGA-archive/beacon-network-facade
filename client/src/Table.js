@@ -56,6 +56,7 @@ export default function CollapsibleTable({
   // console.log("selectedFilters", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
   const validNetworkBeacons = filterValidBeacons(networkBeacons);
 
@@ -101,6 +102,11 @@ export default function CollapsibleTable({
     setBeaconDialogOpen(false);
   };
 
+  console.log("individualBeacons", individualBeacons);
+  console.log("validIndividualBeacons", validIndividualBeacons);
+  console.log("networkBeacons", networkBeacons);
+  console.log("validNetworkBeacons", validNetworkBeacons);
+
   let individualAlleleData = [];
   if (individualBeacons.length > 0) {
     const alleleData = [].concat(
@@ -118,6 +124,7 @@ export default function CollapsibleTable({
         )
     );
   }
+  console.log("🏡 individualAlleleData", individualAlleleData);
 
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
@@ -141,11 +148,14 @@ export default function CollapsibleTable({
     dev: "Dev-Beacon",
   };
 
+  // console.log("networkBeacons", networkBeacons); I have already the duplicates
+
   const filteredRegistries = registries.filter((registry) =>
     selectedFilters.some(
       (filter) => filter === maturityMapping[registry.beaconMaturity]
     )
   );
+
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
 
@@ -184,6 +194,7 @@ export default function CollapsibleTable({
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
 
+  // Starting here
   const networkRows = filteredRegistries
     .filter((registry) =>
       validNetworkBeacons.some(
@@ -196,17 +207,24 @@ export default function CollapsibleTable({
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
         .map((beacon) => {
-          let populationList = [];
+          let alleleData = [];
+
           beacon.results?.forEach((result) => {
             result.frequencyInPopulations?.forEach((popObj) => {
               popObj.frequencies?.forEach((freq) => {
-                if (freq.population) {
-                  populationList.push(freq.population);
+                if (freq.population && freq.alleleFrequency !== undefined) {
+                  alleleData.push({
+                    population: freq.population,
+                    alleleFrequency: freq.alleleFrequency,
+                  });
                 }
               });
             });
           });
 
+          console.log("📊 alleleData in Table:", alleleData);
+
+          let populationList = alleleData.map((item) => item.population);
           let populationString =
             populationList.length > 0 ? populationList.join(", ") : "(unknown)";
 
@@ -218,8 +236,8 @@ export default function CollapsibleTable({
               datasetName: beacon.datasetName,
               population: populationString,
               alleleFrequency:
-                beacon.results?.[0]?.frequencyInPopulations?.[0]
-                  ?.frequencies?.[0]?.alleleFrequency || "N/A",
+                alleleData.length > 0 ? alleleData[0].alleleFrequency : "N/A",
+              alleleData,
               response: beacon.exists ? "Found" : "Not Found",
             },
           };
@@ -227,7 +245,9 @@ export default function CollapsibleTable({
 
       if (selectedFilters.includes("af-only")) {
         history = history.filter(
-          (item) => item.dataset.alleleFrequency !== "N/A"
+          (item) =>
+            item.dataset.alleleData &&
+            item.dataset.alleleData.some((d) => d.alleleFrequency !== "N/A")
         );
       }
 
@@ -251,6 +271,9 @@ export default function CollapsibleTable({
       }
       return true;
     });
+
+  console.log("✅ Final networkRows:", networkRows);
+  // Ending here
 
   const beaconNetworkCount = networkRows.length;
   const uniqueIndividualBeaconIds = new Set(
@@ -607,6 +630,7 @@ export default function CollapsibleTable({
               {networkRows.map((row, index) => (
                 <Row
                   key={row.name}
+                  allNetworkRows={networkRows}
                   row={row}
                   isNetwork={true}
                   isFirstRow={index === 0}

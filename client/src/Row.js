@@ -18,6 +18,7 @@ import Doc from "../src/document.svg";
 import Tick from "../src/tick.svg";
 
 export default function Row({
+  allNetworkRows,
   row,
   isNetwork,
   isFirstRow = false,
@@ -32,6 +33,9 @@ export default function Row({
   const [currentDataset, setCurrentDataset] = useState("");
   const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [openRows, setOpenRows] = useState({});
+  const [networkAlleleData, setNetworkAlleleData] = useState([]);
+
+  console.log("networkAlleleData", networkAlleleData);
 
   // console.log("🔎 openRows State:", openRows);
   // console.log("🔎 Current Row State:", row.name, "Open:", open);
@@ -77,8 +81,14 @@ export default function Row({
     });
   };
 
+  // console.log("row", row); problem does not come from row. becuase in row.hisotry the population is already wrong
+  // I am trying to solve the issue of the population. Basically in the console.log("alleleFrequency", historyRow.dataset.alleleFrequency);
+  // The populations are grouped and there is only ONE AF.
+  // I am now checking row.history to see how populationg gets stored.
   const alleleDataNetwork = row.history.map((historyRow) => {
-    console.log("row.history", row.history);
+    // console.log("row.history", row.history);
+    // console.log("historyRow", historyRow);
+    // console.log("historyRow.dataset", historyRow.dataset);
     // console.log("historyRow.beaconId", historyRow.beaconId);
     // console.log("alleleFrequency", historyRow.dataset.alleleFrequency);
     return {
@@ -91,15 +101,38 @@ export default function Row({
     };
   });
 
-  console.log("alleleDataNetwork", alleleDataNetwork);
+  // console.log("alleleDataNetwork", alleleDataNetwork);
+
+  // const handleDialogOpen = (historyRow) => {
+  //   if (historyRow?.dataset?.datasetId) {
+  //     setCurrentBeaconName(historyRow.beaconId || "");
+  //     setCurrentDataset(historyRow.dataset.datasetId);
+  //     setNetworkAlleleData(historyRow.dataset.alleleData || []);
+
+  //     setDialogOpen(true);
+  //   } else {
+  //     console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
+  //   }
+  // };
+
   const handleDialogOpen = (historyRow) => {
-    if (historyRow?.dataset?.datasetId) {
-      setCurrentBeaconName(historyRow.beaconId || "");
-      setCurrentDataset(historyRow.dataset.datasetId);
-      setDialogOpen(true);
-    } else {
-      console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
-    }
+    setCurrentBeaconName(historyRow.beaconId);
+    setCurrentDataset(historyRow.dataset.datasetId);
+    const matchingRow = allNetworkRows.find((r) =>
+      r.history.some(
+        (h) =>
+          h.beaconId === historyRow.beaconId &&
+          h.dataset.datasetId === historyRow.dataset.datasetId
+      )
+    );
+    const matchingHistory = matchingRow?.history.find(
+      (h) =>
+        h.beaconId === historyRow.beaconId &&
+        h.dataset.datasetId === historyRow.dataset.datasetId
+    );
+    const alleleData = matchingHistory?.dataset?.alleleData || [];
+    setNetworkAlleleData(alleleData);
+    setDialogOpen(true);
   };
 
   const handleDialogClose = () => {
@@ -346,7 +379,7 @@ export default function Row({
                               width: "94px",
                               whiteSpace: "nowrap",
                               paddingLeft: "4px",
-                              backgroundColor: "burlywood",
+                              // backgroundColor: "burlywood",
                             }}
                           >
                             <b>{beaconId}</b>
@@ -471,6 +504,7 @@ export default function Row({
         beaconNetworkBeaconName={currentBeaconName}
         beaconNetworkDataset={currentDataset}
         alleleDataNetwork={alleleDataNetwork}
+        networkAlleleData={networkAlleleData}
       />
       <BeaconDialog
         open={beaconDialogOpen}

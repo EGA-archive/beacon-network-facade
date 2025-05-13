@@ -15,9 +15,11 @@ export default function AFDialog({
   individualBeaconRegistryId,
   beaconNetworkBeaconName,
   beaconNetworkDataset,
-  alleleDataNetwork,
   individualAlleleData,
+  networkAlleleData = [],
 }) {
+  console.log("🧬 alleleData in Dialog:", networkAlleleData);
+
   return (
     <Dialog
       onClose={onClose}
@@ -89,7 +91,7 @@ export default function AFDialog({
         </Typography>
       </DialogContent>
       <TableDialog
-        alleleDataNetwork={alleleDataNetwork}
+        networkAlleleData={networkAlleleData}
         beaconNetworkBeaconName={beaconNetworkBeaconName}
         beaconNetworkDataset={beaconNetworkDataset}
         individualBeaconName={individualBeaconName}
