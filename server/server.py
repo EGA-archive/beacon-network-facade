@@ -47,8 +47,6 @@ def cache_registry(is_v2):
 
     for beacon in data[keyname]:
         beaconsv2.append(beacon)
-    LOG.warning(beaconsv2)
-    LOG.warning(len(beaconsv2))
     result = cursor.executemany('INSERT OR IGNORE INTO {} ({}) VALUES (?);'.format(tablename, variablename),  zip(beaconsv2))
     conn.commit()
 
@@ -57,6 +55,51 @@ def cache_registry(is_v2):
     # .encode('utf8') can be removed for Python 3
 
     return list(cached_beaconsv2)
+
+def cache_registry_info(infoBeacons):
+    tablename='registries'
+    variablename='beaconId'
+    variablename2='beaconName'
+    #LOG.warning(dict_registries)
+    conn = sqlite3.connect('/cache/info.db')
+    cursor = conn.cursor()
+    try:
+        result = cursor.execute('CREATE TABLE {} ({} TEXT UNIQUE, {} TEXT UNIQUE)'.format(tablename,variablename,variablename2))
+    except Exception as e:
+        LOG.warning(e)
+        pass
+    
+    #LOG.warning(infoBeacons)
+    
+    listinfos=[]
+    try:
+        for beacon in infoBeacons:
+            try:
+                listinfos.append((beacon["response"]["id"],beacon["response"]["name"]))
+            except Exception:
+                if len(infoBeacons)==2:
+                    listinfos.append(tuple(infoBeacons))
+                    break
+                else:
+                    listinfos.append((beacon["id"],beacon["name"]))
+        #LOG.warning(listinfos)
+        result = cursor.executemany('INSERT OR IGNORE INTO {} ({},{}) VALUES (?,?);'.format(tablename, variablename,variablename2), listinfos)
+    except Exception as e:
+        LOG.warning(e)
+        pass
+    
+    conn.commit()
+
+def load_registry_info():
+    conn = sqlite3.connect('/cache/info.db')
+    tablename='registries'
+    cursor = conn.cursor()
+    result = cursor.execute("SELECT * from {}".format(tablename))
+    cached_beaconsv2 = result.fetchall()
+    # .encode('utf8') can be removed for Python 3
+    return list(cached_beaconsv2)
+
+
 
 async def dataset_request(session, url, data):
     async with session.get(url) as response:
@@ -241,90 +284,11 @@ async def registry(websocket, burl, is_v2):
                 default_v2_response["response"]["environment"]="prod"
                 default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
                 default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"
-                default_v2_response["responses"]=['tsri-civic',
-                                                    'aauh-proseqs',
-                                                    'tsri-clinvars',
-                                                    'tsri-cosmics',
-                                                    'tsri-geno2mps',
-                                                    'tsri-dbsnps',
-                                                    'tsri-snpedias',
-                                                    'tsri-grasps',
-                                                    'tsri-uniprots',
-                                                    'aauh-retroseq',
-                                                    'tsri-wellderlys',
-                                                    'tsri-gnomad_exomes',
-                                                    'phenomecentrals',
-                                                    'tsri-exacs',
-                                                    'tsri-dbnsfps',
-                                                    'tsri-gnomad_genomes',
-                                                    'tsri-gwassnpss',
-                                                    'tsri-mutdb',
-                                                    'tsri-emv',
-                                                    'rdconnects',
-                                                    'cogr-queenss',
-                                                    'broads',
-                                                    'cogr-sinais',
-                                                    'bipmed',
-                                                    'tsri-docm',
-                                                    'tsri-evss',
-                                                    'myvariants',
-                                                    'ega',
-                                                    'ucscs',
-                                                    'vicc',
-                                                    'swefreqs',
-                                                    'hgmds',
-                                                    'bemgi',
-                                                    'sahgps',
-                                                    'scilifelabs',
-                                                    'curoverse',
-                                                    'nbdc-humandbss',
-                                                    'cogr-bc-cancers',
-                                                    'cytognomix',
-                                                    'scilifelab-clingens',
-                                                    'cafe-cardiokits',
-                                                    'ACpops',
-                                                    'lovd',
-                                                    'gigascience-2s',
-                                                    'wgs',
-                                                    'wtsis',
-                                                    'altruists',
-                                                    'elixir-fis',
-                                                    'cafe-central',
-                                                    'variant-matcher',
-                                                    'icgcs',
-                                                    'amplab',
-                                                    'molgenis-emx2',
-                                                    'cogr-consensus',
-                                                    'ebis',
-                                                    'tsri-cgi',
-                                                    'clinbioinfosspa',
-                                                    'cosmics',
-                                                    'tsri-cadd',
-                                                    'kaviars',
-                                                    'thousandgenomes-phase3',
-                                                    'conglomerate',
-                                                    'mssng-db6',
-                                                    'cafe-variome',
-                                                    'cell_liness',
-                                                    'ncbis',
-                                                    'cosmic-alls',
-                                                    'mygene2',
-                                                    'brca-exchanges',
-                                                    'aghas',
-                                                    'narcissome',
-                                                    'prism',
-                                                    'agha-somatic',
-                                                    'thousandgenomes',
-                                                    'bob',
-                                                    'agha-germline',
-                                                    'cmh',
-                                                    'inmegens',
-                                                    'garvans',
-                                                    'gigascience',
-                                                    'bioreference',
-                                                    'google',
-                                                    'platinum',
-                                                    'gigascience-1']
+                url='https://beacon-network.org/api/beacons'
+                response_obj = await beacon_request(session, url, data)
+                LOG.warning(response_obj)
+                default_v2_response["responses"]=[]
+                default_v2_response["responses"]=response_obj
                 end_time = perf_counter()
                 response_obj=default_v2_response
                 final_time=end_time-start_time
@@ -358,7 +322,6 @@ async def ws_server(websocket):
             LOG.warning(f"First: {firstitem}")
             LOG.warning(f"Token: {token}")
             data = cache_registry(True)
-            LOG.warning(data)
             for beacon in data:
                 beacon = list(beacon)
                 beacon=beacon[0]
@@ -382,7 +345,7 @@ async def ws_server(websocket):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
-                LOG.warning(inforesponse)
+                #LOG.warning(inforesponse)
                 try:
                     #LOG.warning(inforesponse)
                     beaconInfoId=inforesponse["meta"]["beaconId"]
@@ -398,6 +361,10 @@ async def ws_server(websocket):
                         beaconAPI=inforesponse["api"]
                     except Exception:
                         beaconAPI="https://beacon-network.org/api"
+                    try:
+                        beaconsinfo=inforesponse["responses"]
+                    except Exception:
+                        beaconsinfo=[]
                     finalinforesponse["beaconId"]=beaconInfoId
                     finalinforesponse["beaconName"]=beaconName
                     finalinforesponse["beaconMaturity"]=beaconMaturity
@@ -405,11 +372,16 @@ async def ws_server(websocket):
                     finalinforesponse["beaconLogo"]=beaconLogo
                     finalinforesponse["beaconAPI"]=beaconAPI
                     finalinforesponse["numberOfBeacons"]=numberOfBeacons
+                    finalinforesponse["infoBeacons"]=beaconsinfo
                     list_of_beacons.append(finalinforesponse)
                     with open('/responses/registries.json') as registries_file:
                         dict_registries = json.load(registries_file)
                     dict_registries["response"]["registries"]=list_of_beacons
                     dict_registries=json.dumps(dict_registries)
+                    if beaconsinfo == []:
+                        cache_registry_info([beaconInfoId,beaconName])
+                    else:
+                        cache_registry_info(beaconsinfo)
                     #LOG.warning(dict_registries)
                 except Exception:
                     LOG.error('{} is not responding'.format(inforesponse["beacon"]))
@@ -459,6 +431,8 @@ async def ws_server(websocket):
                     pass
                 dict_response["responseSummary"]["numTotalResults"]+=count
                 datasets = await datasets_requesting(websocket, burl, True)
+                infos = load_registry_info()
+                LOG.warning(infos)
                 try:
                     datasets = json.loads(datasets)
                 except Exception:
@@ -468,10 +442,27 @@ async def ws_server(websocket):
                         try:
                             if response1["beaconId"]!=beaconId:
                                 response1["beaconNetworkId"]=beaconId
+                                LOG.warning('yaaaaaaaay')
+                                LOG.warning(infos)
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
                             elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                                 response1["beaconNetworkId"]=beaconId
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
                             else:
                                 response1["beaconId"]=beaconId
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
                             try:
                                 if response1["id"]:
                                     collection_datasets = datasets["response"]["collections"]
@@ -483,16 +474,25 @@ async def ws_server(websocket):
                             dict_response["response"]["resultSets"].append(response1)
                         except Exception:
                             response1["beaconId"]=beaconId
+                            if response1["id"]:
+                                collection_datasets = datasets["response"]["collections"]
+                                for collection in collection_datasets:
+                                    if collection["id"] == response1["id"]:
+                                        response1["datasetName"] = collection["name"]
+                                for infobeacon in infos:
+                                    listainfo=list(infobeacon)
+                                    if listainfo[0]==response1["beaconId"]:
+                                        response1["beaconName"]=listainfo[1]
                             dict_response["response"]["resultSets"].append(response1)
                 except Exception:
                     if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
                         dict_response["response"]["resultSets"].append({"beaconNetworkId": beaconId, "exists": False})
                     else:
-                        dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
+                        dict_response["response"]["resultSets"].append({"beaconId": beaconId, "beaconName": infos["response"]["name"],"exists": False})
                 if dict_response["responseSummary"]["numTotalResults"] > 0 or dict_response["responseSummary"]["exists"] == True:
                     dict_response["responseSummary"]["exists"]=True
                 dict_response = json.dumps(dict_response)
-                LOG.warning(dict_response)
+                #LOG.warning(dict_response)
                 await websocket.send(f"{dict_response}")
             
  
