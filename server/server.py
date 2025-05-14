@@ -9,18 +9,54 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 import yaml
 from aiohttp_client_cache import CachedSession, SQLiteBackend
+import sqlite3
 
 LOG = logging.getLogger(__name__)
 
 cache = SQLiteBackend(
     cache_name='~/.cache/aiohttp-requests.db',  # For SQLite, this will be used as the filename
-    expire_after=60*60,                         # By default, cached responses expire in an hour
+    expire_after=-1,                         # By default, cached responses expire in an hour
     allowed_codes=(200, 418),                   # Cache responses with these status codes
     allowed_methods=['GET', 'POST'],            # Cache requests with these HTTP methods
     include_headers=True,                       # Cache requests with different headers separately
     ignored_params=['auth_token'],              # Keep using the cached response even if this param changes
     timeout=0.004,                                # Connection timeout for SQLite backend
 )
+
+def cache_registry(is_v2):
+    if is_v2==True:
+        tablename='beaconv2'
+        variablename='beacons_v2'
+        keyname='v2_Beacons'
+    else:
+        tablename='beaconv1'
+        variablename='beacons_v1'
+        keyname='v1_Beacons'
+    conn = sqlite3.connect('/cache/registry.db')
+    cursor = conn.cursor()
+    try:
+        result = cursor.execute('CREATE TABLE {} ({} TEXT UNIQUE)'.format(tablename,variablename))
+    except Exception:
+        pass
+
+    # bulk insert the messages
+    with open('registry.yml', 'r') as f:
+        data = yaml.load(f, Loader=yaml.SafeLoader)
+
+    beaconsv2=[]
+
+    for beacon in data[keyname]:
+        beaconsv2.append(beacon)
+    LOG.warning(beaconsv2)
+    LOG.warning(len(beaconsv2))
+    result = cursor.executemany('INSERT OR IGNORE INTO {} ({}) VALUES (?);'.format(tablename, variablename),  zip(beaconsv2))
+    conn.commit()
+
+    result = cursor.execute("SELECT * from {}".format(tablename))
+    cached_beaconsv2 = result.fetchall()
+    # .encode('utf8') can be removed for Python 3
+
+    return list(cached_beaconsv2)
 
 async def dataset_request(session, url, data):
     async with session.get(url) as response:
@@ -32,8 +68,8 @@ async def datasets_requesting(websocket, burl, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=15, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )
     async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
         if is_v2 == True:
@@ -61,8 +97,8 @@ async def requesting(websocket, burl, query, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=15, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )
     query = query.replace('"', '')
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
@@ -179,12 +215,12 @@ async def registry(websocket, burl, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )   
     if is_v2 == True:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 url = burl + '/info'
                 response_obj = await beacon_request(session, url, data)
                 end_time = perf_counter()
@@ -198,7 +234,7 @@ async def registry(websocket, burl, is_v2):
             return json.dumps({"beacon": burl})
     elif is_v2 == False:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 default_v2_response={"meta": {}, "response": {"organization": {}}}
                 default_v2_response["meta"]["beaconId"]="beacon.network.org"
                 default_v2_response["response"]["name"]="Beacon v1 Network"
@@ -321,15 +357,19 @@ async def ws_server(websocket):
             tasks=[]
             LOG.warning(f"First: {firstitem}")
             LOG.warning(f"Token: {token}")
-            with open('registry.yml', 'r') as f:
-                data = yaml.load(f, Loader=yaml.SafeLoader)
-
-            for beacon in data["v2_Beacons"]:
+            data = cache_registry(True)
+            LOG.warning(data)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, registry, websocket, beacon, True)
                     tasks.append(task)
             try:
-                for beacon in data["v1_Beacons"]:
+                data = cache_registry(False)
+                for beacon in data:
+                    beacon = list(beacon)
+                    beacon=beacon[0]
                     with ThreadPoolExecutor() as pool:
                         task = await loop.run_in_executor(pool, registry, websocket, beacon, False)
                         tasks.append(task)
@@ -382,15 +422,17 @@ async def ws_server(websocket):
             loop=asyncio.get_running_loop()
             tasks=[]
             dataset_tasks=[]
-            with open('registry.yml', 'r') as f:
-                data = yaml.load(f, Loader=yaml.SafeLoader)
-
-            for beacon in data["v2_Beacons"]:
+            data=cache_registry(True)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, requesting, websocket, beacon, firstitem, True)
                     tasks.append(task)
-
-            for beacon in data["v1_Beacons"]:
+            data=cache_registry(False)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, requesting, websocket, beacon, firstitem, False)
                     tasks.append(task)
