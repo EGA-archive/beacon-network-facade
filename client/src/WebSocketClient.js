@@ -102,11 +102,42 @@ function WebSocketClient({ setRegistries, setSocket }) {
           onSubmit={handleSearch}
         >
           {({ handleSubmit, setFieldValue, values, errors, touched }) => {
+            // const handlePaste = (event) => {
+            //   event.preventDefault();
+            //   const pastedData = event.clipboardData.getData("text").trim();
+            //   const cleanedData = pastedData.replace(/\s+/g, "-");
+            //   setFieldValue("variant", cleanedData);
+            // };
             const handlePaste = (event) => {
               event.preventDefault();
-              const pastedData = event.clipboardData.getData("text").trim();
-              const cleanedData = pastedData.replace(/\s+/g, "-");
-              setFieldValue("variant", cleanedData);
+              const pastedData = event.clipboardData.getData("text");
+
+              const cleanedData = pastedData
+                .trim()
+                .replace(/\./g, "")
+                .replace(/\t/g, "-")
+                .replace(/\s+/g, " ")
+                .replace(/\s/g, "-")
+                .replace(/-+/g, "-");
+
+              const inputElement = event.target;
+              const start = inputElement.selectionStart;
+              const end = inputElement.selectionEnd;
+
+              if (start !== null && end !== null) {
+                const newValue =
+                  inputElement.value.substring(0, start) +
+                  cleanedData +
+                  inputElement.value.substring(end);
+
+                setFieldValue("variant", newValue);
+                setTimeout(() => {
+                  inputElement.setSelectionRange(
+                    start + cleanedData.length,
+                    start + cleanedData.length
+                  );
+                }, 0);
+              }
             };
 
             return (
