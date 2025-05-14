@@ -81,16 +81,7 @@ export default function Row({
     });
   };
 
-  // console.log("row", row); problem does not come from row. becuase in row.hisotry the population is already wrong
-  // I am trying to solve the issue of the population. Basically in the console.log("alleleFrequency", historyRow.dataset.alleleFrequency);
-  // The populations are grouped and there is only ONE AF.
-  // I am now checking row.history to see how populationg gets stored.
   const alleleDataNetwork = row.history.map((historyRow) => {
-    // console.log("row.history", row.history);
-    // console.log("historyRow", historyRow);
-    // console.log("historyRow.dataset", historyRow.dataset);
-    // console.log("historyRow.beaconId", historyRow.beaconId);
-    // console.log("alleleFrequency", historyRow.dataset.alleleFrequency);
     return {
       beaconId: historyRow.beaconId,
       datasetId: historyRow.dataset.datasetId,
@@ -100,20 +91,6 @@ export default function Row({
       beaconURL: row.beaconURL,
     };
   });
-
-  // console.log("alleleDataNetwork", alleleDataNetwork);
-
-  // const handleDialogOpen = (historyRow) => {
-  //   if (historyRow?.dataset?.datasetId) {
-  //     setCurrentBeaconName(historyRow.beaconId || "");
-  //     setCurrentDataset(historyRow.dataset.datasetId);
-  //     setNetworkAlleleData(historyRow.dataset.alleleData || []);
-
-  //     setDialogOpen(true);
-  //   } else {
-  //     console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
-  //   }
-  // };
 
   const handleDialogOpen = (historyRow) => {
     setCurrentBeaconName(historyRow.beaconId);
@@ -305,7 +282,7 @@ export default function Row({
               </a>
             </Box>
           </TableCell>
-          <TableCell variant="lessPadding">
+          {/* <TableCell variant="lessPadding">
             {hasAlleleFrequency(deduplicatedHistory) ? (
               <img
                 src={Tick}
@@ -325,7 +302,44 @@ export default function Row({
                 Not Available
               </i>
             )}
+          </TableCell> */}
+
+          <TableCell variant="lessPadding">
+            {hasAlleleFrequency(deduplicatedHistory) ? (
+              (() => {
+                const allAFs = deduplicatedHistory.flatMap((hr) => {
+                  const formatted = getFormattedAlleleFrequency(hr.dataset);
+                  if (!formatted || formatted === "N/A") return [];
+                  return formatted
+                    .split(/[;,-]/)
+                    .map((val) => parseFloat(val.trim()))
+                    .filter((n) => !isNaN(n));
+                });
+
+                if (allAFs.length === 0) return <i>Not Available</i>;
+                const min = Math.min(...allAFs).toFixed(5);
+                const max = Math.max(...allAFs).toFixed(5);
+                return (
+                  <span style={{ color: "#077EA6", fontWeight: "bold" }}>
+                    {min} - {max}
+                  </span>
+                );
+              })()
+            ) : (
+              <i
+                style={{
+                  color: deduplicatedHistory.some(
+                    (hr) => hr.dataset?.response === "Found"
+                  )
+                    ? "#0099CD"
+                    : "#FF7C62",
+                }}
+              >
+                Not Available
+              </i>
+            )}
           </TableCell>
+
           <TableCell variant="lessPadding">
             <StatusButton
               status={
@@ -425,13 +439,18 @@ export default function Row({
                           </TableCell>
 
                           <TableCell sx={{ width: "155px" }} />
-                          <TableCell sx={{ width: "154px" }} />
+                          <TableCell
+                            sx={{
+                              width: "154px",
+                            }}
+                          />
                         </TableRow>
                         {beaconDatasets.map((historyRow, datasetIndex) => {
                           const afValue = getFormattedAlleleFrequency(
                             historyRow.dataset
                           );
                           const afClickable = afValue !== "N/A";
+                          console.log("afValue", afValue);
 
                           return (
                             <TableRow
@@ -477,7 +496,13 @@ export default function Row({
                               >
                                 {historyRow.dataset?.alleleFrequency !==
                                 "N/A" ? (
-                                  <b style={{ color: "#077EA6" }}>{afValue}</b>
+                                  <b
+                                    style={{
+                                      color: "#077EA6",
+                                    }}
+                                  >
+                                    {afValue}
+                                  </b>
                                 ) : (
                                   <i>Not Available</i>
                                 )}

@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WebSocketClient from "./WebSocketClient";
 import CustomNavbar from "./CustomNavbar";
 import Footer from "./Footer";
@@ -21,6 +21,42 @@ function App() {
     "all",
     "Close All",
   ]);
+
+  // useEffect(() => {
+  //   if (socket) return;
+
+  //   const ws = new WebSocket("ws://localhost:5700");
+  //   console.log("🌐 [App] Connecting WebSocket...");
+
+  //   ws.onopen = () => {
+  //     console.log("✅ [App] WebSocket connected");
+  //     setSocket(ws);
+  //     ws.send(JSON.stringify("/registries"));
+  //     setTimeout(() => {
+  //       ws.send(JSON.stringify("/registries"));
+  //     }, 1000);
+  //   };
+
+  //   ws.onmessage = (event) => {
+  //     try {
+  //       const data = JSON.parse(event.data);
+  //       if (data.response?.registries) {
+  //         console.log(
+  //           "📥 [App] Registries received:",
+  //           data.response.registries.length
+  //         );
+  //         setRegistries(data.response.registries);
+  //       } else {
+  //         console.log("📨 [App] Other message:", data);
+  //       }
+  //     } catch (err) {
+  //       console.error("❌ [App] Error parsing message:", err);
+  //     }
+  //   };
+
+  //   ws.onerror = (err) => console.error("❌ [App] WebSocket error:", err);
+  //   ws.onclose = () => console.warn("⚠️ [App] WebSocket closed");
+  // }, [socket]);
 
   return (
     <ThemeProvider theme={CustomTheme}>
