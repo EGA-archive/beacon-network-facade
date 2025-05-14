@@ -473,24 +473,74 @@ export default function CollapsibleTable({
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           {hasFoundDataset ? (
                             <img
                               src={Tick}
                               alt="Tick"
-                              style={{ width: "18px", height: "18px" }}
+                              style={{
+                                width: "18px",
+                                height: "18px",
+                              }}
                             />
                           ) : (
                             <i
                               style={{
                                 color: hasFoundDataset ? "#0099CD" : "#FF7C62",
-                                fontWeight: "bold",
                               }}
                             >
                               Not Available
                             </i>
                           )}
+                        </TableCell> */}
+                        <TableCell>
+                          {hasFoundDataset ? (
+                            (() => {
+                              const afValues = filteredIndividualBeacons
+                                .filter(
+                                  (beacon) =>
+                                    beacon.beaconId === registry.beaconId
+                                )
+                                .flatMap((beacon) => {
+                                  const raw =
+                                    getFormattedAlleleFrequency(beacon);
+                                  if (raw === "N/A") return [];
+                                  return raw
+                                    .split(/[\-;]/)
+                                    .map((v) => parseFloat(v.trim()))
+                                    .filter((n) => !isNaN(n));
+                                });
+
+                              if (afValues.length > 0) {
+                                const min = Math.min(...afValues).toFixed(5);
+                                const max = Math.max(...afValues).toFixed(5);
+                                return (
+                                  <span
+                                    style={{
+                                      color: "#077EA6",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {min} - {max}
+                                  </span>
+                                );
+                              }
+
+                              return (
+                                <i
+                                  style={{
+                                    color: "#FF7C62",
+                                  }}
+                                >
+                                  Not Available
+                                </i>
+                              );
+                            })()
+                          ) : (
+                            <i style={{ color: "#FF7C62" }}>Not Available</i>
+                          )}
                         </TableCell>
+
                         <TableCell>
                           <StatusButton
                             status={hasFoundDataset ? "Found" : "Not Found"}

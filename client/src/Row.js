@@ -282,28 +282,6 @@ export default function Row({
               </a>
             </Box>
           </TableCell>
-          {/* <TableCell variant="lessPadding">
-            {hasAlleleFrequency(deduplicatedHistory) ? (
-              <img
-                src={Tick}
-                alt="Tick"
-                style={{ width: "18px", height: "18px" }}
-              />
-            ) : (
-              <i
-                style={{
-                  color: deduplicatedHistory.some(
-                    (hr) => hr.dataset?.response === "Found"
-                  )
-                    ? "#0099CD"
-                    : "#FF7C62",
-                }}
-              >
-                Not Available
-              </i>
-            )}
-          </TableCell> */}
-
           <TableCell variant="lessPadding">
             {hasAlleleFrequency(deduplicatedHistory) ? (
               (() => {
