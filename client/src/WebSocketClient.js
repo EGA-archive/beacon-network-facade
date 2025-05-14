@@ -30,38 +30,48 @@ function WebSocketClient({ setRegistries, setSocket }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const searchParams = new URLSearchParams(location.search);
-  const variant = searchParams.get("pos");
-  const genome = searchParams.get("assembly");
-
   useEffect(() => {
     connectWebSocket();
   }, []);
 
   const connectWebSocket = () => {
-    if (reconnectRef.current) return;
+    if (reconnectRef.current) {
+      console.warn("🔁 WebSocket already connected.");
+      return;
+    }
+
+    console.log("🌐 Connecting to WebSocket...");
     const ws = new WebSocket("ws://localhost:5700");
-    // const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
 
     ws.onopen = () => {
+      console.log("✅ WebSocket OPEN");
       setConnected(true);
       setSocket(ws);
+      window.dispatchEvent(new Event("socket-ready"));
 
       if (!hasRequestedRegistries.current) {
+        console.log("📤 Sending /registries request");
         ws.send(JSON.stringify("/registries"));
 
         setTimeout(() => {
+          console.log("📤 Re-sending /registries after 1s");
           ws.send(JSON.stringify("/registries"));
         }, 1000);
+
         hasRequestedRegistries.current = true;
       }
     };
 
     ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message", event.data);
+      // console.log("📩 Message received:", event.data);
       try {
         const data = JSON.parse(event.data);
+
         if (data.response?.registries) {
+          console.log(
+            "📥 Received registries:",
+            data.response.registries.length
+          );
           setLocalRegistries(data.response.registries);
           setRegistries(data.response.registries);
         } else {
@@ -71,19 +81,69 @@ function WebSocketClient({ setRegistries, setSocket }) {
           ]);
         }
       } catch (error) {
-        console.error("❌ Error parsing WebSocket response:", error);
-        setMessages((prevMessages) => [...prevMessages, event.data]);
+        console.error("❌ JSON parse error:", error);
+        setMessages((prev) => [...prev, event.data]);
       }
     };
 
-    ws.onerror = (error) => console.error("❌ WebSocket error:", error);
+    ws.onerror = (error) => console.error("❌ WebSocket Error:", error);
 
     ws.onclose = () => {
+      console.warn("⚠️ WebSocket closed");
       setConnected(false);
     };
 
     return () => ws.close();
   };
+
+  // const connectWebSocket = () => {
+  //   if (reconnectRef.current) return;
+  //   const ws = new WebSocket("ws://localhost:5700");
+  //   // const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
+
+  //   ws.onopen = () => {
+  //     setConnected(true);
+  //     console.log("✅ WebSocket OPEN, sending to parent");
+  //     setSocket(ws);
+  //     window.dispatchEvent(new Event("socket-ready"));
+
+  //     if (!hasRequestedRegistries.current) {
+  //       ws.send(JSON.stringify("/registries"));
+
+  //       setTimeout(() => {
+  //         ws.send(JSON.stringify("/registries"));
+  //       }, 1000);
+  //       hasRequestedRegistries.current = true;
+  //     }
+  //   };
+
+  //   ws.onmessage = (event) => {
+  //     console.log("📩 WebSocket Received Message", event.data);
+  //     try {
+  //       const data = JSON.parse(event.data);
+  //       if (data.response?.registries) {
+  //         setLocalRegistries(data.response.registries);
+  //         setRegistries(data.response.registries);
+  //       } else {
+  //         setMessages((prevMessages) => [
+  //           ...prevMessages,
+  //           JSON.stringify(data, null, 2),
+  //         ]);
+  //       }
+  //     } catch (error) {
+  //       console.error("❌ Error parsing WebSocket response:", error);
+  //       setMessages((prevMessages) => [...prevMessages, event.data]);
+  //     }
+  //   };
+
+  //   ws.onerror = (error) => console.error("❌ WebSocket error:", error);
+
+  //   ws.onclose = () => {
+  //     setConnected(false);
+  //   };
+
+  //   return () => ws.close();
+  // };
 
   const handleSearch = (values) => {
     const { variant, genome } = values;
@@ -102,12 +162,6 @@ function WebSocketClient({ setRegistries, setSocket }) {
           onSubmit={handleSearch}
         >
           {({ handleSubmit, setFieldValue, values, errors, touched }) => {
-            // const handlePaste = (event) => {
-            //   event.preventDefault();
-            //   const pastedData = event.clipboardData.getData("text").trim();
-            //   const cleanedData = pastedData.replace(/\s+/g, "-");
-            //   setFieldValue("variant", cleanedData);
-            // };
             const handlePaste = (event) => {
               event.preventDefault();
               const pastedData = event.clipboardData.getData("text");

@@ -18,7 +18,7 @@ export default function AFDialog({
   individualAlleleData,
   networkAlleleData = [],
 }) {
-  console.log("🧬 alleleData in Dialog:", networkAlleleData);
+  // console.log("🧬 alleleData in Dialog:", networkAlleleData);
 
   return (
     <Dialog

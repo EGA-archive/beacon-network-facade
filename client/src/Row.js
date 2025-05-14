@@ -35,7 +35,7 @@ export default function Row({
   const [openRows, setOpenRows] = useState({});
   const [networkAlleleData, setNetworkAlleleData] = useState([]);
 
-  console.log("networkAlleleData", networkAlleleData);
+  // console.log("networkAlleleData", networkAlleleData);
 
   // console.log("🔎 openRows State:", openRows);
   // console.log("🔎 Current Row State:", row.name, "Open:", open);

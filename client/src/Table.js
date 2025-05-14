@@ -39,7 +39,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -102,10 +102,10 @@ export default function CollapsibleTable({
     setBeaconDialogOpen(false);
   };
 
-  console.log("individualBeacons", individualBeacons);
-  console.log("validIndividualBeacons", validIndividualBeacons);
-  console.log("networkBeacons", networkBeacons);
-  console.log("validNetworkBeacons", validNetworkBeacons);
+  // console.log("individualBeacons", individualBeacons);
+  // console.log("validIndividualBeacons", validIndividualBeacons);
+  // console.log("networkBeacons", networkBeacons);
+  // console.log("validNetworkBeacons", validNetworkBeacons);
 
   let individualAlleleData = [];
   if (individualBeacons.length > 0) {
@@ -124,7 +124,7 @@ export default function CollapsibleTable({
         )
     );
   }
-  console.log("🏡 individualAlleleData", individualAlleleData);
+  // console.log("🏡 individualAlleleData", individualAlleleData);
 
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
@@ -222,7 +222,7 @@ export default function CollapsibleTable({
             });
           });
 
-          console.log("📊 alleleData in Table:", alleleData);
+          // console.log("📊 alleleData in Table:", alleleData);
 
           let populationList = alleleData.map((item) => item.population);
           let populationString =
@@ -272,7 +272,7 @@ export default function CollapsibleTable({
       return true;
     });
 
-  console.log("✅ Final networkRows:", networkRows);
+  // console.log("✅ Final networkRows:", networkRows);
   // Ending here
 
   const beaconNetworkCount = networkRows.length;

@@ -11,6 +11,7 @@ import CustomTheme from "./CustomTheme";
 function App() {
   const [registries, setRegistries] = useState([]);
   const [socket, setSocket] = useState(null);
+  // const [pendingQuery, setPendingQuery] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState([
     "Found",
     "Not-Found",
@@ -36,20 +37,10 @@ function App() {
                     setSocket={setSocket}
                     selectedFilters={selectedFilters}
                     setSelectedFilters={setSelectedFilters}
+                    // setPendingQuery={setPendingQuery}
                   />
                 }
               />
-              {/* <Route
-                path="/search/:variant/:genome"
-                element={
-                  <SearchResults
-                    registries={registries}
-                    socket={socket}
-                    selectedFilters={selectedFilters}
-                    setSelectedFilters={setSelectedFilters}
-                  />
-                }
-              /> */}
               <Route
                 path="/search"
                 element={
@@ -58,6 +49,8 @@ function App() {
                     socket={socket}
                     selectedFilters={selectedFilters}
                     setSelectedFilters={setSelectedFilters}
+                    // pendingQuery={pendingQuery}
+                    // setPendingQuery={setPendingQuery}
                   />
                 }
               />
