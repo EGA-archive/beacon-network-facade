@@ -38,7 +38,7 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  // console.log("📊 Data received:", data);
+  console.log("📊 Data received:", data);
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -182,6 +182,8 @@ export default function CollapsibleTable({
     );
   });
 
+  console.log("foundFilteredBeacons", foundFilteredBeacons);
+
   const filteredIndividualBeacons = foundFilteredBeacons
     .filter((beacon) => {
       if (selectedFilters.includes("af-only")) {
@@ -193,6 +195,8 @@ export default function CollapsibleTable({
     .sort((a, b) => {
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
+
+  console.log("✅ filteredIndividualBeacons:", filteredIndividualBeacons);
 
   // Starting here
   const networkRows = filteredRegistries
@@ -505,12 +509,18 @@ export default function CollapsibleTable({
                             >
                               <TableBody>
                                 {filteredIndividualBeacons
+
                                   .filter(
                                     (individualBeacon) =>
                                       individualBeacon.beaconId ===
                                       registry.beaconId
                                   )
+
                                   .map((individualBeacon) => {
+                                    console.log(
+                                      "🔍 individualBeacon:",
+                                      individualBeacon
+                                    );
                                     const rawAfValue =
                                       getFormattedAlleleFrequency(
                                         individualBeacon
