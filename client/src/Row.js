@@ -15,7 +15,6 @@ import Dialog from "./Dialog";
 import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
-import Tick from "../src/tick.svg";
 
 export default function Row({
   allNetworkRows,
@@ -30,10 +29,13 @@ export default function Row({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
+  const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [currentDatasetName, setCurrentDatasetName] = useState("");
   const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [openRows, setOpenRows] = useState({});
   const [networkAlleleData, setNetworkAlleleData] = useState([]);
+  const [datasetNameMap, setDatasetNameMap] = useState({});
 
   // console.log("networkAlleleData", networkAlleleData);
 
@@ -84,6 +86,7 @@ export default function Row({
   const alleleDataNetwork = row.history.map((historyRow) => {
     return {
       beaconId: historyRow.beaconId,
+      beaconName: historyRow.beaconName,
       datasetId: historyRow.dataset.datasetId,
       population: historyRow.dataset.population,
       alleleFrequency: historyRow.dataset.alleleFrequency,
@@ -92,9 +95,13 @@ export default function Row({
     };
   });
 
+  // console.log("alleleDataNetwork", alleleDataNetwork);
+
   const handleDialogOpen = (historyRow) => {
-    setCurrentBeaconName(historyRow.beaconId);
+    setCurrentBeaconId(historyRow.beaconId);
+    setCurrentBeaconName(historyRow.beaconName);
     setCurrentDataset(historyRow.dataset.datasetId);
+    setCurrentDatasetName(historyRow.dataset.datasetName);
     const matchingRow = allNetworkRows.find((r) =>
       r.history.some(
         (h) =>
@@ -180,11 +187,7 @@ export default function Row({
 
   const handleBeaconDialogOpen = (historyRow) => {
     const beaconId = historyRow.beaconId;
-
     const maturity = historyRow.maturity;
-    // console.log("historyRow", historyRow);
-    // console.log("historyRow Maturity", historyRow.maturity);
-    // const beaconAPI = row.beaconAPI;
 
     let datasetIds = alleleDataNetwork
       .filter((data) => data.beaconId === beaconId)
@@ -192,10 +195,23 @@ export default function Row({
 
     datasetIds = [...new Set(datasetIds)];
 
-    setCurrentBeaconName(beaconId);
+    setCurrentBeaconName(historyRow.beaconName || "Undefined");
+    setCurrentBeaconId(historyRow.beaconId);
     setCurrentBeaconMaturity(maturity);
+
     setCurrentDataset(datasetIds);
+
+    const datasetNameMap = {};
+    alleleDataNetwork
+      .filter((data) => data.beaconId === beaconId)
+      .forEach((data) => {
+        datasetNameMap[data.datasetId] = data.datasetName || "Undefined";
+      });
+
+    setDatasetNameMap(datasetNameMap);
     setBeaconDialogOpen(true);
+    console.log("✅ set currentDataset:", datasetIds);
+    console.log("✅ set currentDatasetName:", historyRow.dataset.datasetName);
   };
 
   const handleBeaconDialogClose = () => {
@@ -371,10 +387,13 @@ export default function Row({
                               width: "94px",
                               whiteSpace: "nowrap",
                               paddingLeft: "4px",
-                              // backgroundColor: "burlywood",
                             }}
                           >
-                            <b>{beaconId}</b>
+                            <b>
+                              {beaconDatasets[0]?.beaconName ||
+                                beaconDatasets[0]?.beaconId ||
+                                "Undefined"}
+                            </b>
                             <Box
                               component="span"
                               sx={{
@@ -504,19 +523,23 @@ export default function Row({
         open={dialogOpen}
         onClose={handleDialogClose}
         beaconNetworkBeaconName={currentBeaconName}
+        beaconNetworkBeaconId={currentBeaconId}
         beaconNetworkDataset={currentDataset}
         alleleDataNetwork={alleleDataNetwork}
         networkAlleleData={networkAlleleData}
+        beaconNetworkDatasetName={currentDatasetName}
       />
       <BeaconDialog
         open={beaconDialogOpen}
         onClose={handleBeaconDialogClose}
         beaconAPI={row.beaconAPI}
         beaconURL={row.beaconURL}
-        beaconId={currentBeaconName}
         currentDataset={currentDataset}
         beaconType="network"
         currentBeaconMaturity={currentBeaconMaturity}
+        beaconName={currentBeaconName}
+        beaconIdNetwork={currentBeaconId}
+        currentDatasetNameMap={datasetNameMap}
       />
     </React.Fragment>
   );

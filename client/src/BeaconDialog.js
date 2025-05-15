@@ -9,28 +9,35 @@ import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import { MaturityButton } from "./ButtonComponents";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function BeaconDialog({
   open,
   onClose,
   beaconType,
-  currentDataset,
+  currentDataset, // only for network
   individualBeaconName,
   individualBeaconRegistryId,
   individualBeaconAPI,
   individualBeaconURL,
-  currentDatasets,
+  currentDatasets, // only for individuals
   beaconAPI,
   beaconId,
   beaconURL,
   beaconMaturity,
   currentBeaconMaturity,
+  beaconName,
+  beaconIdNetwork,
+  currentDatasetNameMap,
 }) {
   const [organizationName, setOrganizationName] = useState("Undefined");
   const [contact, setContact] = useState("Undefined");
   const [entryTypes, setEntryTypes] = useState([]);
   const [datasetsInfo, setDatasetsInfo] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // console.log("currentDatasets", currentDatasets);
+  // console.log("currentDataset", currentDataset);
 
   const apiToFetch =
     beaconType === "individual" ? individualBeaconAPI : beaconAPI;
@@ -43,6 +50,7 @@ export default function BeaconDialog({
     }
   }, [open]);
 
+  // This will go!
   const fetchDatasetInfo = async () => {
     if (!apiToFetch) return;
 
@@ -110,16 +118,25 @@ export default function BeaconDialog({
       const response = await axios.get(`${apiToFetch}/map`);
       const endpointSets = response.data?.response?.endpointSets || {};
 
-      const sortedEntryTypes = Object.entries(endpointSets)
-        .map(([key, value]) => {
-          const pathSegment = value.rootUrl?.split("/").pop();
-          return { id: key, pathSegment };
-        })
-        .sort((a, b) => a.pathSegment.localeCompare(b.pathSegment));
+      const seenSegments = new Set();
+      const uniqueEntryTypes = [];
+
+      Object.entries(endpointSets).forEach(([key, value]) => {
+        const pathSegment = value.rootUrl?.split("/").pop();
+        if (pathSegment && !seenSegments.has(pathSegment)) {
+          seenSegments.add(pathSegment);
+          uniqueEntryTypes.push({ id: key, pathSegment });
+        }
+      });
+
+      const sortedEntryTypes = uniqueEntryTypes.sort((a, b) =>
+        a.pathSegment.localeCompare(b.pathSegment)
+      );
 
       setEntryTypes(sortedEntryTypes);
+      console.log("✅ Deduplicated Entry Types:", sortedEntryTypes);
     } catch (err) {
-      console.error("Error fetching entry types:", err);
+      console.error("❌ Error fetching entry types:", err);
     } finally {
       setLoading(false);
     }
@@ -205,10 +222,9 @@ export default function BeaconDialog({
               color: "black",
             }}
           >
-            <b>Beacon Name: </b>
-            {/* {organizationName} */}
+            <b>Beacon Name:</b> {beaconName || "Undefined"}
             <br />
-            <b>Beacon ID:</b> {individualBeaconName || beaconId} <br />
+            <b>Beacon ID:</b> {individualBeaconName || beaconIdNetwork} <br />
             <b>Organization: </b>
             {organizationName}
             <br />
@@ -274,75 +290,93 @@ export default function BeaconDialog({
           sx={{
             padding: "20px",
             maxHeight: "300px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: loading ? "center" : "start",
+            alignItems: loading ? "center" : "start",
+            minHeight: "100px",
           }}
         >
-          {[
-            ...new Set(
-              beaconType === "individual"
-                ? currentDatasets
-                : currentDataset || []
-            ),
-          ].map((datasetId, index) => {
-            const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
+          {loading ? (
+            <CircularProgress size={30} />
+          ) : (
+            [
+              ...new Set(
+                beaconType === "individual"
+                  ? currentDatasets
+                  : currentDataset || []
+              ),
+            ].map((datasetId, index) => {
+              const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
 
-            const datasetName = datasetInfo?.name || "Undefined";
-            const datasetDescription = datasetInfo?.description || "Undefined";
+              const fromMap = currentDatasetNameMap?.[datasetId];
+              const fromApi = datasetInfo?.name;
 
-            return (
-              <React.Fragment key={index}>
-                <Typography
-                  gutterBottom
-                  sx={{
-                    fontFamily: "Open Sans, sans-serif",
-                    fontSize: "14px",
-                    fontWeight: 400,
-                    lineHeight: "24px",
-                    letterSpacing: "0.5px",
-                    color: "black",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div>
-                    <b>Dataset ID:</b> {datasetId || "Undefined"}
-                  </div>
+              const datasetName =
+                fromMap && fromMap !== "Undefined"
+                  ? fromMap
+                  : fromApi || "Undefined";
 
-                  <div>
-                    <b>Dataset Name:</b> {datasetName}
-                  </div>
+              const datasetDescription =
+                datasetInfo?.description || "Undefined";
 
-                  <div>
-                    <b>Description:</b>{" "}
-                    {datasetDescription !== "Undefined" ? (
-                      <>
-                        <br />
-                        {datasetDescription}
-                      </>
-                    ) : (
-                      "Undefined"
-                    )}
-                  </div>
-                </Typography>
+              console.log("🧾 DatasetId:", datasetId);
+              console.log("📛 Name from Map:", fromMap);
+              console.log("🧬 Name from API:", fromApi);
+              console.log("🧵 Final name shown:", datasetName);
 
-                {(datasetName === "Undefined" ||
-                  datasetDescription === "Undefined") && (
+              return (
+                <React.Fragment key={index}>
                   <Typography
-                    component="div"
+                    gutterBottom
                     sx={{
                       fontFamily: "Open Sans, sans-serif",
                       fontSize: "14px",
-                      fontStyle: "italic",
-                      marginBottom: "16px",
+                      fontWeight: 400,
+                      lineHeight: "24px",
+                      letterSpacing: "0.5px",
                       color: "black",
+                      marginBottom: "16px",
                     }}
                   >
-                    Note: This is a work in progress and the information about{" "}
-                    {datasetId ? datasetId : "this dataset"} will be available
-                    in the next release
+                    <div>
+                      <b>Dataset Name:</b> {datasetName}
+                    </div>
+
+                    <div>
+                      <b>Description:</b>{" "}
+                      {datasetDescription !== "Undefined" ? (
+                        <>
+                          <br />
+                          {datasetDescription}
+                        </>
+                      ) : (
+                        "Undefined"
+                      )}
+                    </div>
                   </Typography>
-                )}
-              </React.Fragment>
-            );
-          })}
+
+                  {(datasetName === "Undefined" ||
+                    datasetDescription === "Undefined") && (
+                    <Typography
+                      component="div"
+                      sx={{
+                        fontFamily: "Open Sans, sans-serif",
+                        fontSize: "14px",
+                        fontStyle: "italic",
+                        marginBottom: "16px",
+                        color: "black",
+                      }}
+                    >
+                      Note: This is a work in progress and the information about{" "}
+                      {datasetId ? datasetId : "this dataset"} will be available
+                      in the next release
+                    </Typography>
+                  )}
+                </React.Fragment>
+              );
+            })
+          )}
         </DialogContent>
       </DialogContent>
 

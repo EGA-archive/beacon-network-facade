@@ -20,12 +20,7 @@ import {
   getAlleleData,
   // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
-import Tick from "../src/tick.svg";
-import {
-  StatusButton,
-  MaturityButton,
-  BeaconTypeButton,
-} from "./ButtonComponents";
+import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import BeaconDialog from "./BeaconDialog";
 import Doc from "../src/document.svg";
@@ -234,6 +229,7 @@ export default function CollapsibleTable({
 
           return {
             beaconId: beacon.beaconId,
+            beaconName: beacon.beaconName,
             maturity: registry.beaconMaturity,
             dataset: {
               datasetId: beacon.id,
@@ -276,7 +272,7 @@ export default function CollapsibleTable({
       return true;
     });
 
-  // console.log("✅ Final networkRows:", networkRows);
+  console.log("✅ Final networkRows:", networkRows);
   // Ending here
 
   const beaconNetworkCount = networkRows.length;
@@ -436,7 +432,9 @@ export default function CollapsibleTable({
 
                             <Box
                               component="span"
-                              style={{ paddingLeft: "7.2%" }}
+                              style={{
+                                paddingLeft: "7.2%",
+                              }}
                             >
                               <b>{registry.beaconName}</b>
                             </Box>
@@ -473,26 +471,6 @@ export default function CollapsibleTable({
                             </Box>
                           </Box>
                         </TableCell>
-                        {/* <TableCell>
-                          {hasFoundDataset ? (
-                            <img
-                              src={Tick}
-                              alt="Tick"
-                              style={{
-                                width: "18px",
-                                height: "18px",
-                              }}
-                            />
-                          ) : (
-                            <i
-                              style={{
-                                color: hasFoundDataset ? "#0099CD" : "#FF7C62",
-                              }}
-                            >
-                              Not Available
-                            </i>
-                          )}
-                        </TableCell> */}
                         <TableCell>
                           {hasFoundDataset ? (
                             (() => {
@@ -525,7 +503,6 @@ export default function CollapsibleTable({
                                   </span>
                                 );
                               }
-
                               return (
                                 <i
                                   style={{
