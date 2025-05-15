@@ -48,6 +48,7 @@ function BeaconQuery({
     }
 
     const handleMessage = (event) => {
+      console.log("📩 Message received in BeaconQuery:", event.data);
       setMessageCount((prev) => {
         const newCount = prev + 1;
 
@@ -82,6 +83,8 @@ function BeaconQuery({
       }, 0);
     }
   }, [messageCount, registriesLength, setLoading]);
+
+  // console.log("aggData", aggregatedData);
 
   return (
     <div>

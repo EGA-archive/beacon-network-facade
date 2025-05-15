@@ -30,20 +30,17 @@ function SearchResults({
   const variant = searchParams.get("pos");
   const genome = searchParams.get("assembly");
 
-  const [pendingQuery, setPendingQuery] = useState(null);
-
   useEffect(() => {
-    console.log("🧪 useEffect triggered (auto-query)");
-
     const searchParams = new URLSearchParams(location.search);
     const pos = searchParams.get("pos");
     const assembly = searchParams.get("assembly");
 
-    console.log("🔍 URL Params — pos:", pos, "| assembly:", assembly);
-    console.log("🧪 socket:", socket);
-    console.log("🧪 socket readyState:", socket?.readyState); // Will be 1 if OPEN
-    console.log("🧪 registries:", registries);
-    console.log("🧪 registries length:", registries.length);
+    console.log("📍 Debug info:");
+    console.log("🔸 pos:", pos);
+    console.log("🔸 assembly:", assembly);
+    console.log("🔸 socket exists:", !!socket);
+    console.log("🔸 socket state:", socket?.readyState);
+    console.log("🔸 registries length:", registries.length);
 
     if (
       pos &&
@@ -52,6 +49,8 @@ function SearchResults({
       socket.readyState === WebSocket.OPEN &&
       registries.length > 0
     ) {
+      console.log("🚀 All conditions met - triggering search");
+
       const [referenceName, start, referenceBases, alternateBases] =
         pos.split("-");
 
@@ -68,13 +67,7 @@ function SearchResults({
       console.log("📡 Sending query:", query);
       socket.send(JSON.stringify(query));
     } else {
-      console.log("🛑 Conditions not met for auto-query:");
-      if (!pos || !assembly) console.log("🔸 Missing pos or assembly in URL.");
-      if (!socket) console.log("🔸 socket is not available yet.");
-      if (socket && socket.readyState !== WebSocket.OPEN)
-        console.log("🔸 socket is not OPEN. Current state:", socket.readyState);
-      if (registries.length === 0)
-        console.log("🔸 registries not yet populated.");
+      console.log("⏳ Waiting for socket to be ready or registries to load...");
     }
   }, [socket, registries, location.search]);
 

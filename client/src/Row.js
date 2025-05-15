@@ -428,7 +428,6 @@ export default function Row({
                             historyRow.dataset
                           );
                           const afClickable = afValue !== "N/A";
-                          console.log("afValue", afValue);
 
                           return (
                             <TableRow
