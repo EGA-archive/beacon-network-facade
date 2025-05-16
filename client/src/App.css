@@ -182,7 +182,7 @@ body {
 /* Search CSS */
 
 .search-row {
-  margin-top: 90px;
+  margin-top: 30px !important;
 }
 
 .variant-query {
@@ -274,7 +274,7 @@ body {
 }
 
 .example-span {
-  margin-top: 10px;
+  margin-top: 15px !important;
 }
 
 .example {

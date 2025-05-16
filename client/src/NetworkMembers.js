@@ -41,6 +41,7 @@ function NetworkMembers({ registries = [] }) {
           >
             {registriesWithValidLogos.map((registry) => (
               <Grid
+                item
                 key={registry.beaconId}
                 xs={12}
                 sm={4}

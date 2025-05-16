@@ -233,7 +233,8 @@ export default function BeaconDialog({
           >
             <b>Beacon Name:</b> {beaconName || individualBeaconName}
             <br />
-            <b>Beacon ID:</b> {individualBeaconName || beaconIdNetwork} <br />
+            <b>Beacon ID:</b> {individualBeaconRegistryId || beaconIdNetwork}{" "}
+            <br />
             <b>Organization: </b>
             {organizationName}
             <br />

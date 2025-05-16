@@ -197,8 +197,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Form.Group>
-                  <Grid container spacing={2} className="search-row">
-                    <Grid size={{ xs: 12, sm: 7 }}>
+                  <Grid item container spacing={2} className="search-row">
+                    <Grid item xs={12} sm={7}>
                       <Form.Label>
                         <b className="variant-query">Variant query</b>
                         <Tooltip
@@ -240,7 +240,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
                       />
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3 }}>
+                    <Grid item xs={12} sm={3}>
                       <Form.Label>
                         <b>Ref Genome</b>
                       </Form.Label>
@@ -261,7 +261,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
                         )}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 2 }}>
+
+                    <Grid item xs={12} sm={2}>
                       <button
                         className="searchbutton"
                         type="submit"
@@ -274,7 +275,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     </Grid>
                   </Grid>
                 </Form.Group>
-                <Grid container className="example-span">
+                <Grid item container className="example-span">
                   <Grid xs={12} sm="auto">
                     <span>Example: </span>
                     <a
