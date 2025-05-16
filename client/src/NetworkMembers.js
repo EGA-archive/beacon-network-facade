@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Container } from "react-bootstrap";
 
 function NetworkMembers({ registries = [] }) {

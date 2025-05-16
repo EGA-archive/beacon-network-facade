@@ -12,6 +12,7 @@ export default function AFDialog({
   onClose,
   individualBeaconName,
   individualDataset,
+  individualDatasetName,
   individualBeaconRegistryId,
   beaconNetworkBeaconName,
   beaconNetworkBeaconId,
@@ -88,8 +89,11 @@ export default function AFDialog({
             beaconNetworkBeaconName ||
             beaconNetworkBeaconId}
           <br></br>
+          {/* Cahnge here */}
           <b>Dataset: </b>
-          {individualDataset || beaconNetworkDatasetName}
+          {individualDatasetName ||
+            individualDataset ||
+            beaconNetworkDatasetName}
         </Typography>
       </DialogContent>
       <TableDialog

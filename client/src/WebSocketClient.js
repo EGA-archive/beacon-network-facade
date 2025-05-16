@@ -4,7 +4,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { Container, Form } from "react-bootstrap";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";

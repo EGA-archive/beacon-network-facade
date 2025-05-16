@@ -18,7 +18,6 @@ import {
   separateBeacons,
   getFormattedAlleleFrequency,
   getAlleleData,
-  // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
 import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
@@ -42,10 +41,12 @@ export default function CollapsibleTable({
   const [currentBeaconId, setCurrentBeaconId] = useState("");
   const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [currentDatasetName, setCurrentDatasetName] = useState("");
   const [openRows, setOpenRows] = useState({});
   const [currentBeaconApi, setCurrentBeaconApi] = useState("");
   const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
   const [currentDatasets, setCurrentDatasets] = useState([]);
+  const [currentDatasetNameMap, setCurrentDatasetNameMap] = useState({});
 
   // console.log("openRows", openRows);
   // console.log("selectedFilters", selectedFilters);
@@ -60,6 +61,7 @@ export default function CollapsibleTable({
       setCurrentBeaconName(beaconName);
       setCurrentBeaconApi(beaconAPI);
       setCurrentBeaconUrl(beaconURL);
+
       const matchingBeacon = registries.find(
         (registry) => registry.beaconName === beaconName
       );
@@ -69,26 +71,23 @@ export default function CollapsibleTable({
         return;
       }
 
-      // setCurrentBeaconId(matchingBeacon.beaconId);
-      setCurrentBeaconMaturity(matchingBeacon.beaconMaturity);
-
       const beaconId = matchingBeacon.beaconId;
       setCurrentBeaconId(beaconId);
-
-      setOpenRows((prev) => ({
-        ...prev,
-        [beaconId]: true,
-      }));
-
-      // const datasets = filteredIndividualBeacons
-      //   .filter((beacon) => beacon.beaconId === beaconId)
-      //   .map((beacon) => beacon.id);
+      setCurrentBeaconMaturity(matchingBeacon.beaconMaturity);
 
       const datasets = filteredIndividualBeacons
-        .filter((beacon) => beacon.beaconId === matchingBeacon.beaconId)
+        .filter((beacon) => beacon.beaconId === beaconId)
         .map((beacon) => beacon.id);
 
+      const datasetNameMap = {};
+      filteredIndividualBeacons
+        .filter((beacon) => beacon.beaconId === beaconId)
+        .forEach((entry) => {
+          datasetNameMap[entry.id] = entry.datasetName || "Undefined";
+        });
+
       setCurrentDatasets(datasets);
+      setCurrentDatasetNameMap(datasetNameMap);
       setBeaconDialogOpen(true);
     }
   };
@@ -127,6 +126,7 @@ export default function CollapsibleTable({
       setCurrentBeaconId(registry.beaconId);
       setCurrentBeaconMaturity(registry.beaconMaturity);
       setCurrentDataset(individualBeacon.id);
+      setCurrentDatasetName(individualBeacon.datasetName);
       setDialogOpen(true);
     } else {
       console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
@@ -272,7 +272,7 @@ export default function CollapsibleTable({
       return true;
     });
 
-  console.log("✅ Final networkRows:", networkRows);
+  // console.log("✅ Final networkRows:", networkRows);
   // Ending here
 
   const beaconNetworkCount = networkRows.length;
@@ -690,6 +690,7 @@ export default function CollapsibleTable({
         individualDataset={currentDataset}
         individualBeaconRegistryId={currentBeaconId}
         individualAlleleData={individualAlleleData}
+        individualDatasetName={currentDatasetName}
       />
       <BeaconDialog
         open={beaconDialogOpen}
@@ -701,6 +702,7 @@ export default function CollapsibleTable({
         individualBeaconAPI={currentBeaconApi}
         individualBeaconURL={currentBeaconUrl}
         currentDatasets={currentDatasets}
+        currentDatasetNameMap={currentDatasetNameMap}
         beaconMaturity={currentBeaconMaturity}
       />
     </>

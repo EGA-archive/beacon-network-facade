@@ -42,12 +42,24 @@ export default function BeaconDialog({
   const apiToFetch =
     beaconType === "individual" ? individualBeaconAPI : beaconAPI;
 
+  // useEffect(() => {
+  //   if (open) {
+  //     fetchBeaconInfo();
+  //     fetchEntryTypes();
+  //     fetchDatasetInfo();
+  //   }
+  // }, [open]);
+
   useEffect(() => {
-    if (open) {
-      fetchBeaconInfo();
-      fetchEntryTypes();
-      fetchDatasetInfo();
-    }
+    if (!open) return;
+
+    setLoading(true);
+
+    Promise.all([
+      fetchBeaconInfo(),
+      fetchEntryTypes(),
+      fetchDatasetInfo(),
+    ]).finally(() => setLoading(false));
   }, [open]);
 
   // This will go!
@@ -134,11 +146,8 @@ export default function BeaconDialog({
       );
 
       setEntryTypes(sortedEntryTypes);
-      console.log("✅ Deduplicated Entry Types:", sortedEntryTypes);
     } catch (err) {
       console.error("❌ Error fetching entry types:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -222,7 +231,7 @@ export default function BeaconDialog({
               color: "black",
             }}
           >
-            <b>Beacon Name:</b> {beaconName || "Undefined"}
+            <b>Beacon Name:</b> {beaconName || individualBeaconName}
             <br />
             <b>Beacon ID:</b> {individualBeaconName || beaconIdNetwork} <br />
             <b>Organization: </b>
@@ -292,91 +301,93 @@ export default function BeaconDialog({
             maxHeight: "300px",
             display: "flex",
             flexDirection: "column",
-            justifyContent: loading ? "center" : "start",
-            alignItems: loading ? "center" : "start",
+            justifyContent: "start",
+            alignItems: "start",
             minHeight: "100px",
           }}
         >
-          {loading ? (
-            <CircularProgress size={30} />
-          ) : (
-            [
-              ...new Set(
-                beaconType === "individual"
-                  ? currentDatasets
-                  : currentDataset || []
-              ),
-            ].map((datasetId, index) => {
-              const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
+          {[
+            ...new Set(
+              beaconType === "individual"
+                ? currentDatasets
+                : currentDataset || []
+            ),
+          ].map((datasetId, index) => {
+            const datasetInfo = datasetsInfo.find((d) => d.id === datasetId);
 
-              const fromMap = currentDatasetNameMap?.[datasetId];
-              const fromApi = datasetInfo?.name;
+            const fromMap = currentDatasetNameMap?.[datasetId];
+            const fromApi = datasetInfo?.name;
 
-              const datasetName =
-                fromMap && fromMap !== "Undefined"
-                  ? fromMap
-                  : fromApi || "Undefined";
+            const datasetName =
+              fromMap && fromMap !== "Undefined"
+                ? fromMap
+                : fromApi || "Undefined";
 
-              const datasetDescription =
-                datasetInfo?.description || "Undefined";
+            const datasetDescription = datasetInfo?.description || "Undefined";
+            const showLoader = loading && datasetDescription === "Undefined";
 
-              console.log("🧾 DatasetId:", datasetId);
-              console.log("📛 Name from Map:", fromMap);
-              console.log("🧬 Name from API:", fromApi);
-              console.log("🧵 Final name shown:", datasetName);
+            console.log(
+              "📦 Source:",
+              fromMap && fromMap !== "Undefined"
+                ? "fromMap"
+                : fromApi
+                ? "fromApi"
+                : "Undefined"
+            );
 
-              return (
-                <React.Fragment key={index}>
+            return (
+              <React.Fragment key={index}>
+                <Typography
+                  gutterBottom
+                  sx={{
+                    fontFamily: "Open Sans, sans-serif",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    lineHeight: "24px",
+                    letterSpacing: "0.5px",
+                    color: "black",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div>
+                    <b>Dataset Name:</b> {datasetName}
+                  </div>
+
+                  <div>
+                    <b>Description:</b>{" "}
+                    {showLoader ? (
+                      <CircularProgress size={16} sx={{ marginLeft: "10px" }} />
+                    ) : datasetDescription !== "Undefined" ? (
+                      <>
+                        <br />
+                        {datasetDescription}
+                      </>
+                    ) : (
+                      "Undefined"
+                    )}
+                  </div>
+                </Typography>
+
+                {(datasetName === "Undefined" ||
+                  datasetDescription === "Undefined") && (
                   <Typography
-                    gutterBottom
+                    component="div"
                     sx={{
                       fontFamily: "Open Sans, sans-serif",
                       fontSize: "14px",
-                      fontWeight: 400,
-                      lineHeight: "24px",
-                      letterSpacing: "0.5px",
-                      color: "black",
+                      fontStyle: "italic",
                       marginBottom: "16px",
+                      color: "black",
                     }}
                   >
-                    <div>
-                      <b>Dataset Name:</b> {datasetName}
-                    </div>
-
-                    <div>
-                      <b>Description:</b>{" "}
-                      {datasetDescription !== "Undefined" ? (
-                        <>
-                          <br />
-                          {datasetDescription}
-                        </>
-                      ) : (
-                        "Undefined"
-                      )}
-                    </div>
+                    Note: This is a work in progress and the information about{" "}
+                    {datasetId ? datasetId : "this dataset"} will be available
+                    in the next release
                   </Typography>
-
-                  {(datasetName === "Undefined" ||
-                    datasetDescription === "Undefined") && (
-                    <Typography
-                      component="div"
-                      sx={{
-                        fontFamily: "Open Sans, sans-serif",
-                        fontSize: "14px",
-                        fontStyle: "italic",
-                        marginBottom: "16px",
-                        color: "black",
-                      }}
-                    >
-                      Note: This is a work in progress and the information about{" "}
-                      {datasetId ? datasetId : "this dataset"} will be available
-                      in the next release
-                    </Typography>
-                  )}
-                </React.Fragment>
-              );
-            })
-          )}
+                )}
+              </React.Fragment>
+            );
+          })}
         </DialogContent>
       </DialogContent>
 

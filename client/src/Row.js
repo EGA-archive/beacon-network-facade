@@ -90,6 +90,7 @@ export default function Row({
       datasetId: historyRow.dataset.datasetId,
       population: historyRow.dataset.population,
       alleleFrequency: historyRow.dataset.alleleFrequency,
+      datasetName: historyRow.dataset.datasetName || "Undefined",
       beaconAPI: row.beaconAPI,
       beaconURL: row.beaconURL,
     };
@@ -202,16 +203,12 @@ export default function Row({
     setCurrentDataset(datasetIds);
 
     const datasetNameMap = {};
-    alleleDataNetwork
-      .filter((data) => data.beaconId === beaconId)
-      .forEach((data) => {
-        datasetNameMap[data.datasetId] = data.datasetName || "Undefined";
-      });
+    alleleDataNetwork.forEach((data) => {
+      datasetNameMap[data.datasetId] = data.datasetName || "Undefined";
+    });
 
     setDatasetNameMap(datasetNameMap);
     setBeaconDialogOpen(true);
-    console.log("✅ set currentDataset:", datasetIds);
-    console.log("✅ set currentDatasetName:", historyRow.dataset.datasetName);
   };
 
   const handleBeaconDialogClose = () => {
