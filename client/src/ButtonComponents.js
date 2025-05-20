@@ -81,13 +81,13 @@ const BeaconTypeButton = ({ type }) => {
     <Box
       sx={{
         display: "inline-flex",
-        borderRadius: "8px",
+        minWidth: "105px",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: "6px",
-        padding: "4px 8px",
+        borderRadius: "8px",
+        padding: "2px 8px",
         fontFamily: '"Open Sans", sans-serif',
-        fontSize: "14px",
+        fontSize: "11px",
         ...styleProps,
       }}
     >

@@ -281,6 +281,10 @@ body {
   color: blue;
 }
 
+.main-row {
+  padding-left: 2.5%;
+}
+
 @media (max-width: 1399px) and (min-width: 1200px) {
   .beacon-title {
     margin-top: 10px;

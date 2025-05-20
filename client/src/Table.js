@@ -361,18 +361,29 @@ export default function CollapsibleTable({
         >
           <TableHead>
             <TableRow className="title-row">
-              <TableCell colSpan={3} sx={{ pl: 6.5 }}>
+              <TableCell colSpan={2}>
                 <Box
                   sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
                 >
                   <b>Beacon Network / Beacon</b>
                 </Box>
               </TableCell>
-              <TableCell />
-              <TableCell colSpan={1}>
+              <TableCell colSpan={2}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    marginLeft: "125px",
+                  }}
+                >
+                  <i>
+                    <b>Datasets Found / Total</b>
+                  </i>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ width: "15%", textAlign: "center" }}>
                 <b>Allele Frequency</b>
               </TableCell>
-              <TableCell colSpan={1}>
+              <TableCell sx={{ width: "11%", textAlign: "center" }}>
                 <b>Response</b>
               </TableCell>
             </TableRow>
@@ -387,6 +398,14 @@ export default function CollapsibleTable({
                 )
                 .map((registry) => {
                   const rowIsOpen = !!openRows[registry.beaconId];
+                  const beaconDatasets = filteredIndividualBeacons.filter(
+                    (b) => b.beaconId === registry.beaconId
+                  );
+
+                  const firstDataset = beaconDatasets[0];
+                  const firstAF = getFormattedAlleleFrequency(firstDataset);
+                  const afClickable = firstAF !== "N/A";
+
                   const isNetwork = networkBeacons.some(
                     (nb) => nb.beaconNetworkId === registry.beaconId
                   );
@@ -407,8 +426,11 @@ export default function CollapsibleTable({
                       <TableRow>
                         <TableCell
                           variant="lessPaddingSingle"
-                          style={{ verticalAlign: "middle" }}
-                          colSpan={4}
+                          style={{
+                            verticalAlign: "middle",
+                            paddingLeft: "8px",
+                          }}
+                          colSpan={2}
                         >
                           <Box
                             sx={{
@@ -429,16 +451,9 @@ export default function CollapsibleTable({
                               )}
                             </IconButton>
                             <BeaconTypeButton type={beaconType} />
-
-                            <Box
-                              component="span"
-                              style={{
-                                paddingLeft: "7.2%",
-                              }}
-                            >
+                            <Box component="span" className="main-row">
                               <b>{registry.beaconName}</b>
                             </Box>
-
                             <Box
                               component="span"
                               sx={{
@@ -471,58 +486,158 @@ export default function CollapsibleTable({
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell>
-                          {hasFoundDataset ? (
-                            (() => {
-                              const afValues = filteredIndividualBeacons
-                                .filter(
-                                  (beacon) =>
-                                    beacon.beaconId === registry.beaconId
-                                )
-                                .flatMap((beacon) => {
-                                  const raw =
-                                    getFormattedAlleleFrequency(beacon);
-                                  if (raw === "N/A") return [];
-                                  return raw
-                                    .split(/[\-;]/)
-                                    .map((v) => parseFloat(v.trim()))
-                                    .filter((n) => !isNaN(n));
-                                });
 
-                              if (afValues.length > 0) {
-                                const min = Math.min(...afValues).toFixed(5);
-                                const max = Math.max(...afValues).toFixed(5);
-                                return (
-                                  <span
-                                    style={{
-                                      color: "#077EA6",
-                                      fontWeight: "bold",
-                                    }}
-                                  >
-                                    {min} - {max}
-                                  </span>
-                                );
-                              }
-                              return (
-                                <i
-                                  style={{
-                                    color: "#FF7C62",
-                                  }}
-                                >
-                                  Not Available
-                                </i>
-                              );
-                            })()
-                          ) : (
-                            <i style={{ color: "#FF7C62" }}>Not Available</i>
-                          )}
-                        </TableCell>
+                        {rowIsOpen ? (
+                          <>
+                            <TableCell
+                              colSpan={rowIsOpen ? 2 : 0}
+                              sx={{ paddingLeft: "141px" }}
+                            >
+                              <b>
+                                {firstDataset?.datasetName ||
+                                  firstDataset?.id ||
+                                  "Undefined"}
+                              </b>
+                            </TableCell>
 
-                        <TableCell>
-                          <StatusButton
-                            status={hasFoundDataset ? "Found" : "Not Found"}
-                          />
-                        </TableCell>
+                            <TableCell
+                              sx={{
+                                textAlign: "center",
+                                cursor: afClickable ? "pointer" : "default",
+                                padding: "16px 16px 16px 20px",
+                                textDecoration: afClickable
+                                  ? "underline"
+                                  : "none",
+                                textDecorationColor: afClickable
+                                  ? "#077EA6"
+                                  : "inherit",
+                                color: "#077EA6",
+                              }}
+                              onClick={() => {
+                                if (afClickable) {
+                                  handleDialogOpen(registry, firstDataset);
+                                }
+                              }}
+                            >
+                              <b>{firstAF}</b>
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                textAlign: "center",
+                              }}
+                            >
+                              <StatusButton
+                                status={
+                                  firstDataset?.exists ? "Found" : "Not Found"
+                                }
+                              />
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell
+                              colSpan={2}
+                              sx={{ paddingRight: "72px" }}
+                            >
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                {(() => {
+                                  const total = beaconDatasets.length;
+                                  const found = beaconDatasets.filter(
+                                    (d) => d.exists
+                                  ).length;
+
+                                  return found > 0 ? (
+                                    <span
+                                      style={{
+                                        fontWeight: "bold",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                      }}
+                                    >
+                                      {found} / {total}
+                                    </span>
+                                  ) : null;
+                                })()}
+                              </Box>
+                            </TableCell>
+
+                            <TableCell>
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                {hasFoundDataset ? (
+                                  (() => {
+                                    const afValues = filteredIndividualBeacons
+                                      .filter(
+                                        (beacon) =>
+                                          beacon.beaconId === registry.beaconId
+                                      )
+                                      .flatMap((beacon) => {
+                                        const raw =
+                                          getFormattedAlleleFrequency(beacon);
+                                        if (raw === "N/A") return [];
+                                        return raw
+                                          .split(/[\-;]/)
+                                          .map((v) => parseFloat(v.trim()))
+                                          .filter((n) => !isNaN(n));
+                                      });
+
+                                    if (afValues.length > 0) {
+                                      const min = Math.min(...afValues).toFixed(
+                                        5
+                                      );
+                                      const max = Math.max(...afValues).toFixed(
+                                        5
+                                      );
+                                      return (
+                                        <span
+                                          style={{
+                                            color: "#077EA6",
+                                            fontWeight: "bold",
+                                          }}
+                                        >
+                                          {min} - {max}
+                                        </span>
+                                      );
+                                    }
+
+                                    return (
+                                      <i style={{ color: "#FF7C62" }}>
+                                        Not Available
+                                      </i>
+                                    );
+                                  })()
+                                ) : (
+                                  <i style={{ color: "#FF7C62" }}>
+                                    Not Available
+                                  </i>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                <StatusButton
+                                  status={
+                                    hasFoundDataset ? "Found" : "Not Found"
+                                  }
+                                />
+                              </Box>
+                            </TableCell>
+                          </>
+                        )}
                       </TableRow>
                       <TableRow variant="emptyRow">
                         <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
@@ -543,11 +658,9 @@ export default function CollapsibleTable({
                                       registry.beaconId
                                   )
 
-                                  .map((individualBeacon) => {
-                                    console.log(
-                                      "🔍 individualBeacon:",
-                                      individualBeacon
-                                    );
+                                  .map((individualBeacon, index) => {
+                                    if (index === 0) return null;
+
                                     const rawAfValue =
                                       getFormattedAlleleFrequency(
                                         individualBeacon
@@ -564,22 +677,9 @@ export default function CollapsibleTable({
                                       <TableRow
                                         key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
                                       >
-                                        <TableCell
-                                          sx={{
-                                            width: "90px !important",
-                                          }}
-                                        />
-
-                                        <TableCell
-                                          sx={{
-                                            width: "149px !important",
-                                          }}
-                                        />
-                                        <TableCell
-                                          sx={{
-                                            width: "340px !important",
-                                          }}
-                                        >
+                                        <TableCell sx={{ width: "14%" }} />
+                                        <TableCell sx={{ width: "32.7%" }} />
+                                        <TableCell sx={{ width: "27%" }}>
                                           <Box>
                                             <b>
                                               {individualBeacon?.datasetName ||
@@ -588,9 +688,10 @@ export default function CollapsibleTable({
                                             </b>
                                           </Box>
                                         </TableCell>
+
                                         <TableCell
                                           sx={{
-                                            width: "148px !important",
+                                            textAlign: "center",
                                             cursor: clickable
                                               ? "pointer"
                                               : "default",
@@ -640,7 +741,8 @@ export default function CollapsibleTable({
 
                                         <TableCell
                                           sx={{
-                                            width: "146px !important",
+                                            width: "11%",
+                                            textAlign: "center",
                                           }}
                                         >
                                           <StatusButton

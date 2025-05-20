@@ -12,7 +12,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
-import { getFormattedAlleleFrequency } from "./utils/beaconUtils";
+import {
+  getFormattedAlleleFrequency,
+  withTruncatedTooltip,
+} from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
 
@@ -38,18 +41,14 @@ export default function Row({
   const [datasetNameMap, setDatasetNameMap] = useState({});
 
   // console.log("networkAlleleData", networkAlleleData);
-
   // console.log("🔎 openRows State:", openRows);
   // console.log("🔎 Current Row State:", row.name, "Open:", open);
-
   // console.log("row", row);
 
   useEffect(() => {
     if (forceCloseAll) {
       // console.log("❌ Force Closing All Rows");
-
       setOpen(false);
-
       setOpenRows((prevRows) => {
         const updatedRows = Object.keys(prevRows).reduce((acc, key) => {
           acc[key] = false;
@@ -59,9 +58,7 @@ export default function Row({
       });
     } else if (forceOpenAll) {
       // console.log("✅ Force Opening All Rows");
-
       setOpen(true);
-
       setOpenRows((prevRows) => ({
         ...prevRows,
         [row.name]: true,
@@ -182,6 +179,8 @@ export default function Row({
       : 0;
   });
 
+  // console.log("deduplicatedHistoy", deduplicatedHistory);
+
   const hasAlleleFrequency = (historyData) => {
     return historyData.some((item) => item.dataset.alleleFrequency !== "N/A");
   };
@@ -242,8 +241,8 @@ export default function Row({
         >
           <TableCell
             variant="lessPadding"
-            style={{ verticalAlign: "middle" }}
-            colSpan={4}
+            style={{ verticalAlign: "middle", paddingLeft: 0 }}
+            colSpan={2}
           >
             <Box
               sx={{
@@ -253,9 +252,7 @@ export default function Row({
                 flexWrap: "nowrap",
               }}
             >
-              {isUncollapsibleRow(row) && <Box sx={{ width: 35 }} />}
-
-              {!isUncollapsibleRow(row) && (
+              {/* {!isUncollapsibleRow(row) && (
                 <IconButton
                   aria-label="expand row"
                   size="small"
@@ -267,14 +264,43 @@ export default function Row({
                     <KeyboardArrowRightIcon />
                   )}
                 </IconButton>
-              )}
+              )} */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isUncollapsibleRow(row) && <Box sx={{ width: 35 }} />}
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {!isUncollapsibleRow(row) && (
+                  <IconButton
+                    aria-label="expand row"
+                    size="small"
+                    onClick={toggleRow}
+                  >
+                    {open ? (
+                      <KeyboardArrowDownIcon />
+                    ) : (
+                      <KeyboardArrowRightIcon />
+                    )}
+                  </IconButton>
+                )}
+              </Box>
 
               <BeaconTypeButton type={isNetwork ? "network" : "single"} />
-
-              <Box component="span" style={{ paddingLeft: "5%" }}>
+              <Box component="span" className="main-row">
                 <b>{row.name}</b>
                 <br />
-                <span>{row.numberOfBeacons}</span> beacons
+                {/* <span>{row.numberOfBeacons}</span> beacons */}
               </Box>
 
               <a
@@ -289,58 +315,113 @@ export default function Row({
                   style={{
                     maxWidth: "100%",
                     height: "50px",
-                    padding: "10px 16px",
+                    padding: "10px 0px",
                   }}
                 />
               </a>
             </Box>
           </TableCell>
-          <TableCell variant="lessPadding">
-            {hasAlleleFrequency(deduplicatedHistory) ? (
-              (() => {
-                const allAFs = deduplicatedHistory.flatMap((hr) => {
-                  const formatted = getFormattedAlleleFrequency(hr.dataset);
-                  if (!formatted || formatted === "N/A") return [];
-                  return formatted
-                    .split(/[;,-]/)
-                    .map((val) => parseFloat(val.trim()))
-                    .filter((n) => !isNaN(n));
-                });
 
-                if (allAFs.length === 0) return <i>Not Available</i>;
-                const min = Math.min(...allAFs).toFixed(5);
-                const max = Math.max(...allAFs).toFixed(5);
-                return (
-                  <span style={{ color: "#077EA6", fontWeight: "bold" }}>
-                    {min} - {max}
-                  </span>
-                );
-              })()
-            ) : (
-              <i
-                style={{
-                  color: deduplicatedHistory.some(
-                    (hr) => hr.dataset?.response === "Found"
-                  )
-                    ? "#0099CD"
-                    : "#FF7C62",
-                }}
+          <TableCell
+            colSpan={2}
+            variant="lessPadding"
+            sx={{
+              width: "17%",
+              paddingRight: "68px",
+            }}
+          >
+            {deduplicatedHistory.some(
+              (d) => d.dataset?.response === "Found"
+            ) ? (
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                height="100%"
               >
-                Not Available
-              </i>
-            )}
+                {(() => {
+                  const total = deduplicatedHistory.length;
+                  const found = deduplicatedHistory.filter(
+                    (d) => d.dataset?.response === "Found"
+                  ).length;
+
+                  return (
+                    <span
+                      style={{
+                        fontWeight: "bold",
+                        color: "#333",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {found} / {total}
+                    </span>
+                  );
+                })()}
+              </Box>
+            ) : null}
           </TableCell>
 
-          <TableCell variant="lessPadding">
-            <StatusButton
-              status={
-                deduplicatedHistory.some(
-                  (hr) => hr.dataset?.response === "Found"
-                )
-                  ? "Found"
-                  : "Not Found"
-              }
-            />
+          <TableCell variant="lessPadding" sx={{ width: "15%" }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              height="100%"
+            >
+              {hasAlleleFrequency(deduplicatedHistory) ? (
+                (() => {
+                  const allAFs = deduplicatedHistory.flatMap((hr) => {
+                    const formatted = getFormattedAlleleFrequency(hr.dataset);
+                    if (!formatted || formatted === "N/A") return [];
+                    return formatted
+                      .split(/[;,-]/)
+                      .map((val) => parseFloat(val.trim()))
+                      .filter((n) => !isNaN(n));
+                  });
+
+                  if (allAFs.length === 0) return <i>Not Available</i>;
+
+                  const min = Math.min(...allAFs).toFixed(5);
+                  const max = Math.max(...allAFs).toFixed(5);
+
+                  return (
+                    <span style={{ color: "#077EA6", fontWeight: "bold" }}>
+                      {min} - {max}
+                    </span>
+                  );
+                })()
+              ) : (
+                <i
+                  style={{
+                    color: deduplicatedHistory.some(
+                      (hr) => hr.dataset?.response === "Found"
+                    )
+                      ? "#0099CD"
+                      : "#FF7C62",
+                  }}
+                >
+                  Not Available
+                </i>
+              )}
+            </Box>
+          </TableCell>
+          <TableCell variant="lessPadding" sx={{ width: "11%" }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              height="100%"
+            >
+              <StatusButton
+                status={
+                  deduplicatedHistory.some(
+                    (hr) => hr.dataset?.response === "Found"
+                  )
+                    ? "Found"
+                    : "Not Found"
+                }
+              />
+            </Box>
           </TableCell>
         </TableRow>
       )}
@@ -378,18 +459,19 @@ export default function Row({
                     ).map(([beaconId, beaconDatasets], beaconIndex) => (
                       <React.Fragment key={`beacon-${beaconIndex}`}>
                         <TableRow>
-                          <TableCell sx={{ width: "160px !important" }} />
+                          <TableCell sx={{ width: "14%" }}></TableCell>
                           <TableCell
+                            colSpan={2}
                             sx={{
-                              width: "94px",
                               whiteSpace: "nowrap",
-                              paddingLeft: "4px",
                             }}
                           >
                             <b>
-                              {beaconDatasets[0]?.beaconName ||
-                                beaconDatasets[0]?.beaconId ||
-                                "Undefined"}
+                              {withTruncatedTooltip(
+                                beaconDatasets[0]?.beaconName ||
+                                  beaconDatasets[0]?.beaconId ||
+                                  "Undefined"
+                              )}
                             </b>
                             <Box
                               component="span"
@@ -418,61 +500,117 @@ export default function Row({
                               />
                             </Box>
                           </TableCell>
-                          <TableCell sx={{ width: "368px" }}>
-                            {/* TODO: Here the dataset will go! */}
-                            {/* <Box>
-                              {historyRow.dataset?.datasetId ? (
-                                <b>
-                                  {historyRow.dataset.datasetName ||
-                                    historyRow.dataset.datasetId}
-                                </b>
-                              ) : (
-                                <b>Undefined</b>
-                              )}
-                            </Box> */}
-                          </TableCell>
 
-                          <TableCell sx={{ width: "155px" }} />
+                          <TableCell
+                            colSpan={2}
+                            sx={{
+                              alignItems: "center",
+                              justifyContent: "center",
+                              paddingLeft: "50px",
+                            }}
+                          >
+                            <b>
+                              {withTruncatedTooltip(
+                                beaconDatasets[0]?.dataset?.datasetName ||
+                                  beaconDatasets[0]?.dataset?.datasetId ||
+                                  "Undefined"
+                              )}
+                            </b>
+                          </TableCell>
                           <TableCell
                             sx={{
-                              width: "154px",
+                              cursor:
+                                beaconDatasets[0]?.dataset?.alleleFrequency !==
+                                "N/A"
+                                  ? "pointer"
+                                  : "default",
+                              padding: "10px 16px",
+                              textAlign: "center",
+                              textDecoration:
+                                beaconDatasets[0]?.dataset?.alleleFrequency !==
+                                "N/A"
+                                  ? "underline"
+                                  : "none",
+                              textDecorationColor:
+                                beaconDatasets[0]?.dataset?.alleleFrequency !==
+                                "N/A"
+                                  ? "#077EA6"
+                                  : "inherit",
+                              color:
+                                beaconDatasets[0]?.dataset?.response === "Found"
+                                  ? "#0099CD"
+                                  : beaconDatasets[0]?.dataset?.response ===
+                                    "Not Found"
+                                  ? "#FF7C62"
+                                  : "inherit",
                             }}
-                          />
+                            onClick={() => {
+                              if (
+                                beaconDatasets[0]?.dataset?.alleleFrequency !==
+                                "N/A"
+                              ) {
+                                handleDialogOpen(beaconDatasets[0]);
+                              }
+                            }}
+                          >
+                            {beaconDatasets[0]?.dataset?.alleleFrequency !==
+                            "N/A" ? (
+                              <b style={{ color: "#077EA6" }}>
+                                {getFormattedAlleleFrequency(
+                                  beaconDatasets[0].dataset
+                                )}
+                              </b>
+                            ) : (
+                              <i>Not Available</i>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ width: "11%", textAlign: "center" }}>
+                            <StatusButton
+                              status={
+                                beaconDatasets[0]?.dataset?.response || "N/A"
+                              }
+                            />
+                          </TableCell>
                         </TableRow>
-                        {beaconDatasets.map((historyRow, datasetIndex) => {
-                          const afValue = getFormattedAlleleFrequency(
-                            historyRow.dataset
-                          );
-                          const afClickable = afValue !== "N/A";
-
-                          return (
+                        {beaconDatasets
+                          .slice(1)
+                          .map((historyRow, datasetIndex) => (
                             <TableRow
                               key={`dataset-${beaconIndex}-${datasetIndex}`}
                             >
-                              <TableCell />
-                              <TableCell />
-                              <TableCell>
-                                <Box>
-                                  {historyRow.dataset?.datasetId ? (
-                                    <b>
-                                      {historyRow.dataset.datasetName ||
-                                        historyRow.dataset.datasetId}
-                                    </b>
-                                  ) : (
-                                    <b>Undefined</b>
+                              <TableCell sx={{ width: "14%" }}></TableCell>
+                              <TableCell colSpan={2} />
+                              <TableCell
+                                colSpan={2}
+                                sx={{ paddingLeft: "50px" }}
+                              >
+                                <b>
+                                  {withTruncatedTooltip(
+                                    historyRow.dataset?.datasetName ||
+                                      historyRow.dataset?.datasetId ||
+                                      "Undefined"
                                   )}
-                                </Box>
+                                </b>
                               </TableCell>
                               <TableCell
                                 sx={{
-                                  cursor: afClickable ? "pointer" : "default",
-                                  padding: "10px 16px 10px 16px",
-                                  textDecoration: afClickable
-                                    ? "underline"
-                                    : "none",
-                                  textDecorationColor: afClickable
-                                    ? "#077EA6"
-                                    : "inherit",
+                                  textAlign: "center",
+                                  cursor:
+                                    historyRow.dataset?.alleleFrequency !==
+                                    "N/A"
+                                      ? "pointer"
+                                      : "default",
+                                  padding: "10px 16px",
+                                  textDecoration:
+                                    historyRow.dataset?.alleleFrequency !==
+                                    "N/A"
+                                      ? "underline"
+                                      : "none",
+                                  textDecorationColor:
+                                    historyRow.dataset?.alleleFrequency !==
+                                    "N/A"
+                                      ? "#077EA6"
+                                      : "inherit",
                                   color:
                                     historyRow.dataset?.response === "Found"
                                       ? "#0099CD"
@@ -482,32 +620,34 @@ export default function Row({
                                       : "inherit",
                                 }}
                                 onClick={() => {
-                                  if (afClickable) {
+                                  if (
+                                    historyRow.dataset?.alleleFrequency !==
+                                    "N/A"
+                                  ) {
                                     handleDialogOpen(historyRow);
                                   }
                                 }}
                               >
                                 {historyRow.dataset?.alleleFrequency !==
                                 "N/A" ? (
-                                  <b
-                                    style={{
-                                      color: "#077EA6",
-                                    }}
-                                  >
-                                    {afValue}
+                                  <b style={{ color: "#077EA6" }}>
+                                    {getFormattedAlleleFrequency(
+                                      historyRow.dataset
+                                    )}
                                   </b>
                                 ) : (
                                   <i>Not Available</i>
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell
+                                sx={{ width: "11%", textAlign: "center" }}
+                              >
                                 <StatusButton
                                   status={historyRow.dataset?.response || "N/A"}
                                 />
                               </TableCell>
                             </TableRow>
-                          );
-                        })}
+                          ))}
                       </React.Fragment>
                     ))}
                   </TableBody>
