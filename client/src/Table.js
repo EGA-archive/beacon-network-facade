@@ -275,32 +275,86 @@ export default function CollapsibleTable({
   // console.log("✅ Final networkRows:", networkRows);
   // Ending here
 
-  const beaconNetworkCount = networkRows.length;
+  const beaconNetworkCount = networkRows.filter(
+    (network) => network.response === "Found"
+  ).length;
+
+  console.log("Filtered Network Rows", beaconNetworkCount);
+  console.log("networkRows", networkRows);
+
   const uniqueIndividualBeaconIds = new Set(
     filteredIndividualBeacons.map((beacon) => beacon.beaconId)
   );
   const individualBeaconCount = uniqueIndividualBeaconIds.size;
+
+  console.log("filteredIndividualBeacons", filteredIndividualBeacons);
+
   const uniqueNetworkBeaconIds = new Set(
     networkRows.flatMap((network) =>
       network.history.map((historyRow) => historyRow.beaconId)
     )
   );
   const networkBeaconCount = uniqueNetworkBeaconIds.size;
-  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
-  const individualDatasetCount = new Set(
-    filteredIndividualBeacons
-      .filter((beacon) => beacon.id)
-      .map((beacon) => beacon.id)
-  ).size;
-  const networkDatasetCount = new Set(
-    networkRows.flatMap((network) =>
-      network.history
-        .filter((historyRow) => historyRow.dataset?.datasetId)
-        .map((historyRow) => historyRow.dataset.datasetId)
-    )
-  ).size;
 
+  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
+
+  // Checked
+  const individualDatasetSet = new Set(
+    filteredIndividualBeacons
+      .filter((beacon) => beacon.exists && beacon.id && beacon.datasetName)
+      .map((beacon) => `${beacon.id}__${beacon.datasetName}`)
+  );
+
+  const individualDatasetCount = individualDatasetSet.size;
+  console.log("✅ individualDatasetCount:", individualDatasetCount);
+  // Checked
+
+  // Checked
+  const networkDatasetSet = new Set();
+  const addedDatasets = [];
+  const skippedDatasets = [];
+
+  networkRows.forEach((network) => {
+    if (Array.isArray(network.history)) {
+      network.history.forEach((historyRow) => {
+        const dataset = historyRow.dataset;
+        const beaconId = historyRow.beaconId || "❌ Missing Beacon ID";
+        const networkName = network.name || "❌ Missing Network Name";
+
+        const response = dataset?.response;
+        const datasetId = dataset?.datasetId || "❌ Missing ID";
+        const datasetName = dataset?.datasetName || "❌ Missing Name";
+
+        const isFound = response === "Found";
+        const uniqueKey = `${networkName}__${beaconId}__${datasetId}__${datasetName}`;
+
+        if (isFound) {
+          if (!networkDatasetSet.has(uniqueKey)) {
+            networkDatasetSet.add(uniqueKey);
+            addedDatasets.push({
+              datasetId,
+              datasetName,
+              beaconId,
+              networkName,
+            });
+          }
+        } else {
+          skippedDatasets.push({
+            datasetId,
+            datasetName,
+            beaconId,
+            networkName,
+            reason: "response !== 'Found'",
+          });
+        }
+      });
+    }
+  });
+
+  const networkDatasetCount = networkDatasetSet.size;
+  console.log("✅ networkDatasetCount:", networkDatasetCount);
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
+  // Checked
 
   useEffect(() => {
     if (setStats) {
@@ -499,27 +553,41 @@ export default function CollapsibleTable({
                                   "Undefined"}
                               </b>
                             </TableCell>
-
                             <TableCell
                               sx={{
                                 textAlign: "center",
                                 cursor: afClickable ? "pointer" : "default",
                                 padding: "16px 16px 16px 20px",
-                                textDecoration: afClickable
-                                  ? "underline"
-                                  : "none",
-                                textDecorationColor: afClickable
-                                  ? "#077EA6"
-                                  : "inherit",
-                                color: "#077EA6",
+                                textDecoration:
+                                  afClickable && firstAF !== "N/A"
+                                    ? "underline"
+                                    : "none",
+                                textDecorationColor:
+                                  afClickable && firstAF !== "N/A"
+                                    ? "#077EA6"
+                                    : "inherit",
+                                color:
+                                  firstAF !== "N/A" ? "#077EA6" : "inherit",
                               }}
                               onClick={() => {
-                                if (afClickable) {
+                                if (afClickable && firstAF !== "N/A") {
                                   handleDialogOpen(registry, firstDataset);
                                 }
                               }}
                             >
-                              <b>{firstAF}</b>
+                              {firstAF !== "N/A" ? (
+                                <b>{firstAF}</b>
+                              ) : (
+                                <i
+                                  style={{
+                                    color: firstDataset?.exists
+                                      ? "#0099CD"
+                                      : "#FF7C62",
+                                  }}
+                                >
+                                  Not Available
+                                </i>
+                              )}
                             </TableCell>
                             <TableCell
                               sx={{
