@@ -271,32 +271,65 @@ export default function CollapsibleTable({
       }
       return true;
     });
-
-  // console.log("✅ Final networkRows:", networkRows);
   // Ending here
 
+  // Checked
   const beaconNetworkCount = networkRows.filter(
-    (network) => network.response === "Found"
+    (network) =>
+      Array.isArray(network.history) &&
+      network.history.some((row) => row.dataset?.response === "Found")
   ).length;
+  // Checked
 
-  console.log("Filtered Network Rows", beaconNetworkCount);
-  console.log("networkRows", networkRows);
+  // Checked
+  const uniqueIndividualBeaconIds = new Set();
+  const individualBeaconIdToNameMap = new Map();
 
-  const uniqueIndividualBeaconIds = new Set(
-    filteredIndividualBeacons.map((beacon) => beacon.beaconId)
-  );
+  filteredIndividualBeacons.forEach((entry) => {
+    const { beaconId, beaconName, exists } = entry;
+
+    if (exists === true && beaconId) {
+      if (!uniqueIndividualBeaconIds.has(beaconId)) {
+        uniqueIndividualBeaconIds.add(beaconId);
+        individualBeaconIdToNameMap.set(
+          beaconId,
+          beaconName || "Unnamed Beacon"
+        );
+      }
+    }
+  });
+
   const individualBeaconCount = uniqueIndividualBeaconIds.size;
+  // Checked
 
-  console.log("filteredIndividualBeacons", filteredIndividualBeacons);
+  // Checked
+  const uniqueNetworkBeaconKeys = new Set();
+  const beaconKeyToNetworkMap = new Map();
 
-  const uniqueNetworkBeaconIds = new Set(
-    networkRows.flatMap((network) =>
-      network.history.map((historyRow) => historyRow.beaconId)
-    )
-  );
-  const networkBeaconCount = uniqueNetworkBeaconIds.size;
+  networkRows.forEach((network) => {
+    const networkName = network.name;
+    if (!Array.isArray(network.history)) return;
 
+    network.history.forEach((historyRow) => {
+      const { beaconId, dataset } = historyRow;
+      const response = dataset?.response;
+
+      if (response === "Found" && beaconId && networkName) {
+        const uniqueKey = `${networkName}__${beaconId}`;
+
+        if (!uniqueNetworkBeaconKeys.has(uniqueKey)) {
+          uniqueNetworkBeaconKeys.add(uniqueKey);
+          beaconKeyToNetworkMap.set(uniqueKey, networkName);
+        }
+      }
+    });
+  });
+
+  const networkBeaconCount = uniqueNetworkBeaconKeys.size;
   const totalBeaconCount = individualBeaconCount + networkBeaconCount;
+
+  // console.log("✅ uniqueNetworkBeaconKeys count:", networkBeaconCount);
+  // Checked
 
   // Checked
   const individualDatasetSet = new Set(
@@ -306,7 +339,7 @@ export default function CollapsibleTable({
   );
 
   const individualDatasetCount = individualDatasetSet.size;
-  console.log("✅ individualDatasetCount:", individualDatasetCount);
+  // console.log("✅ individualDatasetCount:", individualDatasetCount);
   // Checked
 
   // Checked
@@ -352,7 +385,7 @@ export default function CollapsibleTable({
   });
 
   const networkDatasetCount = networkDatasetSet.size;
-  console.log("✅ networkDatasetCount:", networkDatasetCount);
+  // console.log("✅ networkDatasetCount:", networkDatasetCount);
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
   // Checked
 

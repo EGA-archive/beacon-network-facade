@@ -369,23 +369,24 @@ export default function BeaconDialog({
                   </div>
                 </Typography>
 
-                {(datasetName === "Undefined" ||
-                  datasetDescription === "Undefined") && (
-                  <Typography
-                    component="div"
-                    sx={{
-                      fontFamily: "Open Sans, sans-serif",
-                      fontSize: "14px",
-                      fontStyle: "italic",
-                      marginBottom: "16px",
-                      color: "black",
-                    }}
-                  >
-                    Note: This is a work in progress and the information about{" "}
-                    {datasetId ? datasetId : "this dataset"} will be available
-                    in the next release
-                  </Typography>
-                )}
+                {!loading &&
+                  (datasetName === "Undefined" ||
+                    datasetDescription === "Undefined") && (
+                    <Typography
+                      component="div"
+                      sx={{
+                        fontFamily: "Open Sans, sans-serif",
+                        fontSize: "14px",
+                        fontStyle: "italic",
+                        marginBottom: "16px",
+                        color: "black",
+                      }}
+                    >
+                      Note: This is a work in progress and the information about{" "}
+                      {datasetId ? datasetId : "this dataset"} will be available
+                      in the next release.
+                    </Typography>
+                  )}
               </React.Fragment>
             );
           })}
