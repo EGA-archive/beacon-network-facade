@@ -5,6 +5,7 @@ const StatusButton = ({ status, isFallback = false }) => {
   const statusStyles = {
     Found: { backgroundColor: "#0099CD", color: "white" },
     "Not Found": { backgroundColor: "#FF7C62", color: "white" },
+    "No Response": { backgroundColor: "#949494", color: "white" },
   };
 
   return (
@@ -13,12 +14,14 @@ const StatusButton = ({ status, isFallback = false }) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "100px",
+        minWidth: "62px",
+        maxWidth: "100px",
         height: "28px",
         padding: "12px",
         borderRadius: "6px",
         fontWeight: "bold",
         textAlign: "center",
+        fontSize: "11px",
         fontFamily: '"Open Sans", sans-serif',
         ...statusStyles[status],
       }}

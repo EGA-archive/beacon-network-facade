@@ -230,6 +230,27 @@ export default function Row({
     return grouped;
   };
 
+  const hasAtLeastOneResponse = deduplicatedHistory.some(
+    (d) => d.dataset?.response === "Found"
+  );
+
+  const networkStatus = isNetwork
+    ? hasAtLeastOneResponse
+      ? "Found"
+      : "No Response"
+    : deduplicatedHistory.some((d) => d.dataset?.response === "Not Found")
+    ? "Not Found"
+    : "Found";
+
+  if (isNetwork && networkStatus === "No Response") {
+    console.log("🚨 Beacon Network with No Response:", {
+      name: row.name,
+      id: row.beaconId,
+      history: row.history,
+      deduplicatedHistory,
+    });
+  }
+
   return (
     <React.Fragment>
       {deduplicatedHistory.length > 0 && (
@@ -397,7 +418,7 @@ export default function Row({
                       (hr) => hr.dataset?.response === "Found"
                     )
                       ? "#0099CD"
-                      : "#FF7C62",
+                      : "black",
                   }}
                 >
                   Not Available
@@ -412,7 +433,7 @@ export default function Row({
               justifyContent="center"
               height="100%"
             >
-              <StatusButton
+              {/* <StatusButton
                 status={
                   deduplicatedHistory.some(
                     (hr) => hr.dataset?.response === "Found"
@@ -420,7 +441,8 @@ export default function Row({
                     ? "Found"
                     : "Not Found"
                 }
-              />
+              /> */}
+              <StatusButton status={networkStatus} />
             </Box>
           </TableCell>
         </TableRow>
