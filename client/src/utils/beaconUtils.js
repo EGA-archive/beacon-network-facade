@@ -78,24 +78,21 @@ export function separateBeacons(data) {
   return { individualBeacons, networkBeacons };
 }
 
-// export const filterValidBeacons = (beacons) => {
-//   const validBeacons = [];
-//   const erroringBeacons = [];
-//   beacons.forEach((beacon) => {
-//     if (beacon.info?.error) {
-//       erroringBeacons.push(beacon);
-//     } else {
-//       validBeacons.push(beacon);
-//     }
-//   });
-//   console.group("🔎 Beacon Filtering Debug");
-//   console.log("Total beacons received:", beacons.length);
-//   console.log("✅ Valid beacons:", validBeacons);
-//   console.log("❌ Erroring-out beacons:", erroringBeacons);
-//   console.groupEnd();
-//   return validBeacons;
-// };
+export const getBeaconRowStatus = (history) => {
+  const hasFound = history.some((h) => h.dataset?.response === "Found");
+  const hasNotFound = history.some((h) => h.dataset?.response === "Not Found");
+  if (hasFound) return "Found";
+  if (hasNotFound) return "Not Found";
+  const hasNoResponse = history.every((h) => {
+    const resp = h.dataset?.response;
+    const hasError = h.info?.error;
+    return (!resp || resp === "" || resp === null) && hasError;
+  });
+  if (hasNoResponse) return "No Response";
+  return "Unknown";
+};
 
+// Original Function - Keeps more beacons
 export const filterValidBeacons = (beacons) => {
   return beacons.filter((beacon) => !beacon.info?.error);
 };
@@ -114,3 +111,37 @@ export function withTruncatedTooltip(text, maxLength = 44) {
     displayText
   );
 }
+
+export const triggerSearchFromURL = (socket) => {
+  console.log("📣 triggerSearchFromURL called");
+
+  const params = new URLSearchParams(window.location.search);
+  const pos = params.get("pos");
+  const assembly = params.get("assembly");
+
+  console.log("🔍 Parsed URL:", { pos, assembly });
+
+  if (!pos || !assembly || socket.readyState !== 1) {
+    console.log("⛔️ Missing required info or socket not ready");
+    return;
+  }
+
+  const [referenceName, start, referenceBases, alternateBases] = pos.split("-");
+  if (!referenceName || !start || !referenceBases || !alternateBases) {
+    console.log("⚠️ Invalid 'pos' format:", pos);
+    return;
+  }
+
+  const message = {
+    query: {
+      referenceName,
+      start: parseInt(start, 10),
+      referenceBases,
+      alternateBases,
+      assemblyId: assembly,
+    },
+  };
+
+  console.log("📤 Sending WebSocket query from URL params:", message);
+  socket.send(JSON.stringify(message));
+};

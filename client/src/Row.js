@@ -18,6 +18,7 @@ import {
 } from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
+import { getBeaconRowStatus } from "./utils/beaconUtils";
 
 export default function Row({
   allNetworkRows,
@@ -230,30 +231,12 @@ export default function Row({
     return grouped;
   };
 
-  const hasAtLeastOneResponse = deduplicatedHistory.some(
-    (d) => d.dataset?.response === "Found"
-  );
-
-  const networkStatus = isNetwork
-    ? hasAtLeastOneResponse
-      ? "Found"
-      : "No Response"
-    : deduplicatedHistory.some((d) => d.dataset?.response === "Not Found")
-    ? "Not Found"
-    : "Found";
-
-  if (isNetwork && networkStatus === "No Response") {
-    console.log("🚨 Beacon Network with No Response:", {
-      name: row.name,
-      id: row.beaconId,
-      history: row.history,
-      deduplicatedHistory,
-    });
-  }
+  const networkStatus = isNetwork ? getBeaconRowStatus(row.history) : null;
 
   return (
     <React.Fragment>
-      {deduplicatedHistory.length > 0 && (
+      {(deduplicatedHistory.length > 0 ||
+        (isNetwork && networkStatus === "No Response")) && (
         <TableRow
           sx={{
             backgroundColor: "#E5F2FF",
@@ -351,35 +334,31 @@ export default function Row({
               paddingRight: "68px",
             }}
           >
-            {deduplicatedHistory.some(
-              (d) => d.dataset?.response === "Found"
-            ) ? (
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                height="100%"
-              >
-                {(() => {
-                  const total = deduplicatedHistory.length;
-                  const found = deduplicatedHistory.filter(
-                    (d) => d.dataset?.response === "Found"
-                  ).length;
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              height="100%"
+            >
+              {(() => {
+                const total = deduplicatedHistory.length;
+                const found = deduplicatedHistory.filter(
+                  (d) => d.dataset?.response === "Found"
+                ).length;
 
-                  return (
-                    <span
-                      style={{
-                        fontWeight: "bold",
-                        color: "#333",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {found} / {total}
-                    </span>
-                  );
-                })()}
-              </Box>
-            ) : null}
+                return (
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      color: "#333",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {found} / {total}
+                  </span>
+                );
+              })()}
+            </Box>
           </TableCell>
 
           <TableCell variant="lessPadding" sx={{ width: "15%" }}>
@@ -418,7 +397,7 @@ export default function Row({
                       (hr) => hr.dataset?.response === "Found"
                     )
                       ? "#0099CD"
-                      : "black",
+                      : "#FF7C62",
                   }}
                 >
                   Not Available
@@ -442,7 +421,7 @@ export default function Row({
                     : "Not Found"
                 }
               /> */}
-              <StatusButton status={networkStatus} />
+              {<StatusButton status={networkStatus} />}
             </Box>
           </TableCell>
         </TableRow>

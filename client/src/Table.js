@@ -32,8 +32,8 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  console.log("📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Data received:", data);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -177,7 +177,7 @@ export default function CollapsibleTable({
     );
   });
 
-  console.log("foundFilteredBeacons", foundFilteredBeacons);
+  // console.log("foundFilteredBeacons", foundFilteredBeacons);
 
   const filteredIndividualBeacons = foundFilteredBeacons
     .filter((beacon) => {
@@ -191,7 +191,7 @@ export default function CollapsibleTable({
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
 
-  console.log("✅ filteredIndividualBeacons:", filteredIndividualBeacons);
+  // console.log("✅ filteredIndividualBeacons:", filteredIndividualBeacons);
 
   // Starting here
   const networkRows = filteredRegistries
@@ -652,7 +652,7 @@ export default function CollapsibleTable({
                                     (d) => d.exists
                                   ).length;
 
-                                  return found > 0 ? (
+                                  return (
                                     <span
                                       style={{
                                         fontWeight: "bold",
@@ -662,7 +662,7 @@ export default function CollapsibleTable({
                                     >
                                       {found} / {total}
                                     </span>
-                                  ) : null;
+                                  );
                                 })()}
                               </Box>
                             </TableCell>
