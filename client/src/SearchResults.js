@@ -13,6 +13,8 @@ function SearchResults({
   socket,
   selectedFilters,
   setSelectedFilters,
+  queryCompleted,
+  setQueryCompleted,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,23 +35,43 @@ function SearchResults({
 
   const hasTriggeredQuery = useRef(false);
 
+  // useEffect(() => {
+  //   console.log("🧠 Checking whether to trigger URL-based query");
+  //   console.log("🔸 socket:", socket);
+  //   console.log("🔸 socket readyState:", socket?.readyState);
+  //   console.log("🔸 registries:", registries);
+  //   console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
+
+  //   if (
+  //     !hasTriggeredQuery.current &&
+  //     socket?.readyState === WebSocket.OPEN &&
+  //     registries.length > 0
+  //   ) {
+  //     console.log("✅ All conditions met — calling triggerSearchFromURL");
+  //     hasTriggeredQuery.current = true;
+  //     triggerSearchFromURL(socket);
+  //   }
+  // }, [searchParams, socket, registries]);
+
   useEffect(() => {
     console.log("🧠 Checking whether to trigger URL-based query");
     console.log("🔸 socket:", socket);
     console.log("🔸 socket readyState:", socket?.readyState);
     console.log("🔸 registries:", registries);
     console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
-
     if (
       !hasTriggeredQuery.current &&
       socket?.readyState === WebSocket.OPEN &&
-      registries.length > 0
+      registries.length > 0 &&
+      !queryCompleted
     ) {
       console.log("✅ All conditions met — calling triggerSearchFromURL");
       hasTriggeredQuery.current = true;
       triggerSearchFromURL(socket);
     }
-  }, [searchParams, socket, registries]);
+  }, [searchParams, socket, registries, queryCompleted]);
+
+  console.log("Query completed:", queryCompleted);
 
   return (
     <Container>
@@ -87,7 +109,7 @@ function SearchResults({
               paddingRight: "50px",
             }}
           >
-            {loading && <CircularProgress size={40} />}
+            {loading && !queryCompleted && <CircularProgress size={40} />}
           </Box>
         </Grid>
 
@@ -141,12 +163,12 @@ function SearchResults({
       {!hasTriggeredQuery.current && (
         <Grid container justifyContent="center" mt={3}>
           <Grid item xs={12} sm={6}>
-            <Box textAlign="center">
+            {/* <Box textAlign="center">
               <CircularProgress size={36} />
               <p style={{ marginTop: "10px" }}>
                 Waiting for socket and registries…
               </p>
-            </Box>
+            </Box> */}
           </Grid>
         </Grid>
       )}
@@ -161,6 +183,7 @@ function SearchResults({
         setStats={setStats}
         setLoading={setLoading}
         registriesLength={registriesLength}
+        setQueryCompleted={setQueryCompleted}
       />
     </Container>
   );

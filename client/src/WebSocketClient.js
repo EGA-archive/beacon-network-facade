@@ -21,9 +21,9 @@ const variantQueryValidationSchema = Yup.object().shape({
 
 const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 
-function WebSocketClient({ setRegistries, setSocket }) {
+function WebSocketClient({ setRegistries, setSocket, registries = [] }) {
   const [messages, setMessages] = useState([]);
-  const [registries, setLocalRegistries] = useState([]);
+  // const [registries, setLocalRegistries] = useState([]);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
