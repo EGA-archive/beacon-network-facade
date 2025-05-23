@@ -32,7 +32,7 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  // console.log("📊 Data received:", data);
+  // console.log("5555555555555555📊 Data received:", data);
   // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);

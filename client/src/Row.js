@@ -256,19 +256,6 @@ export default function Row({
                 flexWrap: "nowrap",
               }}
             >
-              {/* {!isUncollapsibleRow(row) && (
-                <IconButton
-                  aria-label="expand row"
-                  size="small"
-                  onClick={toggleRow}
-                >
-                  {open ? (
-                    <KeyboardArrowDownIcon />
-                  ) : (
-                    <KeyboardArrowRightIcon />
-                  )}
-                </IconButton>
-              )} */}
               <Box
                 sx={{
                   display: "flex",
@@ -412,15 +399,6 @@ export default function Row({
               justifyContent="center"
               height="100%"
             >
-              {/* <StatusButton
-                status={
-                  deduplicatedHistory.some(
-                    (hr) => hr.dataset?.response === "Found"
-                  )
-                    ? "Found"
-                    : "Not Found"
-                }
-              /> */}
               {<StatusButton status={networkStatus} />}
             </Box>
           </TableCell>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 function WebSocketInitializer({
   setSocket,
@@ -12,7 +12,6 @@ function WebSocketInitializer({
   const hasRequestedRegistries = useRef(false);
   const reconnectAttempts = useRef(0);
 
-  // Keep refs in sync with latest values
   useEffect(() => {
     shouldReconnectRef.current = shouldReconnect;
   }, [shouldReconnect]);
@@ -21,7 +20,7 @@ function WebSocketInitializer({
     queryCompletedRef.current = queryCompleted;
   }, [queryCompleted]);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
     if (socketRef.current) {
       socketRef.current.close();
     }
@@ -53,13 +52,24 @@ function WebSocketInitializer({
         console.warn("⚠️ [Initializer] WebSocket closed", e);
         clearInterval(pingInterval);
 
-        if (shouldReconnectRef.current && !queryCompletedRef.current) {
-          attemptReconnect();
-        } else {
-          console.log(
-            "🛑 Reconnect skipped — query is completed or reconnect disabled."
-          );
+        // if (shouldReconnectRef.current && !queryCompletedRef.current) {
+        //   attemptReconnect();
+        // } else {
+        //   console.log(
+        //     "🛑 Reconnect skipped — query is completed or reconnect disabled."
+        //   );
+        // }
+        if (!shouldReconnectRef.current) {
+          console.log("🛑 Reconnect skipped — reconnect flag is false.");
+          return;
         }
+
+        if (queryCompletedRef.current) {
+          console.log("🛑 Reconnect skipped — query already completed.");
+          return;
+        }
+
+        attemptReconnect();
       };
     };
 
@@ -76,7 +86,7 @@ function WebSocketInitializer({
     };
 
     ws.onerror = (e) => console.error("❌ [Initializer] WebSocket error", e);
-  };
+  }, [setSocket, setRegistries]);
 
   const attemptReconnect = () => {
     if (!shouldReconnectRef.current || queryCompletedRef.current) {
@@ -89,7 +99,6 @@ function WebSocketInitializer({
     const delay = Math.min(5000, 1000 * Math.pow(2, reconnectAttempts.current));
     reconnectAttempts.current += 1;
 
-    console.log(`🔁 Reconnecting WebSocket in ${delay / 1000}s...`);
     setTimeout(() => {
       connectWebSocket();
     }, delay);
@@ -97,12 +106,11 @@ function WebSocketInitializer({
 
   useEffect(() => {
     connectWebSocket();
-
     return () => {
       console.log("🧹 Cleaning up WebSocket...");
       socketRef.current?.close();
     };
-  }, [setSocket, setRegistries]);
+  }, [connectWebSocket]);
 
   return null;
 }

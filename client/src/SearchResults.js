@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import BeaconQuery from "./BeaconQuery";
 import { Container } from "react-bootstrap";
@@ -17,10 +17,7 @@ function SearchResults({
   setQueryCompleted,
 }) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const registriesLength = location.state?.registriesLength || 0;
-  const reconnectRef = useRef(null);
-
+  const [aggregatedData, setAggregatedData] = useState([]);
   const [stats, setStats] = useState({
     beaconNetworkCount: 0,
     totalBeaconCount: 0,
@@ -28,7 +25,6 @@ function SearchResults({
   });
 
   const [loading, setLoading] = useState(false);
-
   const [searchParams] = useSearchParams();
   const variant = searchParams.get("pos");
   const genome = searchParams.get("assembly");
@@ -41,17 +37,17 @@ function SearchResults({
   //   console.log("🔸 socket readyState:", socket?.readyState);
   //   console.log("🔸 registries:", registries);
   //   console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
-
   //   if (
   //     !hasTriggeredQuery.current &&
   //     socket?.readyState === WebSocket.OPEN &&
-  //     registries.length > 0
+  //     registries.length > 0 &&
+  //     !queryCompleted
   //   ) {
   //     console.log("✅ All conditions met — calling triggerSearchFromURL");
   //     hasTriggeredQuery.current = true;
   //     triggerSearchFromURL(socket);
   //   }
-  // }, [searchParams, socket, registries]);
+  // }, [searchParams, socket, registries, queryCompleted]);
 
   useEffect(() => {
     console.log("🧠 Checking whether to trigger URL-based query");
@@ -59,19 +55,32 @@ function SearchResults({
     console.log("🔸 socket readyState:", socket?.readyState);
     console.log("🔸 registries:", registries);
     console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
+
     if (
-      !hasTriggeredQuery.current &&
       socket?.readyState === WebSocket.OPEN &&
       registries.length > 0 &&
+      !hasTriggeredQuery.current &&
       !queryCompleted
     ) {
-      console.log("✅ All conditions met — calling triggerSearchFromURL");
+      console.log("✅ All conditions met — starting BeaconQuery via props");
       hasTriggeredQuery.current = true;
-      triggerSearchFromURL(socket);
     }
-  }, [searchParams, socket, registries, queryCompleted]);
+  }, [
+    socket?.readyState,
+    registries.length,
+    searchParams.toString(),
+    queryCompleted,
+  ]);
 
-  console.log("Query completed:", queryCompleted);
+  useEffect(() => {
+    if (queryCompleted) {
+      console.log("🔁 Resetting hasTriggeredQuery because query is completed");
+      hasTriggeredQuery.current = false;
+    }
+  }, [queryCompleted]);
+
+  console.log("Query completed from SEARCH:", queryCompleted);
+  console.log("Aggregated data from search", aggregatedData);
 
   return (
     <Container>
@@ -125,14 +134,32 @@ function SearchResults({
             minHeight: "80px",
           }}
         >
-          <button className="searchbutton" onClick={() => navigate("/")}>
+          <button
+            className="searchbutton"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+          >
             <div>
               <div className="lupared"></div>New Search
             </div>
           </button>
+          {/* <button
+            className="searchbutton"
+            onClick={() => {
+              setQueryCompleted(false); // Reset query flag
+              setLoading(false); // Stop spinner if stuck
+              setSelectedFilters([]); // Reset filters if needed
+              setAggregatedData([]); // Clear data if you're keeping it in App
+              navigate("/"); // Navigate to home
+            }}
+          >
+            <div>
+              <div className="lupared"></div>New Search
+            </div>
+          </button> */}
         </Grid>
       </Grid>
-
       {/* Stats & queried variant */}
       <Grid
         container
@@ -159,20 +186,19 @@ function SearchResults({
           </p>
         </Grid>
       </Grid>
-
-      {!hasTriggeredQuery.current && (
+      {/* {!hasTriggeredQuery.current && (
         <Grid container justifyContent="center" mt={3}>
           <Grid item xs={12} sm={6}>
-            {/* <Box textAlign="center">
+            <Box textAlign="center">
               <CircularProgress size={36} />
               <p style={{ marginTop: "10px" }}>
                 Waiting for socket and registries…
               </p>
-            </Box> */}
+            </Box>
           </Grid>
         </Grid>
-      )}
-
+      )} */}
+      {/* {socket?.readyState === WebSocket.OPEN && registries.length > 0 && ( */}
       <BeaconQuery
         variant={variant}
         genome={genome}
@@ -182,177 +208,14 @@ function SearchResults({
         setSelectedFilters={setSelectedFilters}
         setStats={setStats}
         setLoading={setLoading}
-        registriesLength={registriesLength}
         setQueryCompleted={setQueryCompleted}
+        registriesLength={registries.length}
+        aggregatedData={aggregatedData}
+        queryCompleted={queryCompleted}
+        setAggregatedData={setAggregatedData}
       />
+      {/* )} */}
     </Container>
   );
 }
 export default SearchResults;
-
-// import React, { useRef, useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useSearchParams } from "react-router-dom";
-// import BeaconQuery from "./BeaconQuery";
-// import { Container } from "react-bootstrap";
-// import { Box } from "@mui/material";
-// import Grid from "@mui/material/Grid";
-// import CircularProgress from "@mui/material/CircularProgress";
-
-// function SearchResults({
-//   registries = [],
-//   socket,
-//   selectedFilters,
-//   setSelectedFilters,
-// }) {
-//   const navigate = useNavigate();
-//   const [searchParams] = useSearchParams();
-
-//   const variant = searchParams.get("pos");
-//   const genome = searchParams.get("assembly");
-
-//   const [stats, setStats] = useState({
-//     beaconNetworkCount: 0,
-//     totalBeaconCount: 0,
-//     totalDatasetCount: 0,
-//   });
-
-//   const [loading, setLoading] = useState(false);
-//   const hasTriggeredQuery = useRef(false);
-
-//   useEffect(() => {
-//     const isSocketReady = socket?.readyState === WebSocket.OPEN;
-//     const isRegistriesReady = registries.length > 0;
-//     const canQuery = variant && genome && isSocketReady && isRegistriesReady;
-
-//     console.log("📍 Debug info:");
-//     console.log("🔸 pos:", variant);
-//     console.log("🔸 assembly:", genome);
-//     console.log("🔸 socket exists:", !!socket);
-//     console.log("🔸 socket state:", socket?.readyState);
-//     console.log("🔸 registries length:", registries.length);
-
-//     if (!hasTriggeredQuery.current && canQuery) {
-//       hasTriggeredQuery.current = true;
-
-//       const [referenceName, start, referenceBases, alternateBases] =
-//         variant.split("-");
-
-//       const query = {
-//         query: {
-//           assemblyId: genome,
-//           referenceName,
-//           start: Number(start),
-//           referenceBases,
-//           alternateBases,
-//         },
-//       };
-
-//       console.log("🚀 Sending query:", query);
-//       socket.send(JSON.stringify(query));
-//     } else if (!canQuery) {
-//       console.log("⏳ Waiting for socket and registries to be ready...");
-//     }
-//   }, [searchParams, socket, registries]);
-
-//   return (
-//     <Container>
-//       <Grid
-//         container
-//         spacing={2}
-//         alignItems="center"
-//         justifyContent="space-between"
-//         sx={{ mt: "30px" }}
-//       >
-//         <Grid item xs={12} sm={3}>
-//           <p style={{ marginTop: "36px" }}>
-//             <b>Results</b>
-//           </p>
-//         </Grid>
-
-//         <Grid
-//           item
-//           xs={12}
-//           sm={2}
-//           sx={{
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             minHeight: "80px",
-//           }}
-//         >
-//           {loading && <CircularProgress size={40} />}
-//         </Grid>
-
-//         <Grid
-//           item
-//           xs={12}
-//           sm={2}
-//           sx={{
-//             display: "flex",
-//             justifyContent: "flex-end",
-//             minHeight: "80px",
-//           }}
-//         >
-//           <button className="searchbutton" onClick={() => navigate("/")}>
-//             <div>
-//               <div className="lupared"></div>New Search
-//             </div>
-//           </button>
-//         </Grid>
-//       </Grid>
-
-//       <Grid
-//         container
-//         spacing={2}
-//         alignItems="center"
-//         justifyContent="space-between"
-//       >
-//         <Grid item xs={12} sm={9}>
-//           <Box sx={{ display: "flex" }}>
-//             <p>
-//               <span>
-//                 Queried Variant: <b>{genome} </b>
-//                 <b>|</b>
-//                 <b> {variant}</b>
-//               </span>
-//             </p>
-//           </Box>
-//           <p>
-//             <span>
-//               Found Results: <b>{stats.beaconNetworkCount} Beacon Networks</b> /{" "}
-//               <b>{stats.totalBeaconCount} Beacons</b> /
-//               <b> {stats.totalDatasetCount} Datasets</b>
-//             </span>
-//           </p>
-//         </Grid>
-//       </Grid>
-
-//       {!hasTriggeredQuery.current && (
-//         <Grid container justifyContent="center" mt={3}>
-//           <Grid item xs={12} sm={6}>
-//             <Box textAlign="center">
-//               <CircularProgress size={36} />
-//               <p style={{ marginTop: "10px" }}>
-//                 Waiting for socket and registries…
-//               </p>
-//             </Box>
-//           </Grid>
-//         </Grid>
-//       )}
-
-//       <BeaconQuery
-//         variant={variant}
-//         genome={genome}
-//         socket={socket}
-//         registries={registries}
-//         selectedFilters={selectedFilters}
-//         setSelectedFilters={setSelectedFilters}
-//         setStats={setStats}
-//         setLoading={setLoading}
-//         registriesLength={registries.length}
-//       />
-//     </Container>
-//   );
-// }
-// export default SearchResults;

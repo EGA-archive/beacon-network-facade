@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import WebSocketClient from "./WebSocketClient";
 import CustomNavbar from "./CustomNavbar";
 import Footer from "./Footer";
@@ -14,7 +14,6 @@ function App() {
   const [shouldReconnect, setShouldReconnect] = useState(true);
   const [queryCompleted, setQueryCompleted] = useState(false);
   const [socket, setSocket] = useState(null);
-  // const [pendingQuery, setPendingQuery] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState([
     "Found",
     "Not-Found",
@@ -25,43 +24,10 @@ function App() {
     "Close All",
   ]);
 
+  console.log("queryCompleted from App", queryCompleted);
+
   return (
     <ThemeProvider theme={CustomTheme}>
-      {/* <Router>
-        <div className="bigparent">
-          <div>
-            <CustomNavbar />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <WebSocketClient
-                    setRegistries={setRegistries}
-                    setSocket={setSocket}
-                    selectedFilters={selectedFilters}
-                    setSelectedFilters={setSelectedFilters}
-                    // setPendingQuery={setPendingQuery}
-                  />
-                }
-              />
-              <Route
-                path="/search"
-                element={
-                  <SearchResults
-                    registries={registries}
-                    socket={socket}
-                    selectedFilters={selectedFilters}
-                    setSelectedFilters={setSelectedFilters}
-                    // pendingQuery={pendingQuery}
-                    // setPendingQuery={setPendingQuery}
-                  />
-                }
-              />
-            </Routes>
-          </div>
-          <Footer />
-        </div>
-      </Router> */}
       <Router>
         <WebSocketInitializer
           setSocket={setSocket}
