@@ -89,7 +89,7 @@ function SearchResults({
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
-        sx={{ mt: "30px" }}
+        sx={{ mt: "1px" }}
       >
         {/* Results section */}
         <Grid item xs={12} sm={3}>

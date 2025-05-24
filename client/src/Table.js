@@ -10,6 +10,7 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Filters from "./Filters";
@@ -23,6 +24,7 @@ import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import BeaconDialog from "./BeaconDialog";
 import Doc from "../src/document.svg";
+import InfoIcon from "../src/info.svg";
 import { filterValidBeacons } from "./utils/beaconUtils";
 
 export default function CollapsibleTable({
@@ -33,7 +35,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("5555555555555555📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -421,7 +423,7 @@ export default function CollapsibleTable({
     <>
       <TableContainer
         // component={Paper}
-        sx={{ marginTop: "48px", marginBottom: "48px" }}
+        sx={{ marginTop: "30px", marginBottom: "48px" }}
         className="table-container"
       >
         <Filters
@@ -455,20 +457,81 @@ export default function CollapsibleTable({
                   <b>Beacon Network / Beacon</b>
                 </Box>
               </TableCell>
+              <TableCell
+                style={{
+                  width: "120px",
+                }}
+              ></TableCell>
               <TableCell colSpan={2}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    marginLeft: "125px",
-                  }}
-                >
+                <Box sx={{ width: "100%", textAlign: "center" }}>
                   <i>
                     <b>Datasets Found / Total</b>
                   </i>
+                  <Tooltip
+                    title={
+                      <p>
+                        The total is the number of beacons that have responded.
+                      </p>
+                    }
+                    placement="bottom"
+                    arrow
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                      ],
+                      className: "customTooltipWrapper2",
+                    }}
+                  >
+                    <img
+                      src={InfoIcon}
+                      alt="info"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        marginLeft: "9px",
+                        marginTop: "2px",
+                      }}
+                    />
+                  </Tooltip>
                 </Box>
               </TableCell>
+
               <TableCell sx={{ width: "15%", textAlign: "center" }}>
                 <b>Allele Frequency</b>
+                <Tooltip
+                  title={<p>Allele frequencies are between 0 and 1.</p>}
+                  placement="bottom"
+                  arrow
+                  PopperProps={{
+                    modifiers: [
+                      {
+                        name: "offset",
+                        options: {
+                          offset: [0, 8],
+                        },
+                      },
+                    ],
+                    className: "customTooltipWrapper2",
+                  }}
+                >
+                  <img
+                    src={InfoIcon}
+                    alt="info"
+                    style={{
+                      width: 20,
+                      height: 20,
+                      cursor: "pointer",
+                      marginLeft: "9px",
+                      marginTop: "-3px",
+                    }}
+                  />
+                </Tooltip>
               </TableCell>
               <TableCell sx={{ width: "11%", textAlign: "center" }}>
                 <b>Response</b>
@@ -573,12 +636,38 @@ export default function CollapsibleTable({
                             </Box>
                           </Box>
                         </TableCell>
-
+                        <TableCell variant="lessPaddingSingle">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              marginLeft: "100%",
+                            }}
+                          >
+                            <a
+                              href={registry.beaconURL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ flexShrink: 0 }}
+                            >
+                              <img
+                                src={registry.beaconLogo}
+                                style={{
+                                  maxWidth: "120px",
+                                  height: "50px",
+                                  padding: "10px 0px",
+                                }}
+                              />
+                            </a>
+                          </Box>
+                        </TableCell>
                         {rowIsOpen ? (
                           <>
                             <TableCell
                               colSpan={rowIsOpen ? 2 : 0}
-                              sx={{ paddingLeft: "141px" }}
+                              sx={{
+                                paddingLeft: "9%",
+                              }}
                             >
                               <b>
                                 {firstDataset?.datasetName ||
@@ -638,7 +727,9 @@ export default function CollapsibleTable({
                           <>
                             <TableCell
                               colSpan={2}
-                              sx={{ paddingRight: "72px" }}
+                              sx={{
+                                paddingRight: "72px",
+                              }}
                             >
                               <Box
                                 display="flex"
@@ -666,7 +757,6 @@ export default function CollapsibleTable({
                                 })()}
                               </Box>
                             </TableCell>
-
                             <TableCell>
                               <Box
                                 display="flex"
@@ -723,6 +813,7 @@ export default function CollapsibleTable({
                                 )}
                               </Box>
                             </TableCell>
+
                             <TableCell>
                               <Box
                                 display="flex"
@@ -741,7 +832,7 @@ export default function CollapsibleTable({
                         )}
                       </TableRow>
                       <TableRow variant="emptyRow">
-                        <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
+                        <TableCell colSpan={7} sx={{ p: 0 }} variant="noBorder">
                           <Collapse in={rowIsOpen} timeout="auto" unmountOnExit>
                             <Table
                               size="small"
@@ -778,9 +869,25 @@ export default function CollapsibleTable({
                                       <TableRow
                                         key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
                                       >
-                                        <TableCell sx={{ width: "14%" }} />
-                                        <TableCell sx={{ width: "32.7%" }} />
-                                        <TableCell sx={{ width: "27%" }}>
+                                        <TableCell
+                                          colSpan={2}
+                                          sx={{
+                                            width: "32.38%",
+                                          }}
+                                        />
+                                        <TableCell
+                                          variant="lessPaddingSingle"
+                                          sx={{
+                                            width: "9.23%",
+                                            padding: 0,
+                                          }}
+                                        ></TableCell>
+                                        <TableCell
+                                          sx={{
+                                            width: "32.35%",
+                                            paddingLeft: "9%",
+                                          }}
+                                        >
                                           <Box>
                                             <b>
                                               {individualBeacon?.datasetName ||
@@ -792,6 +899,7 @@ export default function CollapsibleTable({
 
                                         <TableCell
                                           sx={{
+                                            width: "15%",
                                             textAlign: "center",
                                             cursor: clickable
                                               ? "pointer"
@@ -842,7 +950,6 @@ export default function CollapsibleTable({
 
                                         <TableCell
                                           sx={{
-                                            width: "11%",
                                             textAlign: "center",
                                           }}
                                         >

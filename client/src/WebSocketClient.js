@@ -226,18 +226,35 @@ function WebSocketClient({ setRegistries, setSocket, registries = [] }) {
                     </Grid>
                   </Grid>
                 </Form.Group>
-                <Grid item container className="example-span">
-                  <Grid xs={12} sm="auto">
-                    <span>Example: </span>
+                <Grid xs={12} sm="auto" className="mt-3">
+                  <span className="mb-4">Examples:</span>
+                  <br />
+                  <span className="d-block mb-3 mt-2">
                     <a
                       type="reset"
-                      onClick={() =>
-                        setFieldValue("variant", "12-113357192-G-A")
-                      }
+                      onClick={() => {
+                        setFieldValue("variant", "12-113357192-G-A");
+                        setFieldValue("genome", "GRCh37");
+                      }}
                     >
-                      <u className="example">12-113357192-G-A</u>
+                      <u className="example">
+                        GRCh37 <b>|</b> 12-113357192-G-A
+                      </u>
                     </a>
-                  </Grid>
+                  </span>
+                  <span className="d-block">
+                    <a
+                      type="reset"
+                      onClick={() => {
+                        setFieldValue("variant", "19-113357192-G-A");
+                        setFieldValue("genome", "GRCh38");
+                      }}
+                    >
+                      <u className="example">
+                        GRCh38 <b>|</b> 19-113357192-G-A
+                      </u>
+                    </a>
+                  </span>
                 </Grid>
               </Form>
             );

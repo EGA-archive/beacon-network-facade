@@ -184,7 +184,7 @@ export default function BeaconDialog({
       open={open}
       PaperProps={{
         sx: {
-          minWidth: "600px",
+          minWidth: "720px",
           minHeight: "450px",
           borderRadius: "10px",
           overflow: "hidden",

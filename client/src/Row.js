@@ -245,7 +245,10 @@ export default function Row({
         >
           <TableCell
             variant="lessPadding"
-            style={{ verticalAlign: "middle", paddingLeft: 0 }}
+            style={{
+              verticalAlign: "middle",
+              paddingLeft: 0,
+            }}
             colSpan={2}
           >
             <Box
@@ -288,31 +291,51 @@ export default function Row({
               </Box>
 
               <BeaconTypeButton type={isNetwork ? "network" : "single"} />
-              <Box component="span" className="main-row">
-                <b>{row.name}</b>
+              {/* <Box component="span" className="main-row">
+                <b>{withTruncatedTooltip(row.name)}</b>
                 <br />
-                {/* <span>{row.numberOfBeacons}</span> beacons */}
+                <span>{row.numberOfBeacons}</span> beacons
+              </Box> */}
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  minWidth: "250px",
+                  whiteSpace: "nowrap",
+                  fontWeight: "bold",
+                }}
+                className="main-row"
+              >
+                {withTruncatedTooltip(row.name)}
               </Box>
-
+            </Box>
+          </TableCell>
+          <TableCell variant="lessPadding">
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                marginLeft: "100%",
+              }}
+            >
               <a
                 href={row.beaconURL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ marginLeft: "20px" }}
+                style={{ display: "block", flexShrink: 0 }}
               >
                 <img
                   src={row.beaconLogo}
                   alt={`${row.name} Logo`}
                   style={{
-                    maxWidth: "100%",
+                    maxWidth: "120px",
                     height: "50px",
+                    objectFit: "contain",
                     padding: "10px 0px",
                   }}
                 />
               </a>
             </Box>
           </TableCell>
-
           <TableCell
             colSpan={2}
             variant="lessPadding"
@@ -347,7 +370,6 @@ export default function Row({
               })()}
             </Box>
           </TableCell>
-
           <TableCell variant="lessPadding" sx={{ width: "15%" }}>
             <Box
               display="flex"
@@ -414,7 +436,7 @@ export default function Row({
               backgroundColor: "#F4F9FE",
             }}
           >
-            <TableCell colSpan={6} style={{ padding: 0 }} variant="noBorder">
+            <TableCell colSpan={7} style={{ padding: 0 }} variant="noBorder">
               <Collapse in={forceOpenAll || open} timeout="auto" unmountOnExit>
                 <Table
                   size="small"
@@ -438,20 +460,29 @@ export default function Row({
                     ).map(([beaconId, beaconDatasets], beaconIndex) => (
                       <React.Fragment key={`beacon-${beaconIndex}`}>
                         <TableRow>
-                          <TableCell sx={{ width: "14%" }}></TableCell>
+                          <TableCell sx={{ width: "12.2%" }}></TableCell>
                           <TableCell
-                            colSpan={2}
+                            colSpan={3}
                             sx={{
                               whiteSpace: "nowrap",
                             }}
                           >
-                            <b>
-                              {withTruncatedTooltip(
-                                beaconDatasets[0]?.beaconName ||
-                                  beaconDatasets[0]?.beaconId ||
-                                  "Undefined"
-                              )}
-                            </b>
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                minWidth: "40%",
+                              }}
+                            >
+                              <b>
+                                {withTruncatedTooltip(
+                                  beaconDatasets[0]?.beaconName ||
+                                    beaconDatasets[0]?.beaconId ||
+                                    "Undefined"
+                                )}
+                              </b>
+                            </Box>
                             <Box
                               component="span"
                               sx={{
@@ -485,7 +516,7 @@ export default function Row({
                             sx={{
                               alignItems: "center",
                               justifyContent: "center",
-                              paddingLeft: "50px",
+                              paddingLeft: 0,
                             }}
                           >
                             <b>
@@ -543,7 +574,12 @@ export default function Row({
                               <i>Not Available</i>
                             )}
                           </TableCell>
-                          <TableCell sx={{ width: "11%", textAlign: "center" }}>
+                          <TableCell
+                            sx={{
+                              width: "11%",
+                              textAlign: "center",
+                            }}
+                          >
                             <StatusButton
                               status={
                                 beaconDatasets[0]?.dataset?.response || "N/A"
@@ -557,11 +593,15 @@ export default function Row({
                             <TableRow
                               key={`dataset-${beaconIndex}-${datasetIndex}`}
                             >
-                              <TableCell sx={{ width: "14%" }}></TableCell>
-                              <TableCell colSpan={2} />
+                              <TableCell sx={{ width: "12.2%" }}></TableCell>
+                              <TableCell colSpan={3}></TableCell>
                               <TableCell
                                 colSpan={2}
-                                sx={{ paddingLeft: "50px" }}
+                                sx={{
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  paddingLeft: 0,
+                                }}
                               >
                                 <b>
                                   {withTruncatedTooltip(
@@ -619,7 +659,9 @@ export default function Row({
                                 )}
                               </TableCell>
                               <TableCell
-                                sx={{ width: "11%", textAlign: "center" }}
+                                sx={{
+                                  textAlign: "center",
+                                }}
                               >
                                 <StatusButton
                                   status={historyRow.dataset?.response || "N/A"}

@@ -75,6 +75,25 @@ body {
   margin-top: 50px;
 }
 
+.customTooltipWrapper2 .MuiTooltip-tooltip {
+  background-color: white;
+  color: #000000;
+  font-size: 12px;
+  border: 1px solid #000000;
+  padding-top: 6px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 8px;
+  margin: 0 !important;
+}
+.customTooltipWrapper2 .MuiTooltip-arrow {
+  color: white;
+}
+
+.customTooltipWrapper2 .MuiTooltip-tooltip p {
+  margin-bottom: 0;
+}
+
 /* Filters section */
 .filter-row {
   display: flex;
@@ -278,7 +297,7 @@ body {
 }
 
 .example {
-  color: blue;
+  color: #0e77af;
 }
 
 .main-row {

@@ -97,18 +97,40 @@ export const filterValidBeacons = (beacons) => {
   return beacons.filter((beacon) => !beacon.info?.error);
 };
 
-export function withTruncatedTooltip(text, maxLength = 44) {
-  if (!text || typeof text !== "string") return text;
+// export function withTruncatedTooltip(text, maxLength = 44) {
+//   if (!text || typeof text !== "string") return text;
 
+//   const shouldTruncate = text.length > maxLength;
+//   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
+
+//   return shouldTruncate ? (
+//     <Tooltip title={text} arrow placement="top-start">
+//       <span style={{ cursor: "pointer" }}>{displayText}</span>
+//     </Tooltip>
+//   ) : (
+//     displayText
+//   );
+// }
+
+// Utility (withTruncatedTooltip)
+export function withTruncatedTooltip(text, maxLength = 50) {
   const shouldTruncate = text.length > maxLength;
   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
 
+  const spanStyles = {
+    cursor: "pointer",
+    fontWeight: "bold",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
+
   return shouldTruncate ? (
     <Tooltip title={text} arrow placement="top-start">
-      <span style={{ cursor: "pointer" }}>{displayText}</span>
+      <span style={spanStyles}>{displayText}</span>
     </Tooltip>
   ) : (
-    displayText
+    <span style={spanStyles}>{displayText}</span>
   );
 }
 

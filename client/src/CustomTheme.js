@@ -58,10 +58,11 @@ const customTheme = createTheme({
         },
         arrow: {
           color: "#023452",
-          transform: "translate(1px, 0px) !important",
+          // transform: "translate(1px, 0px) !important",
         },
       },
     },
+
     // Row
     MuiTableRow: {
       styleOverrides: {
