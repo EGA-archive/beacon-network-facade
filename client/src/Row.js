@@ -18,6 +18,7 @@ import {
 } from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
 import Doc from "../src/document.svg";
+import moreIcon from "../src/moreIcon.svg";
 import { getBeaconRowStatus } from "./utils/beaconUtils";
 
 export default function Row({
@@ -529,6 +530,7 @@ export default function Row({
                           </TableCell>
                           <TableCell
                             sx={{
+                              whiteSpace: "nowrap",
                               cursor:
                                 beaconDatasets[0]?.dataset?.alleleFrequency !==
                                 "N/A"
@@ -536,11 +538,12 @@ export default function Row({
                                   : "default",
                               padding: "10px 16px",
                               textAlign: "center",
-                              textDecoration:
-                                beaconDatasets[0]?.dataset?.alleleFrequency !==
-                                "N/A"
-                                  ? "underline"
-                                  : "none",
+
+                              // textDecoration:
+                              //   beaconDatasets[0]?.dataset?.alleleFrequency !==
+                              //   "N/A"
+                              //     ? "underline"
+                              //     : "none",
                               textDecorationColor:
                                 beaconDatasets[0]?.dataset?.alleleFrequency !==
                                 "N/A"
@@ -565,10 +568,39 @@ export default function Row({
                           >
                             {beaconDatasets[0]?.dataset?.alleleFrequency !==
                             "N/A" ? (
-                              <b style={{ color: "#077EA6" }}>
+                              <b
+                                style={{
+                                  color: "#077EA6",
+                                }}
+                              >
                                 {getFormattedAlleleFrequency(
                                   beaconDatasets[0].dataset
                                 )}
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: 24,
+                                    height: 24,
+
+                                    borderRadius: "50%",
+                                    cursor: "pointer",
+                                    marginLeft: "6px",
+                                    "&:hover": {
+                                      backgroundColor: "#DBEEFD",
+                                    },
+                                  }}
+                                >
+                                  <img
+                                    src={moreIcon}
+                                    alt="More Info"
+                                    style={{
+                                      width: "16px",
+                                      height: "16px",
+                                    }}
+                                  />
+                                </Box>
                               </b>
                             ) : (
                               <i>Not Available</i>
@@ -614,17 +646,18 @@ export default function Row({
                               <TableCell
                                 sx={{
                                   textAlign: "center",
+                                  whiteSpace: "nowrap",
                                   cursor:
                                     historyRow.dataset?.alleleFrequency !==
                                     "N/A"
                                       ? "pointer"
                                       : "default",
                                   padding: "10px 16px",
-                                  textDecoration:
-                                    historyRow.dataset?.alleleFrequency !==
-                                    "N/A"
-                                      ? "underline"
-                                      : "none",
+                                  // textDecoration:
+                                  //   historyRow.dataset?.alleleFrequency !==
+                                  //   "N/A"
+                                  //     ? "underline"
+                                  //     : "none",
                                   textDecorationColor:
                                     historyRow.dataset?.alleleFrequency !==
                                     "N/A"
@@ -653,6 +686,16 @@ export default function Row({
                                     {getFormattedAlleleFrequency(
                                       historyRow.dataset
                                     )}
+                                    <img
+                                      src={moreIcon}
+                                      alt="More Info"
+                                      style={{
+                                        width: "16px",
+                                        height: "16px",
+                                        marginLeft: "5px",
+                                        marginBottom: "3px",
+                                      }}
+                                    />
                                   </b>
                                 ) : (
                                   <i>Not Available</i>
