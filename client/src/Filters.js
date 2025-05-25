@@ -336,8 +336,14 @@ export default function Filters({
 
   return (
     <div className="filter-row">
-      {filters.map(({ label, values, exclusive }) => (
-        <div key={label} className="filter-group">
+      {filters.map(({ label, values, exclusive }, index) => (
+        <div
+          key={label}
+          className="filter-group"
+          style={{
+            marginRight: index === filters.length - 3 ? "60px" : "0px",
+          }}
+        >
           <p className="filter-label">{label}</p>
           <ToggleButtonGroup
             value={selectedFilters}
