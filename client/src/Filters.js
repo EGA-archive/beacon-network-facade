@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 
 export default function Filters({
   selectedFilters,
@@ -184,14 +186,15 @@ export default function Filters({
     lineHeight: "20px",
     letterSpacing: "0.1px",
     textTransform: "none",
-    color: "#7D7D7D",
+    color: "#ADADAD",
     background: "white",
-    border: "1px solid #7D7D7D !important",
+    border: "1px solid #ADADAD !important",
     borderRadius: "6px !important",
     "&.Mui-selected": {
-      backgroundColor: "#EBEBEB",
+      // backgroundColor: "#EBEBEB",
+      backgroundColor: "white",
       color: "black",
-      border: "1px solid black !important",
+      border: "1px solid #0099CD !important",
     },
     "&.Mui-selected:hover": {
       backgroundColor: "#EBEBEB",
@@ -247,6 +250,90 @@ export default function Filters({
     },
   ];
 
+  //   return (
+  //     <div className="filter-row">
+  //       {filters.map(({ label, values, exclusive }) => (
+  //         <div key={label} className="filter-group">
+  //           <p className="filter-label">{label}</p>
+  //           <ToggleButtonGroup
+  //             value={selectedFilters}
+  //             exclusive={exclusive}
+  //             onChange={handleToggle}
+  //             aria-label={label}
+  //             sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
+  //           >
+  //             {values.map((value) => (
+  //               <ToggleButton
+  //                 key={value}
+  //                 value={value}
+  //                 sx={
+  //                   label === "Open/Close all Beacons:"
+  //                     ? openCloseStyles
+  //                     : buttonStyles
+  //                 }
+  //               >
+  //                 {value.replace("-", " ")}
+  //               </ToggleButton>
+  //             ))}
+  //           </ToggleButtonGroup>
+  //         </div>
+  //       ))}
+
+  //       <div className="filter-group">
+  //         <p className="filter-label">Filter by Allele Frequency:</p>
+  //         <ToggleButtonGroup
+  //           value={selectedFilters.includes("af-only") ? "af-only" : "all"}
+  //           exclusive
+  //           onChange={(event, newValue) => {
+  //             if (newValue !== null) {
+  //               setSelectedFilters((prev) => {
+  //                 const updated = prev
+  //                   .filter((val) => val !== "all" && val !== "af-only")
+  //                   .concat(newValue);
+
+  //                 return updated;
+  //               });
+  //             }
+  //           }}
+  //           aria-label="Allele Frequency Filter"
+  //           sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
+  //         >
+  //           {/* {["all", "af-only"].map((value) => (
+  //               <ToggleButton key={value} value={value} sx={buttonStyles}>
+  //                 {value === "all" ? "All" : "Allele Frequency only"}
+  //               </ToggleButton>
+  //             ))} */}
+  //           {["all", "af-only"].map((value) => {
+  //             const isSelected = selectedFilters.includes(value);
+  //             return (
+  //               <ToggleButton key={value} value={value} sx={buttonStyles}>
+  //                 {isSelected ? (
+  //                   <CheckCircleIcon
+  //                     sx={{
+  //                       color: "#0099CD",
+  //                       fontSize: "16px",
+  //                       marginRight: "6px",
+  //                     }}
+  //                   />
+  //                 ) : (
+  //                   <PanoramaFishEyeIcon
+  //                     sx={{
+  //                       color: "#ADADAD",
+  //                       fontSize: "16px",
+  //                       marginRight: "6px",
+  //                     }}
+  //                   />
+  //                 )}
+  //                 {value === "all" ? "All" : "Allele Frequency only"}
+  //               </ToggleButton>
+  //             );
+  //           })}
+  //         </ToggleButtonGroup>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   return (
     <div className="filter-row">
       {filters.map(({ label, values, exclusive }) => (
@@ -259,19 +346,38 @@ export default function Filters({
             aria-label={label}
             sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
           >
-            {values.map((value) => (
-              <ToggleButton
-                key={value}
-                value={value}
-                sx={
-                  label === "Open/Close all Beacons:"
-                    ? openCloseStyles
-                    : buttonStyles
-                }
-              >
-                {value.replace("-", " ")}
-              </ToggleButton>
-            ))}
+            {values.map((value) => {
+              const isSelected = selectedFilters.includes(value);
+              const isOpenClose = label === "Open/Close all Beacons:";
+
+              return (
+                <ToggleButton
+                  key={value}
+                  value={value}
+                  sx={isOpenClose ? openCloseStyles : buttonStyles}
+                >
+                  {!isOpenClose &&
+                    (isSelected ? (
+                      <CheckCircleIcon
+                        sx={{
+                          color: "#0099CD",
+                          fontSize: "16px",
+                          marginRight: "6px",
+                        }}
+                      />
+                    ) : (
+                      <PanoramaFishEyeIcon
+                        sx={{
+                          color: "#ADADAD",
+                          fontSize: "16px",
+                          marginRight: "6px",
+                        }}
+                      />
+                    ))}
+                  {value.replace("-", " ")}
+                </ToggleButton>
+              );
+            })}
           </ToggleButtonGroup>
         </div>
       ))}
@@ -295,11 +401,31 @@ export default function Filters({
           aria-label="Allele Frequency Filter"
           sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
         >
-          {["all", "af-only"].map((value) => (
-            <ToggleButton key={value} value={value} sx={buttonStyles}>
-              {value === "all" ? "All" : "Allele Frequency only"}
-            </ToggleButton>
-          ))}
+          {["all", "af-only"].map((value) => {
+            const isSelected = selectedFilters.includes(value);
+            return (
+              <ToggleButton key={value} value={value} sx={buttonStyles}>
+                {isSelected ? (
+                  <CheckCircleIcon
+                    sx={{
+                      color: "#0099CD",
+                      fontSize: "16px",
+                      marginRight: "6px",
+                    }}
+                  />
+                ) : (
+                  <PanoramaFishEyeIcon
+                    sx={{
+                      color: "#ADADAD",
+                      fontSize: "16px",
+                      marginRight: "6px",
+                    }}
+                  />
+                )}
+                {value === "all" ? "All" : "Allele Frequency only"}
+              </ToggleButton>
+            );
+          })}
         </ToggleButtonGroup>
       </div>
     </div>

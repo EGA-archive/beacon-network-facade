@@ -26,6 +26,7 @@ import BeaconDialog from "./BeaconDialog";
 import Doc from "../src/document.svg";
 import InfoIcon from "../src/info.svg";
 import { filterValidBeacons } from "./utils/beaconUtils";
+import moreIcon from "../src/moreIcon.svg";
 
 export default function CollapsibleTable({
   data,
@@ -675,15 +676,12 @@ export default function CollapsibleTable({
                                   "Undefined"}
                               </b>
                             </TableCell>
-                            <TableCell
+                            {/* <TableCell
                               sx={{
                                 textAlign: "center",
                                 cursor: afClickable ? "pointer" : "default",
                                 padding: "16px 16px 16px 20px",
-                                textDecoration:
-                                  afClickable && firstAF !== "N/A"
-                                    ? "underline"
-                                    : "none",
+
                                 textDecorationColor:
                                   afClickable && firstAF !== "N/A"
                                     ? "#077EA6"
@@ -710,7 +708,72 @@ export default function CollapsibleTable({
                                   Not Available
                                 </i>
                               )}
+                            </TableCell> */}
+                            <TableCell
+                              sx={{
+                                textAlign: "center",
+                                cursor: afClickable ? "pointer" : "default",
+                                padding: "16px 16px 16px 20px",
+                                textDecorationColor:
+                                  afClickable && firstAF !== "N/A"
+                                    ? "#077EA6"
+                                    : "inherit",
+                                color:
+                                  firstAF !== "N/A" ? "#077EA6" : "inherit",
+                              }}
+                              onClick={() => {
+                                if (afClickable && firstAF !== "N/A") {
+                                  handleDialogOpen(registry, firstDataset);
+                                }
+                              }}
+                            >
+                              {firstAF !== "N/A" ? (
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <b>{firstAF}</b>
+                                  <Box
+                                    sx={{
+                                      display: "inline-flex",
+                                      width: 24,
+                                      height: 24,
+                                      marginLeft: "6px",
+                                      borderRadius: "50%",
+                                      cursor: "pointer",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      "&:hover": {
+                                        backgroundColor: "#DBEEFD",
+                                      },
+                                    }}
+                                  >
+                                    <img
+                                      src={moreIcon}
+                                      alt="More Info"
+                                      style={{
+                                        width: "16px",
+                                        height: "16px",
+                                      }}
+                                    />
+                                  </Box>
+                                </Box>
+                              ) : (
+                                <i
+                                  style={{
+                                    color: firstDataset?.exists
+                                      ? "#0099CD"
+                                      : "#FF7C62",
+                                  }}
+                                >
+                                  Not Available
+                                </i>
+                              )}
                             </TableCell>
+
                             <TableCell
                               sx={{
                                 textAlign: "center",
@@ -897,7 +960,8 @@ export default function CollapsibleTable({
                                           </Box>
                                         </TableCell>
 
-                                        <TableCell
+                                        {/* Here */}
+                                        {/* <TableCell
                                           sx={{
                                             width: "15%",
                                             textAlign: "center",
@@ -905,9 +969,7 @@ export default function CollapsibleTable({
                                               ? "pointer"
                                               : "default",
                                             padding: "16px 16px 16px 20px",
-                                            textDecoration: clickable
-                                              ? "underline"
-                                              : "none",
+
                                             textDecorationColor: clickable
                                               ? "#077EA6"
                                               : "inherit",
@@ -935,6 +997,85 @@ export default function CollapsibleTable({
                                             <b style={{ color: "#077EA6" }}>
                                               {afValue}
                                             </b>
+                                          ) : (
+                                            <i
+                                              style={{
+                                                color: individualBeacon.exists
+                                                  ? "#0099CD"
+                                                  : "#FF7C62",
+                                              }}
+                                            >
+                                              Not Available
+                                            </i>
+                                          )}
+                                        </TableCell> */}
+                                        <TableCell
+                                          sx={{
+                                            width: "15%",
+                                            textAlign: "center",
+                                            cursor: clickable
+                                              ? "pointer"
+                                              : "default",
+                                            padding: "16px 16px 16px 20px",
+                                            textDecorationColor: clickable
+                                              ? "#077EA6"
+                                              : "inherit",
+                                          }}
+                                          onClick={() => {
+                                            if (clickable) {
+                                              handleDialogOpen(
+                                                registry,
+                                                individualBeacon
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          {individualBeacon.results?.some(
+                                            (result) =>
+                                              result.frequencyInPopulations?.some(
+                                                (pop) =>
+                                                  pop.frequencies?.some(
+                                                    (f) =>
+                                                      f.alleleFrequency !==
+                                                      undefined
+                                                  )
+                                              )
+                                          ) ? (
+                                            <Box
+                                              sx={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                              }}
+                                            >
+                                              <b style={{ color: "#077EA6" }}>
+                                                {afValue}
+                                              </b>
+                                              <Box
+                                                sx={{
+                                                  display: "inline-flex",
+                                                  width: 24,
+                                                  height: 24,
+                                                  marginLeft: "6px",
+                                                  borderRadius: "50%",
+                                                  cursor: "pointer",
+                                                  alignItems: "center",
+                                                  justifyContent: "center",
+                                                  "&:hover": {
+                                                    backgroundColor: "#DBEEFD",
+                                                  },
+                                                }}
+                                              >
+                                                <img
+                                                  src={moreIcon}
+                                                  alt="More Info"
+                                                  style={{
+                                                    width: "16px",
+                                                    height: "16px",
+                                                  }}
+                                                />
+                                              </Box>
+                                            </Box>
                                           ) : (
                                             <i
                                               style={{
