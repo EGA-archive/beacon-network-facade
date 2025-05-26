@@ -144,7 +144,7 @@ function BeaconQuery({
     setLoading,
   ]);
 
-  console.log("Query completed from beacon Query:", queryCompleted);
+  // console.log("Query completed from beacon Query:", queryCompleted);
 
   return (
     <div>

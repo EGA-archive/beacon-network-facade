@@ -1,5 +1,6 @@
 import React from "react";
 import Tooltip from "@mui/material/Tooltip";
+import { Box } from "@mui/material";
 
 export function getFormattedAlleleFrequency(data) {
   let frequencies = [];
@@ -79,58 +80,85 @@ export function separateBeacons(data) {
 }
 
 export const getBeaconRowStatus = (history) => {
+  const allErrored = history.every((h, index) => {
+    const beaconId = h.beaconId || "Unknown";
+    const hasError = h.hasError === true;
+
+    console.log(
+      `⛔ Checking item [${index}] (beaconId: ${beaconId}) - hasError: ${hasError}`
+    );
+
+    return hasError;
+  });
+
+  if (allErrored) return "No Response";
+
   const hasFound = history.some((h) => h.dataset?.response === "Found");
   const hasNotFound = history.some((h) => h.dataset?.response === "Not Found");
+
   if (hasFound) return "Found";
   if (hasNotFound) return "Not Found";
-  const hasNoResponse = history.every((h) => {
-    const resp = h.dataset?.response;
-    const hasError = h.info?.error;
-    return (!resp || resp === "" || resp === null) && hasError;
-  });
-  if (hasNoResponse) return "No Response";
+
   return "Unknown";
 };
 
-// Original Function - Keeps more beacons
 export const filterValidBeacons = (beacons) => {
   return beacons.filter((beacon) => !beacon.info?.error);
 };
 
-// export function withTruncatedTooltip(text, maxLength = 44) {
-//   if (!text || typeof text !== "string") return text;
-
+// export function withTruncatedTooltip(text, maxLength = 50) {
 //   const shouldTruncate = text.length > maxLength;
 //   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
 
+//   const spanStyles = {
+//     cursor: "pointer",
+//     fontWeight: "bold",
+//     whiteSpace: "nowrap",
+//     overflow: "hidden",
+//     textOverflow: "ellipsis",
+//   };
+
 //   return shouldTruncate ? (
 //     <Tooltip title={text} arrow placement="top-start">
-//       <span style={{ cursor: "pointer" }}>{displayText}</span>
+//       <span style={spanStyles}>{displayText}</span>
 //     </Tooltip>
 //   ) : (
-//     displayText
+//     <span style={spanStyles}>{displayText}</span>
 //   );
 // }
 
-// Utility (withTruncatedTooltip)
 export function withTruncatedTooltip(text, maxLength = 50) {
   const shouldTruncate = text.length > maxLength;
   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
 
-  const spanStyles = {
-    cursor: "pointer",
-    fontWeight: "bold",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  };
+  const content = (
+    <Box
+      component="span"
+      sx={{
+        cursor: "pointer",
+        fontWeight: "bold",
+        whiteSpace: {
+          sm: "normal",
+          md: "nowrap",
+        },
+        minWidth: {
+          sm: "150px",
+          md: "250px",
+        },
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {displayText}
+    </Box>
+  );
 
   return shouldTruncate ? (
     <Tooltip title={text} arrow placement="top-start">
-      <span style={spanStyles}>{displayText}</span>
+      {content}
     </Tooltip>
   ) : (
-    <span style={spanStyles}>{displayText}</span>
+    content
   );
 }
 

@@ -233,6 +233,7 @@ export default function Row({
   };
 
   const networkStatus = isNetwork ? getBeaconRowStatus(row.history) : null;
+  console.log("📡 Row status:", row.name, "→", networkStatus);
 
   return (
     <React.Fragment>
@@ -297,17 +298,7 @@ export default function Row({
                 <br />
                 <span>{row.numberOfBeacons}</span> beacons
               </Box> */}
-              <Box
-                sx={{
-                  flexGrow: 1,
-                  minWidth: "250px",
-                  whiteSpace: "nowrap",
-                  fontWeight: "bold",
-                }}
-                className="main-row"
-              >
-                {withTruncatedTooltip(row.name)}
-              </Box>
+              <Box className="main-row">{withTruncatedTooltip(row.name)}</Box>
             </Box>
           </TableCell>
           <TableCell variant="lessPadding">
@@ -403,11 +394,14 @@ export default function Row({
               ) : (
                 <i
                   style={{
-                    color: deduplicatedHistory.some(
-                      (hr) => hr.dataset?.response === "Found"
-                    )
-                      ? "#0099CD"
-                      : "#FF7C62",
+                    color:
+                      networkStatus === "No Response"
+                        ? "#343434"
+                        : deduplicatedHistory.some(
+                            (hr) => hr.dataset?.response === "Found"
+                          )
+                        ? "#0099CD"
+                        : "#FF7C62",
                   }}
                 >
                   Not Available

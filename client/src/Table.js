@@ -36,7 +36,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("5555555555555555📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function CollapsibleTable({
   const { individualBeacons, networkBeacons } = separateBeacons(data);
 
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
-  const validNetworkBeacons = filterValidBeacons(networkBeacons);
+  const validNetworkBeacons = networkBeacons;
 
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
@@ -146,14 +146,11 @@ export default function CollapsibleTable({
     dev: "Dev-Beacon",
   };
 
-  // console.log("networkBeacons", networkBeacons); I have already the duplicates
-
   const filteredRegistries = registries.filter((registry) =>
     selectedFilters.some(
       (filter) => filter === maturityMapping[registry.beaconMaturity]
     )
   );
-
   const allowedBeaconIds = new Set(filteredRegistries.map((r) => r.beaconId));
   const uniqueIndividualBeacons = new Set();
 
@@ -180,8 +177,6 @@ export default function CollapsibleTable({
     );
   });
 
-  // console.log("foundFilteredBeacons", foundFilteredBeacons);
-
   const filteredIndividualBeacons = foundFilteredBeacons
     .filter((beacon) => {
       if (selectedFilters.includes("af-only")) {
@@ -194,8 +189,7 @@ export default function CollapsibleTable({
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
 
-  // console.log("✅ filteredIndividualBeacons:", filteredIndividualBeacons);
-
+  console.log("✅ Network Beacons before rendering:", validNetworkBeacons);
   // Starting here
   const networkRows = filteredRegistries
     .filter((registry) =>
@@ -204,6 +198,12 @@ export default function CollapsibleTable({
       )
     )
     .map((registry) => {
+      const registryBeacons = validNetworkBeacons.filter(
+        (beacon) => beacon.beaconNetworkId === registry.beaconId
+      );
+
+      const hasError = registryBeacons.some((beacon) => beacon.info?.error);
+
       let history = validNetworkBeacons
         .filter(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
@@ -234,6 +234,7 @@ export default function CollapsibleTable({
             beaconId: beacon.beaconId,
             beaconName: beacon.beaconName,
             maturity: registry.beaconMaturity,
+            hasError: !!beacon.info?.error,
             dataset: {
               datasetId: beacon.id,
               datasetName: beacon.datasetName,
@@ -265,6 +266,7 @@ export default function CollapsibleTable({
         )
           ? "Found"
           : "Not Found",
+
         history,
       };
     })
@@ -274,6 +276,7 @@ export default function CollapsibleTable({
       }
       return true;
     });
+  console.log("networkRows", networkRows);
   // Ending here
 
   // Checked

@@ -50,11 +50,11 @@ function SearchResults({
   // }, [searchParams, socket, registries, queryCompleted]);
 
   useEffect(() => {
-    console.log("🧠 Checking whether to trigger URL-based query");
-    console.log("🔸 socket:", socket);
-    console.log("🔸 socket readyState:", socket?.readyState);
-    console.log("🔸 registries:", registries);
-    console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
+    // console.log("🧠 Checking whether to trigger URL-based query");
+    // console.log("🔸 socket:", socket);
+    // console.log("🔸 socket readyState:", socket?.readyState);
+    // console.log("🔸 registries:", registries);
+    // console.log("🔸 hasTriggeredQuery.current:", hasTriggeredQuery.current);
 
     if (
       socket?.readyState === WebSocket.OPEN &&
@@ -78,9 +78,6 @@ function SearchResults({
       hasTriggeredQuery.current = false;
     }
   }, [queryCompleted]);
-
-  console.log("Query completed from SEARCH:", queryCompleted);
-  console.log("Aggregated data from search", aggregatedData);
 
   return (
     <Container>

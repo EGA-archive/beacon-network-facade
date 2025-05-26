@@ -77,7 +77,7 @@ function WebSocketInitializer({
       try {
         const data = JSON.parse(event.data);
         if (data.response?.registries) {
-          console.log("📥 [Initializer] Received registries");
+          //   console.log("📥 [Initializer] Received registries");
           setRegistries(data.response.registries);
         }
       } catch (e) {
