@@ -106,28 +106,7 @@ export const filterValidBeacons = (beacons) => {
   return beacons.filter((beacon) => !beacon.info?.error);
 };
 
-// export function withTruncatedTooltip(text, maxLength = 50) {
-//   const shouldTruncate = text.length > maxLength;
-//   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
-
-//   const spanStyles = {
-//     cursor: "pointer",
-//     fontWeight: "bold",
-//     whiteSpace: "nowrap",
-//     overflow: "hidden",
-//     textOverflow: "ellipsis",
-//   };
-
-//   return shouldTruncate ? (
-//     <Tooltip title={text} arrow placement="top-start">
-//       <span style={spanStyles}>{displayText}</span>
-//     </Tooltip>
-//   ) : (
-//     <span style={spanStyles}>{displayText}</span>
-//   );
-// }
-
-export function withTruncatedTooltip(text, maxLength = 50) {
+export function withTruncatedTooltip(text, maxLength = 45) {
   const shouldTruncate = text.length > maxLength;
   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
 

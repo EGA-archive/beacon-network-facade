@@ -250,90 +250,6 @@ export default function Filters({
     },
   ];
 
-  //   return (
-  //     <div className="filter-row">
-  //       {filters.map(({ label, values, exclusive }) => (
-  //         <div key={label} className="filter-group">
-  //           <p className="filter-label">{label}</p>
-  //           <ToggleButtonGroup
-  //             value={selectedFilters}
-  //             exclusive={exclusive}
-  //             onChange={handleToggle}
-  //             aria-label={label}
-  //             sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
-  //           >
-  //             {values.map((value) => (
-  //               <ToggleButton
-  //                 key={value}
-  //                 value={value}
-  //                 sx={
-  //                   label === "Open/Close all Beacons:"
-  //                     ? openCloseStyles
-  //                     : buttonStyles
-  //                 }
-  //               >
-  //                 {value.replace("-", " ")}
-  //               </ToggleButton>
-  //             ))}
-  //           </ToggleButtonGroup>
-  //         </div>
-  //       ))}
-
-  //       <div className="filter-group">
-  //         <p className="filter-label">Filter by Allele Frequency:</p>
-  //         <ToggleButtonGroup
-  //           value={selectedFilters.includes("af-only") ? "af-only" : "all"}
-  //           exclusive
-  //           onChange={(event, newValue) => {
-  //             if (newValue !== null) {
-  //               setSelectedFilters((prev) => {
-  //                 const updated = prev
-  //                   .filter((val) => val !== "all" && val !== "af-only")
-  //                   .concat(newValue);
-
-  //                 return updated;
-  //               });
-  //             }
-  //           }}
-  //           aria-label="Allele Frequency Filter"
-  //           sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
-  //         >
-  //           {/* {["all", "af-only"].map((value) => (
-  //               <ToggleButton key={value} value={value} sx={buttonStyles}>
-  //                 {value === "all" ? "All" : "Allele Frequency only"}
-  //               </ToggleButton>
-  //             ))} */}
-  //           {["all", "af-only"].map((value) => {
-  //             const isSelected = selectedFilters.includes(value);
-  //             return (
-  //               <ToggleButton key={value} value={value} sx={buttonStyles}>
-  //                 {isSelected ? (
-  //                   <CheckCircleIcon
-  //                     sx={{
-  //                       color: "#0099CD",
-  //                       fontSize: "16px",
-  //                       marginRight: "6px",
-  //                     }}
-  //                   />
-  //                 ) : (
-  //                   <PanoramaFishEyeIcon
-  //                     sx={{
-  //                       color: "#ADADAD",
-  //                       fontSize: "16px",
-  //                       marginRight: "6px",
-  //                     }}
-  //                   />
-  //                 )}
-  //                 {value === "all" ? "All" : "Allele Frequency only"}
-  //               </ToggleButton>
-  //             );
-  //           })}
-  //         </ToggleButtonGroup>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="filter-row">
       {filters.map(({ label, values, exclusive }, index) => (
@@ -341,7 +257,7 @@ export default function Filters({
           key={label}
           className="filter-group"
           style={{
-            marginRight: index === filters.length - 3 ? "60px" : "0px",
+            marginRight: index === filters.length - 3 ? "65px" : "0px",
           }}
         >
           <p className="filter-label">{label}</p>

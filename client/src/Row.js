@@ -522,98 +522,6 @@ export default function Row({
                               )}
                             </b>
                           </TableCell>
-                          {/* <TableCell
-                            sx={{
-                              whiteSpace: "nowrap",
-                              cursor:
-                                beaconDatasets[0]?.dataset?.alleleFrequency !==
-                                "N/A"
-                                  ? "pointer"
-                                  : "default",
-                              padding: "10px 16px",
-                              textAlign: "center",
-                              verticalAlign: "middle",
-                              backgroundColor: "pink",
-                              // textDecoration:
-                              //   beaconDatasets[0]?.dataset?.alleleFrequency !==
-                              //   "N/A"
-                              //     ? "underline"
-                              //     : "none",
-                              textDecorationColor:
-                                beaconDatasets[0]?.dataset?.alleleFrequency !==
-                                "N/A"
-                                  ? "#077EA6"
-                                  : "inherit",
-                              color:
-                                beaconDatasets[0]?.dataset?.response === "Found"
-                                  ? "#0099CD"
-                                  : beaconDatasets[0]?.dataset?.response ===
-                                    "Not Found"
-                                  ? "#FF7C62"
-                                  : "inherit",
-                            }}
-                            onClick={() => {
-                              if (
-                                beaconDatasets[0]?.dataset?.alleleFrequency !==
-                                "N/A"
-                              ) {
-                                handleDialogOpen(beaconDatasets[0]);
-                              }
-                            }}
-                          >
-                            {beaconDatasets[0]?.dataset?.alleleFrequency !==
-                            "N/A" ? (
-                              <b
-                                style={{
-                                  color: "#077EA6",
-                                }}
-                              >
-                                {getFormattedAlleleFrequency(
-                                  beaconDatasets[0].dataset
-                                )}
-
-                                <Box
-                                  sx={{
-                                    display: "inline-block",
-                                    position: "relative",
-                                    width: "24px",
-                                    height: "24px",
-                                    marginLeft: "6px",
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      bottom: 0,
-                                      left: 0,
-                                      top: 6,
-                                      width: 24,
-                                      height: 24,
-                                      borderRadius: "50%",
-                                      cursor: "pointer",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      "&:hover": {
-                                        backgroundColor: "#DBEEFD",
-                                      },
-                                    }}
-                                  >
-                                    <img
-                                      src={moreIcon}
-                                      alt="More Info"
-                                      style={{
-                                        width: "16px",
-                                        height: "16px",
-                                      }}
-                                    />
-                                  </Box>
-                                </Box>
-                              </b>
-                            ) : (
-                              <i>Not Available</i>
-                            )}
-                          </TableCell> */}
                           <TableCell
                             sx={{
                               whiteSpace: "nowrap",
@@ -720,6 +628,7 @@ export default function Row({
                             >
                               <TableCell sx={{ width: "12.2%" }}></TableCell>
                               <TableCell colSpan={3}></TableCell>
+                              {/* HERE */}
                               <TableCell
                                 colSpan={2}
                                 sx={{
@@ -736,6 +645,7 @@ export default function Row({
                                   )}
                                 </b>
                               </TableCell>
+                              {/* HERE */}
                               <TableCell
                                 sx={{
                                   textAlign: "center",
@@ -809,7 +719,13 @@ export default function Row({
                                     </Box>
                                   </Box>
                                 ) : (
-                                  <i>Not Available</i>
+                                  <i
+                                    style={{
+                                      marginRight: "22px",
+                                    }}
+                                  >
+                                    Not Available
+                                  </i>
                                 )}
                               </TableCell>
 

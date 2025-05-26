@@ -499,44 +499,44 @@ export default function CollapsibleTable({
                         height: 20,
                         cursor: "pointer",
                         marginLeft: "9px",
-                        marginTop: "2px",
+                      }}
+                    />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ width: "15%" }}>
+                <Box sx={{ width: "100%", textAlign: "center" }}>
+                  <b>Allele Frequency</b>
+                  <Tooltip
+                    title={<p>Allele frequencies are between 0 and 1.</p>}
+                    placement="bottom"
+                    arrow
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                      ],
+                      className: "customTooltipWrapper2",
+                    }}
+                  >
+                    <img
+                      src={InfoIcon}
+                      alt="info"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        marginLeft: "9px",
                       }}
                     />
                   </Tooltip>
                 </Box>
               </TableCell>
 
-              <TableCell sx={{ width: "15%", textAlign: "center" }}>
-                <b>Allele Frequency</b>
-                <Tooltip
-                  title={<p>Allele frequencies are between 0 and 1.</p>}
-                  placement="bottom"
-                  arrow
-                  PopperProps={{
-                    modifiers: [
-                      {
-                        name: "offset",
-                        options: {
-                          offset: [0, 8],
-                        },
-                      },
-                    ],
-                    className: "customTooltipWrapper2",
-                  }}
-                >
-                  <img
-                    src={InfoIcon}
-                    alt="info"
-                    style={{
-                      width: 20,
-                      height: 20,
-                      cursor: "pointer",
-                      marginLeft: "9px",
-                      marginTop: "-3px",
-                    }}
-                  />
-                </Tooltip>
-              </TableCell>
               <TableCell sx={{ width: "11%", textAlign: "center" }}>
                 <b>Response</b>
               </TableCell>
