@@ -83,11 +83,6 @@ export const getBeaconRowStatus = (history) => {
   const allErrored = history.every((h, index) => {
     const beaconId = h.beaconId || "Unknown";
     const hasError = h.hasError === true;
-
-    console.log(
-      `⛔ Checking item [${index}] (beaconId: ${beaconId}) - hasError: ${hasError}`
-    );
-
     return hasError;
   });
 
@@ -106,7 +101,7 @@ export const filterValidBeacons = (beacons) => {
   return beacons.filter((beacon) => !beacon.info?.error);
 };
 
-export function withTruncatedTooltip(text, maxLength = 45) {
+export function withTruncatedTooltip(text, maxLength = 38) {
   const shouldTruncate = text.length > maxLength;
   const displayText = shouldTruncate ? `${text.slice(0, maxLength)}...` : text;
 

@@ -24,8 +24,6 @@ function App() {
     "Close All",
   ]);
 
-  console.log("queryCompleted from App", queryCompleted);
-
   return (
     <ThemeProvider theme={CustomTheme}>
       <Router>

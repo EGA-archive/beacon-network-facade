@@ -17,9 +17,9 @@ import {
   withTruncatedTooltip,
 } from "./utils/beaconUtils";
 import BeaconDialog from "./BeaconDialog.js";
-import Doc from "../src/document.svg";
-import moreIcon from "../src/moreIcon.svg";
 import { getBeaconRowStatus } from "./utils/beaconUtils";
+import TextSnippetOutlinedIcon from "@mui/icons-material/TextSnippetOutlined";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 export default function Row({
   allNetworkRows,
@@ -233,7 +233,6 @@ export default function Row({
   };
 
   const networkStatus = isNetwork ? getBeaconRowStatus(row.history) : null;
-  console.log("📡 Row status:", row.name, "→", networkStatus);
 
   return (
     <React.Fragment>
@@ -488,8 +487,9 @@ export default function Row({
                                 height: 24,
                                 borderRadius: "50%",
                                 cursor: "pointer",
-                                marginLeft: "16px",
+                                marginLeft: "8px",
                                 marginRight: "16px",
+
                                 "&:hover": {
                                   backgroundColor: "#DBEEFD",
                                 },
@@ -498,12 +498,13 @@ export default function Row({
                                 handleBeaconDialogOpen(beaconDatasets[0])
                               }
                             >
-                              <img
-                                src={Doc}
+                              <TextSnippetOutlinedIcon
+                                // src={TextSnippetOutlinedIcon}
                                 alt="Doc"
                                 style={{ width: "18px", height: "18px" }}
                               />
                             </Box>
+                            {/* I need to add the logo that comes from registries here infoBeacons */}
                           </TableCell>
 
                           <TableCell
@@ -581,13 +582,14 @@ export default function Row({
                                     cursor: "pointer",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    color: "#077EA6",
                                     "&:hover": {
                                       backgroundColor: "#DBEEFD",
                                     },
                                   }}
                                 >
-                                  <img
-                                    src={moreIcon}
+                                  <MenuOpenIcon
+                                    // src={moreIcon}
                                     alt="More Info"
                                     style={{
                                       width: "16px",
@@ -696,6 +698,7 @@ export default function Row({
                                     <Box
                                       sx={{
                                         display: "inline-flex",
+                                        color: "#077EA6",
                                         width: 24,
                                         height: 24,
                                         marginLeft: "6px",
@@ -708,8 +711,8 @@ export default function Row({
                                         },
                                       }}
                                     >
-                                      <img
-                                        src={moreIcon}
+                                      <MenuOpenIcon
+                                        // src={moreIcon}
                                         alt="More Info"
                                         style={{
                                           width: "16px",

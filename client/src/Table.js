@@ -23,8 +23,9 @@ import {
 import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import BeaconDialog from "./BeaconDialog";
-import Doc from "../src/document.svg";
+import TextSnippetOutlinedIcon from "@mui/icons-material/TextSnippetOutlined";
 import InfoIcon from "../src/info.svg";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import { filterValidBeacons } from "./utils/beaconUtils";
 import moreIcon from "../src/moreIcon.svg";
 
@@ -36,7 +37,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("5555555555555555📊 Data received:", data);
-  // console.log("📊 Registries received:", registries);
+  console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -189,7 +190,7 @@ export default function CollapsibleTable({
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
 
-  console.log("✅ Network Beacons before rendering:", validNetworkBeacons);
+  // console.log("✅ Network Beacons before rendering:", validNetworkBeacons);
   // Starting here
   const networkRows = filteredRegistries
     .filter((registry) =>
@@ -618,14 +619,13 @@ export default function CollapsibleTable({
                                 height: 24,
                                 borderRadius: "50%",
                                 cursor: "pointer",
-                                marginLeft: "16px",
+                                marginLeft: "8px",
                                 "&:hover": {
                                   backgroundColor: "#DBEEFD",
                                 },
                               }}
                             >
-                              <img
-                                src={Doc}
+                              <TextSnippetOutlinedIcon
                                 alt="Doc"
                                 style={{ width: "18px", height: "18px" }}
                                 onClick={() => {
@@ -754,8 +754,8 @@ export default function CollapsibleTable({
                                       },
                                     }}
                                   >
-                                    <img
-                                      src={moreIcon}
+                                    <MenuOpenIcon
+                                      // src={moreIcon}
                                       alt="More Info"
                                       style={{
                                         width: "16px",
@@ -1063,14 +1063,15 @@ export default function CollapsibleTable({
                                                   borderRadius: "50%",
                                                   cursor: "pointer",
                                                   alignItems: "center",
+                                                  color: "#077EA6",
                                                   justifyContent: "center",
                                                   "&:hover": {
                                                     backgroundColor: "#DBEEFD",
                                                   },
                                                 }}
                                               >
-                                                <img
-                                                  src={moreIcon}
+                                                <MenuOpenIcon
+                                                  // src={moreIcon}
                                                   alt="More Info"
                                                   style={{
                                                     width: "16px",

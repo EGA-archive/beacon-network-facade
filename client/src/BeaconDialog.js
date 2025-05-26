@@ -327,15 +327,6 @@ export default function BeaconDialog({
             const datasetDescription = datasetInfo?.description || "Undefined";
             const showLoader = loading && datasetDescription === "Undefined";
 
-            console.log(
-              "📦 Source:",
-              fromMap && fromMap !== "Undefined"
-                ? "fromMap"
-                : fromApi
-                ? "fromApi"
-                : "Undefined"
-            );
-
             return (
               <React.Fragment key={index}>
                 <Typography

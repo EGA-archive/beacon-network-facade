@@ -246,12 +246,12 @@ function WebSocketClient({ setRegistries, setSocket, registries = [] }) {
                     <a
                       type="reset"
                       onClick={() => {
-                        setFieldValue("variant", "19-113357192-G-A");
+                        setFieldValue("variant", "12-112919387-G-A");
                         setFieldValue("genome", "GRCh38");
                       }}
                     >
                       <u className="example">
-                        GRCh38 <b>|</b> 19-113357192-G-A
+                        GRCh38 <b>|</b> 12-112919387-G-A
                       </u>
                     </a>
                   </span>

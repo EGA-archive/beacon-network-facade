@@ -21,9 +21,12 @@ function NetworkMembers({ registries = [] }) {
     );
   };
 
-  const registriesWithValidLogos = logosStatus.filter(
-    (registry) => registry.logoIsValid
-  );
+  const registriesWithValidLogos = logosStatus
+    .filter((registry) => registry.logoIsValid)
+    .filter(
+      (registry, index, self) =>
+        self.findIndex((r) => r.beaconURL === registry.beaconURL) === index
+    );
 
   return (
     <Container>
@@ -44,8 +47,8 @@ function NetworkMembers({ registries = [] }) {
                 item
                 key={registry.beaconId}
                 xs={12}
-                sm={4}
-                md={4}
+                sm={5}
+                md={2}
                 display="flex"
                 justifyContent="center"
                 alignItems="center"
