@@ -267,7 +267,7 @@ export default function CollapsibleTable({
         )
           ? "Found"
           : "Not Found",
-
+        infoBeacons: registry.infoBeacons || [],
         history,
       };
     })
@@ -278,6 +278,7 @@ export default function CollapsibleTable({
       return true;
     });
   console.log("networkRows", networkRows);
+
   // Ending here
 
   // Checked

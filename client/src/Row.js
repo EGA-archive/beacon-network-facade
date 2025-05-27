@@ -41,6 +41,7 @@ export default function Row({
   const [openRows, setOpenRows] = useState({});
   const [networkAlleleData, setNetworkAlleleData] = useState([]);
   const [datasetNameMap, setDatasetNameMap] = useState({});
+  const [validBeaconLogos, setValidBeaconLogos] = useState({});
 
   // console.log("networkAlleleData", networkAlleleData);
   // console.log("🔎 openRows State:", openRows);
@@ -233,6 +234,28 @@ export default function Row({
   };
 
   const networkStatus = isNetwork ? getBeaconRowStatus(row.history) : null;
+
+  useEffect(() => {
+    console.log("🧠 infoBeacons passed to Row:", row.infoBeacons);
+
+    if (!row.infoBeacons) return;
+
+    const initial = {};
+    row.infoBeacons.forEach((info, i) => {
+      const beaconId = info?.meta?.beaconId;
+      const logoUrl = info?.organization?.logoUrl;
+      console.log(`🔍 [${i}] beaconId: ${beaconId}, logoUrl: ${logoUrl}`);
+      if (beaconId) {
+        initial[beaconId] = true;
+      }
+    });
+
+    setValidBeaconLogos(initial);
+  }, [row.infoBeacons]);
+
+  const handleBeaconLogoError = (beaconId) => {
+    setValidBeaconLogos((prev) => ({ ...prev, [beaconId]: false }));
+  };
 
   return (
     <React.Fragment>
@@ -504,7 +527,62 @@ export default function Row({
                                 style={{ width: "18px", height: "18px" }}
                               />
                             </Box>
+
                             {/* I need to add the logo that comes from registries here infoBeacons */}
+                            {/* {row.infoBeacons?.some(
+                              (info) =>
+                                info?.organization?.logoUrl &&
+                                validBeaconLogos[info.meta?.beaconId] !== false
+                            ) && (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  justifyContent: "flex-start",
+                                  alignItems: "center",
+                                  gap: "16px",
+                                  padding: "12px 24px 0",
+                                }}
+                              >
+                                {row.infoBeacons?.map((info, idx) => {
+                                  const logoUrl = info?.organization?.logoUrl;
+                                  const beaconId = info?.meta?.beaconId;
+
+                                  console.log(
+                                    `🖼️ Rendering logo for: ${beaconId}, URL: ${logoUrl}`
+                                  );
+                                  console.log(
+                                    "✅ validBeaconLogos map:",
+                                    validBeaconLogos
+                                  );
+
+                                  if (
+                                    !logoUrl ||
+                                    validBeaconLogos[beaconId] === false
+                                  )
+                                    return null;
+
+                                  return (
+                                    <img
+                                      key={beaconId}
+                                      src={logoUrl}
+                                      alt={`Logo of ${
+                                        info.organization?.name ||
+                                        "organization"
+                                      }`}
+                                      onError={() =>
+                                        handleBeaconLogoError(beaconId)
+                                      }
+                                      style={{
+                                        maxWidth: "70px",
+                                        height: "40px",
+                                        objectFit: "contain",
+                                      }}
+                                    />
+                                  );
+                                })} */}
+                            {/* </Box>
+                            )} */}
                           </TableCell>
 
                           <TableCell
