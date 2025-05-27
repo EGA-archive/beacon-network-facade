@@ -12,11 +12,14 @@ export default function AFDialog({
   onClose,
   individualBeaconName,
   individualDataset,
+  individualDatasetName,
   individualBeaconRegistryId,
   beaconNetworkBeaconName,
+  beaconNetworkBeaconId,
   beaconNetworkDataset,
-  alleleDataNetwork,
+  beaconNetworkDatasetName,
   individualAlleleData,
+  networkAlleleData = [],
 }) {
   return (
     <Dialog
@@ -80,18 +83,24 @@ export default function AFDialog({
             top: 70,
           }}
         >
+          {/* Cahnge here */}
           <b>Beacon: </b>
-          {individualBeaconName || beaconNetworkBeaconName}
+          {individualBeaconName ||
+            beaconNetworkBeaconName ||
+            beaconNetworkBeaconId}
           <br></br>
-          <b>Dataset ID: </b>
-
-          {individualDataset || beaconNetworkDataset}
+          {/* Cahnge here */}
+          <b>Dataset: </b>
+          {individualDatasetName ||
+            individualDataset ||
+            beaconNetworkDatasetName}
         </Typography>
       </DialogContent>
       <TableDialog
-        alleleDataNetwork={alleleDataNetwork}
+        networkAlleleData={networkAlleleData}
         beaconNetworkBeaconName={beaconNetworkBeaconName}
         beaconNetworkDataset={beaconNetworkDataset}
+        beaconNetworkDatasetName={beaconNetworkDatasetName}
         individualBeaconName={individualBeaconName}
         individualDataset={individualDataset}
         individualBeaconRegistryId={individualBeaconRegistryId}

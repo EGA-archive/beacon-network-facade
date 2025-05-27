@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Container } from "react-bootstrap";
 
 function NetworkMembers({ registries = [] }) {
@@ -21,15 +21,18 @@ function NetworkMembers({ registries = [] }) {
     );
   };
 
-  const registriesWithValidLogos = logosStatus.filter(
-    (registry) => registry.logoIsValid
-  );
+  const registriesWithValidLogos = logosStatus
+    .filter((registry) => registry.logoIsValid)
+    .filter(
+      (registry, index, self) =>
+        self.findIndex((r) => r.beaconURL === registry.beaconURL) === index
+    );
 
   return (
     <Container>
       <div>
         <p className="lead mt-5 mb-4">
-          <b>Global Beacon Network Members</b>
+          <b>Global Beacon Atlas Members</b>
         </p>
 
         {registriesWithValidLogos.length > 0 ? (
@@ -41,10 +44,11 @@ function NetworkMembers({ registries = [] }) {
           >
             {registriesWithValidLogos.map((registry) => (
               <Grid
+                item
                 key={registry.beaconId}
                 xs={12}
-                sm={4}
-                md={4}
+                sm={5}
+                md={2}
                 display="flex"
                 justifyContent="center"
                 alignItems="center"

@@ -10,6 +10,7 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Filters from "./Filters";
@@ -18,18 +19,15 @@ import {
   separateBeacons,
   getFormattedAlleleFrequency,
   getAlleleData,
-  // ensureNetworkVisibility,
 } from "./utils/beaconUtils";
-import Tick from "../src/tick.svg";
-import {
-  StatusButton,
-  MaturityButton,
-  BeaconTypeButton,
-} from "./ButtonComponents";
+import { StatusButton, BeaconTypeButton } from "./ButtonComponents";
 import Dialog from "./Dialog";
 import BeaconDialog from "./BeaconDialog";
-import Doc from "../src/document.svg";
+import TextSnippetOutlinedIcon from "@mui/icons-material/TextSnippetOutlined";
+import InfoIcon from "../src/info.svg";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import { filterValidBeacons } from "./utils/beaconUtils";
+import moreIcon from "../src/moreIcon.svg";
 
 export default function CollapsibleTable({
   data,
@@ -38,31 +36,36 @@ export default function CollapsibleTable({
   setSelectedFilters,
   setStats,
 }) {
-  // console.log("📊 Data received:", data);
+  // console.log("5555555555555555📊 Data received:", data);
   console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
   const [currentBeaconName, setCurrentBeaconName] = useState("");
   const [currentBeaconId, setCurrentBeaconId] = useState("");
+  const [currentBeaconMaturity, setCurrentBeaconMaturity] = useState("");
   const [currentDataset, setCurrentDataset] = useState("");
+  const [currentDatasetName, setCurrentDatasetName] = useState("");
   const [openRows, setOpenRows] = useState({});
   const [currentBeaconApi, setCurrentBeaconApi] = useState("");
   const [currentBeaconUrl, setCurrentBeaconUrl] = useState("");
   const [currentDatasets, setCurrentDatasets] = useState([]);
+  const [currentDatasetNameMap, setCurrentDatasetNameMap] = useState({});
 
   // console.log("openRows", openRows);
   // console.log("selectedFilters", selectedFilters);
 
   const { individualBeacons, networkBeacons } = separateBeacons(data);
+
   const validIndividualBeacons = filterValidBeacons(individualBeacons);
-  const validNetworkBeacons = filterValidBeacons(networkBeacons);
+  const validNetworkBeacons = networkBeacons;
 
   const handleBeaconDialogOpen = (beaconName, beaconAPI, beaconURL) => {
     if (beaconName && filteredIndividualBeacons.length > 0) {
       setCurrentBeaconName(beaconName);
       setCurrentBeaconApi(beaconAPI);
       setCurrentBeaconUrl(beaconURL);
+
       const matchingBeacon = registries.find(
         (registry) => registry.beaconName === beaconName
       );
@@ -74,16 +77,21 @@ export default function CollapsibleTable({
 
       const beaconId = matchingBeacon.beaconId;
       setCurrentBeaconId(beaconId);
-      setOpenRows((prev) => ({
-        ...prev,
-        [beaconId]: true,
-      }));
+      setCurrentBeaconMaturity(matchingBeacon.beaconMaturity);
 
       const datasets = filteredIndividualBeacons
         .filter((beacon) => beacon.beaconId === beaconId)
         .map((beacon) => beacon.id);
 
+      const datasetNameMap = {};
+      filteredIndividualBeacons
+        .filter((beacon) => beacon.beaconId === beaconId)
+        .forEach((entry) => {
+          datasetNameMap[entry.id] = entry.datasetName || "Undefined";
+        });
+
       setCurrentDatasets(datasets);
+      setCurrentDatasetNameMap(datasetNameMap);
       setBeaconDialogOpen(true);
     }
   };
@@ -91,6 +99,11 @@ export default function CollapsibleTable({
   const handleBeaconDialogClose = () => {
     setBeaconDialogOpen(false);
   };
+
+  // console.log("individualBeacons", individualBeacons);
+  // console.log("validIndividualBeacons", validIndividualBeacons);
+  // console.log("networkBeacons", networkBeacons);
+  // console.log("validNetworkBeacons", validNetworkBeacons);
 
   let individualAlleleData = [];
   if (individualBeacons.length > 0) {
@@ -109,12 +122,15 @@ export default function CollapsibleTable({
         )
     );
   }
+  // console.log("🏡 individualAlleleData", individualAlleleData);
 
   const handleDialogOpen = (registry, individualBeacon) => {
     if ((registry, individualBeacon)) {
       setCurrentBeaconName(registry.beaconName);
       setCurrentBeaconId(registry.beaconId);
+      setCurrentBeaconMaturity(registry.beaconMaturity);
       setCurrentDataset(individualBeacon.id);
+      setCurrentDatasetName(individualBeacon.datasetName);
       setDialogOpen(true);
     } else {
       console.warn("⚠️ Attempted to open dialog with an undefined datasetId");
@@ -174,6 +190,8 @@ export default function CollapsibleTable({
       return a.exists === false ? 1 : b.exists === false ? -1 : 0;
     });
 
+  // console.log("✅ Network Beacons before rendering:", validNetworkBeacons);
+  // Starting here
   const networkRows = filteredRegistries
     .filter((registry) =>
       validNetworkBeacons.some(
@@ -181,34 +199,50 @@ export default function CollapsibleTable({
       )
     )
     .map((registry) => {
+      const registryBeacons = validNetworkBeacons.filter(
+        (beacon) => beacon.beaconNetworkId === registry.beaconId
+      );
+
+      const hasError = registryBeacons.some((beacon) => beacon.info?.error);
+
       let history = validNetworkBeacons
         .filter(
           (networkBeacon) => networkBeacon.beaconNetworkId === registry.beaconId
         )
         .map((beacon) => {
-          let populationList = [];
+          let alleleData = [];
+
           beacon.results?.forEach((result) => {
             result.frequencyInPopulations?.forEach((popObj) => {
               popObj.frequencies?.forEach((freq) => {
-                if (freq.population) {
-                  populationList.push(freq.population);
+                if (freq.population && freq.alleleFrequency !== undefined) {
+                  alleleData.push({
+                    population: freq.population,
+                    alleleFrequency: freq.alleleFrequency,
+                  });
                 }
               });
             });
           });
 
+          // console.log("📊 alleleData in Table:", alleleData);
+
+          let populationList = alleleData.map((item) => item.population);
           let populationString =
             populationList.length > 0 ? populationList.join(", ") : "(unknown)";
 
           return {
             beaconId: beacon.beaconId,
+            beaconName: beacon.beaconName,
             maturity: registry.beaconMaturity,
+            hasError: !!beacon.info?.error,
             dataset: {
               datasetId: beacon.id,
+              datasetName: beacon.datasetName,
               population: populationString,
               alleleFrequency:
-                beacon.results?.[0]?.frequencyInPopulations?.[0]
-                  ?.frequencies?.[0]?.alleleFrequency || "N/A",
+                alleleData.length > 0 ? alleleData[0].alleleFrequency : "N/A",
+              alleleData,
               response: beacon.exists ? "Found" : "Not Found",
             },
           };
@@ -216,7 +250,9 @@ export default function CollapsibleTable({
 
       if (selectedFilters.includes("af-only")) {
         history = history.filter(
-          (item) => item.dataset.alleleFrequency !== "N/A"
+          (item) =>
+            item.dataset.alleleData &&
+            item.dataset.alleleData.some((d) => d.alleleFrequency !== "N/A")
         );
       }
 
@@ -231,6 +267,7 @@ export default function CollapsibleTable({
         )
           ? "Found"
           : "Not Found",
+        infoBeacons: registry.infoBeacons || [],
         history,
       };
     })
@@ -240,33 +277,125 @@ export default function CollapsibleTable({
       }
       return true;
     });
+  console.log("networkRows", networkRows);
 
-  const beaconNetworkCount = networkRows.length;
-  const uniqueIndividualBeaconIds = new Set(
-    filteredIndividualBeacons.map((beacon) => beacon.beaconId)
-  );
+  // Ending here
+
+  // Checked
+  const beaconNetworkCount = networkRows.filter(
+    (network) =>
+      Array.isArray(network.history) &&
+      network.history.some((row) => row.dataset?.response === "Found")
+  ).length;
+  // Checked
+
+  // Checked
+  const uniqueIndividualBeaconIds = new Set();
+  const individualBeaconIdToNameMap = new Map();
+
+  filteredIndividualBeacons.forEach((entry) => {
+    const { beaconId, beaconName, exists } = entry;
+
+    if (exists === true && beaconId) {
+      if (!uniqueIndividualBeaconIds.has(beaconId)) {
+        uniqueIndividualBeaconIds.add(beaconId);
+        individualBeaconIdToNameMap.set(
+          beaconId,
+          beaconName || "Unnamed Beacon"
+        );
+      }
+    }
+  });
+
   const individualBeaconCount = uniqueIndividualBeaconIds.size;
-  const uniqueNetworkBeaconIds = new Set(
-    networkRows.flatMap((network) =>
-      network.history.map((historyRow) => historyRow.beaconId)
-    )
-  );
-  const networkBeaconCount = uniqueNetworkBeaconIds.size;
-  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
-  const individualDatasetCount = new Set(
-    filteredIndividualBeacons
-      .filter((beacon) => beacon.id)
-      .map((beacon) => beacon.id)
-  ).size;
-  const networkDatasetCount = new Set(
-    networkRows.flatMap((network) =>
-      network.history
-        .filter((historyRow) => historyRow.dataset?.datasetId)
-        .map((historyRow) => historyRow.dataset.datasetId)
-    )
-  ).size;
+  // Checked
 
+  // Checked
+  const uniqueNetworkBeaconKeys = new Set();
+  const beaconKeyToNetworkMap = new Map();
+
+  networkRows.forEach((network) => {
+    const networkName = network.name;
+    if (!Array.isArray(network.history)) return;
+
+    network.history.forEach((historyRow) => {
+      const { beaconId, dataset } = historyRow;
+      const response = dataset?.response;
+
+      if (response === "Found" && beaconId && networkName) {
+        const uniqueKey = `${networkName}__${beaconId}`;
+
+        if (!uniqueNetworkBeaconKeys.has(uniqueKey)) {
+          uniqueNetworkBeaconKeys.add(uniqueKey);
+          beaconKeyToNetworkMap.set(uniqueKey, networkName);
+        }
+      }
+    });
+  });
+
+  const networkBeaconCount = uniqueNetworkBeaconKeys.size;
+  const totalBeaconCount = individualBeaconCount + networkBeaconCount;
+
+  // console.log("✅ uniqueNetworkBeaconKeys count:", networkBeaconCount);
+  // Checked
+
+  // Checked
+  const individualDatasetSet = new Set(
+    filteredIndividualBeacons
+      .filter((beacon) => beacon.exists && beacon.id && beacon.datasetName)
+      .map((beacon) => `${beacon.id}__${beacon.datasetName}`)
+  );
+
+  const individualDatasetCount = individualDatasetSet.size;
+  // console.log("✅ individualDatasetCount:", individualDatasetCount);
+  // Checked
+
+  // Checked
+  const networkDatasetSet = new Set();
+  const addedDatasets = [];
+  const skippedDatasets = [];
+
+  networkRows.forEach((network) => {
+    if (Array.isArray(network.history)) {
+      network.history.forEach((historyRow) => {
+        const dataset = historyRow.dataset;
+        const beaconId = historyRow.beaconId || "❌ Missing Beacon ID";
+        const networkName = network.name || "❌ Missing Network Name";
+
+        const response = dataset?.response;
+        const datasetId = dataset?.datasetId || "❌ Missing ID";
+        const datasetName = dataset?.datasetName || "❌ Missing Name";
+
+        const isFound = response === "Found";
+        const uniqueKey = `${networkName}__${beaconId}__${datasetId}__${datasetName}`;
+
+        if (isFound) {
+          if (!networkDatasetSet.has(uniqueKey)) {
+            networkDatasetSet.add(uniqueKey);
+            addedDatasets.push({
+              datasetId,
+              datasetName,
+              beaconId,
+              networkName,
+            });
+          }
+        } else {
+          skippedDatasets.push({
+            datasetId,
+            datasetName,
+            beaconId,
+            networkName,
+            reason: "response !== 'Found'",
+          });
+        }
+      });
+    }
+  });
+
+  const networkDatasetCount = networkDatasetSet.size;
+  // console.log("✅ networkDatasetCount:", networkDatasetCount);
   const totalDatasetCount = individualDatasetCount + networkDatasetCount;
+  // Checked
 
   useEffect(() => {
     if (setStats) {
@@ -300,7 +429,7 @@ export default function CollapsibleTable({
     <>
       <TableContainer
         // component={Paper}
-        sx={{ marginTop: "48px", marginBottom: "48px" }}
+        sx={{ marginTop: "30px", marginBottom: "48px" }}
         className="table-container"
       >
         <Filters
@@ -327,24 +456,90 @@ export default function CollapsibleTable({
         >
           <TableHead>
             <TableRow className="title-row">
-              <TableCell colSpan={3} sx={{ pl: 6.5 }}>
+              <TableCell colSpan={2}>
                 <Box
                   sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
                 >
-                  <b>Beacon Network</b>
-                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
-                  <b>Beacon Name</b>
-                  <KeyboardArrowRightIcon sx={{ mx: 1 }} />
-                  <i>
-                    <b>Dataset</b>
-                  </i>
+                  <b>Beacon Network / Beacon</b>
                 </Box>
               </TableCell>
-              <TableCell />
-              <TableCell colSpan={1}>
-                <b>Allele Frequency</b>
+              <TableCell
+                style={{
+                  width: "120px",
+                }}
+              ></TableCell>
+              <TableCell colSpan={2}>
+                <Box sx={{ width: "100%", textAlign: "center" }}>
+                  <i>
+                    <b>Datasets Found / Total</b>
+                  </i>
+                  <Tooltip
+                    title={
+                      <p>
+                        The total is the number of beacons that have responded.
+                      </p>
+                    }
+                    placement="bottom"
+                    arrow
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                      ],
+                      className: "customTooltipWrapper2",
+                    }}
+                  >
+                    <img
+                      src={InfoIcon}
+                      alt="info"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        marginLeft: "9px",
+                      }}
+                    />
+                  </Tooltip>
+                </Box>
               </TableCell>
-              <TableCell colSpan={1}>
+              <TableCell sx={{ width: "15%" }}>
+                <Box sx={{ width: "100%", textAlign: "center" }}>
+                  <b>Allele Frequency</b>
+                  <Tooltip
+                    title={<p>Allele frequencies are between 0 and 1.</p>}
+                    placement="bottom"
+                    arrow
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, 8],
+                          },
+                        },
+                      ],
+                      className: "customTooltipWrapper2",
+                    }}
+                  >
+                    <img
+                      src={InfoIcon}
+                      alt="info"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        marginLeft: "9px",
+                      }}
+                    />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+
+              <TableCell sx={{ width: "11%", textAlign: "center" }}>
                 <b>Response</b>
               </TableCell>
             </TableRow>
@@ -359,6 +554,14 @@ export default function CollapsibleTable({
                 )
                 .map((registry) => {
                   const rowIsOpen = !!openRows[registry.beaconId];
+                  const beaconDatasets = filteredIndividualBeacons.filter(
+                    (b) => b.beaconId === registry.beaconId
+                  );
+
+                  const firstDataset = beaconDatasets[0];
+                  const firstAF = getFormattedAlleleFrequency(firstDataset);
+                  const afClickable = firstAF !== "N/A";
+
                   const isNetwork = networkBeacons.some(
                     (nb) => nb.beaconNetworkId === registry.beaconId
                   );
@@ -379,8 +582,11 @@ export default function CollapsibleTable({
                       <TableRow>
                         <TableCell
                           variant="lessPaddingSingle"
-                          style={{ verticalAlign: "middle" }}
-                          colSpan={4}
+                          style={{
+                            verticalAlign: "middle",
+                            paddingLeft: "8px",
+                          }}
+                          colSpan={2}
                         >
                           <Box
                             sx={{
@@ -401,14 +607,9 @@ export default function CollapsibleTable({
                               )}
                             </IconButton>
                             <BeaconTypeButton type={beaconType} />
-
-                            <Box
-                              component="span"
-                              style={{ paddingLeft: "7.2%" }}
-                            >
+                            <Box component="span" className="main-row">
                               <b>{registry.beaconName}</b>
                             </Box>
-
                             <Box
                               component="span"
                               sx={{
@@ -419,14 +620,13 @@ export default function CollapsibleTable({
                                 height: 24,
                                 borderRadius: "50%",
                                 cursor: "pointer",
-                                marginLeft: "16px",
+                                marginLeft: "8px",
                                 "&:hover": {
                                   backgroundColor: "#DBEEFD",
                                 },
                               }}
                             >
-                              <img
-                                src={Doc}
+                              <TextSnippetOutlinedIcon
                                 alt="Doc"
                                 style={{ width: "18px", height: "18px" }}
                                 onClick={() => {
@@ -439,42 +639,267 @@ export default function CollapsibleTable({
                                 }}
                               />
                             </Box>
-                            {registry.beaconMaturity ? (
-                              <MaturityButton
-                                maturity={registry.beaconMaturity}
-                              />
-                            ) : (
-                              "N/A"
-                            )}
                           </Box>
                         </TableCell>
-
-                        <TableCell>
-                          {hasFoundDataset ? (
-                            <img
-                              src={Tick}
-                              alt="Tick"
-                              style={{ width: "18px", height: "18px" }}
-                            />
-                          ) : (
-                            <i
-                              style={{
-                                color: hasFoundDataset ? "#0099CD" : "#FF7C62",
-                                fontWeight: "bold",
+                        <TableCell variant="lessPaddingSingle">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              marginLeft: "100%",
+                            }}
+                          >
+                            <a
+                              href={registry.beaconURL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ flexShrink: 0 }}
+                            >
+                              <img
+                                src={registry.beaconLogo}
+                                style={{
+                                  maxWidth: "120px",
+                                  height: "50px",
+                                  padding: "10px 0px",
+                                }}
+                              />
+                            </a>
+                          </Box>
+                        </TableCell>
+                        {rowIsOpen ? (
+                          <>
+                            <TableCell
+                              colSpan={rowIsOpen ? 2 : 0}
+                              sx={{
+                                paddingLeft: "9%",
                               }}
                             >
-                              No AF
-                            </i>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <StatusButton
-                            status={hasFoundDataset ? "Found" : "Not Found"}
-                          />
-                        </TableCell>
+                              <b>
+                                {firstDataset?.datasetName ||
+                                  firstDataset?.id ||
+                                  "Undefined"}
+                              </b>
+                            </TableCell>
+                            {/* <TableCell
+                              sx={{
+                                textAlign: "center",
+                                cursor: afClickable ? "pointer" : "default",
+                                padding: "16px 16px 16px 20px",
+
+                                textDecorationColor:
+                                  afClickable && firstAF !== "N/A"
+                                    ? "#077EA6"
+                                    : "inherit",
+                                color:
+                                  firstAF !== "N/A" ? "#077EA6" : "inherit",
+                              }}
+                              onClick={() => {
+                                if (afClickable && firstAF !== "N/A") {
+                                  handleDialogOpen(registry, firstDataset);
+                                }
+                              }}
+                            >
+                              {firstAF !== "N/A" ? (
+                                <b>{firstAF}</b>
+                              ) : (
+                                <i
+                                  style={{
+                                    color: firstDataset?.exists
+                                      ? "#0099CD"
+                                      : "#FF7C62",
+                                  }}
+                                >
+                                  Not Available
+                                </i>
+                              )}
+                            </TableCell> */}
+                            <TableCell
+                              sx={{
+                                textAlign: "center",
+                                cursor: afClickable ? "pointer" : "default",
+                                padding: "16px 16px 16px 20px",
+                                textDecorationColor:
+                                  afClickable && firstAF !== "N/A"
+                                    ? "#077EA6"
+                                    : "inherit",
+                                color:
+                                  firstAF !== "N/A" ? "#077EA6" : "inherit",
+                              }}
+                              onClick={() => {
+                                if (afClickable && firstAF !== "N/A") {
+                                  handleDialogOpen(registry, firstDataset);
+                                }
+                              }}
+                            >
+                              {firstAF !== "N/A" ? (
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <b>{firstAF}</b>
+                                  <Box
+                                    sx={{
+                                      display: "inline-flex",
+                                      width: 24,
+                                      height: 24,
+                                      marginLeft: "6px",
+                                      borderRadius: "50%",
+                                      cursor: "pointer",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      "&:hover": {
+                                        backgroundColor: "#DBEEFD",
+                                      },
+                                    }}
+                                  >
+                                    <MenuOpenIcon
+                                      // src={moreIcon}
+                                      alt="More Info"
+                                      style={{
+                                        width: "16px",
+                                        height: "16px",
+                                      }}
+                                    />
+                                  </Box>
+                                </Box>
+                              ) : (
+                                <i
+                                  style={{
+                                    color: firstDataset?.exists
+                                      ? "#0099CD"
+                                      : "#FF7C62",
+                                  }}
+                                >
+                                  Not Available
+                                </i>
+                              )}
+                            </TableCell>
+
+                            <TableCell
+                              sx={{
+                                textAlign: "center",
+                              }}
+                            >
+                              <StatusButton
+                                status={
+                                  firstDataset?.exists ? "Found" : "Not Found"
+                                }
+                              />
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell
+                              colSpan={2}
+                              sx={{
+                                paddingRight: "72px",
+                              }}
+                            >
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                {(() => {
+                                  const total = beaconDatasets.length;
+                                  const found = beaconDatasets.filter(
+                                    (d) => d.exists
+                                  ).length;
+
+                                  return (
+                                    <span
+                                      style={{
+                                        fontWeight: "bold",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                      }}
+                                    >
+                                      {found} / {total}
+                                    </span>
+                                  );
+                                })()}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                {hasFoundDataset ? (
+                                  (() => {
+                                    const afValues = filteredIndividualBeacons
+                                      .filter(
+                                        (beacon) =>
+                                          beacon.beaconId === registry.beaconId
+                                      )
+                                      .flatMap((beacon) => {
+                                        const raw =
+                                          getFormattedAlleleFrequency(beacon);
+                                        if (raw === "N/A") return [];
+                                        return raw
+                                          .split(/[\-;]/)
+                                          .map((v) => parseFloat(v.trim()))
+                                          .filter((n) => !isNaN(n));
+                                      });
+
+                                    if (afValues.length > 0) {
+                                      const min = Math.min(...afValues).toFixed(
+                                        5
+                                      );
+                                      const max = Math.max(...afValues).toFixed(
+                                        5
+                                      );
+                                      return (
+                                        <span
+                                          style={{
+                                            color: "#077EA6",
+                                            fontWeight: "bold",
+                                          }}
+                                        >
+                                          {min} - {max}
+                                        </span>
+                                      );
+                                    }
+
+                                    return (
+                                      <i style={{ color: "#FF7C62" }}>
+                                        Not Available
+                                      </i>
+                                    );
+                                  })()
+                                ) : (
+                                  <i style={{ color: "#FF7C62" }}>
+                                    Not Available
+                                  </i>
+                                )}
+                              </Box>
+                            </TableCell>
+
+                            <TableCell>
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                height="100%"
+                              >
+                                <StatusButton
+                                  status={
+                                    hasFoundDataset ? "Found" : "Not Found"
+                                  }
+                                />
+                              </Box>
+                            </TableCell>
+                          </>
+                        )}
                       </TableRow>
                       <TableRow variant="emptyRow">
-                        <TableCell colSpan={6} sx={{ p: 0 }} variant="noBorder">
+                        <TableCell colSpan={7} sx={{ p: 0 }} variant="noBorder">
                           <Collapse in={rowIsOpen} timeout="auto" unmountOnExit>
                             <Table
                               size="small"
@@ -485,12 +910,16 @@ export default function CollapsibleTable({
                             >
                               <TableBody>
                                 {filteredIndividualBeacons
+
                                   .filter(
                                     (individualBeacon) =>
                                       individualBeacon.beaconId ===
                                       registry.beaconId
                                   )
-                                  .map((individualBeacon) => {
+
+                                  .map((individualBeacon, index) => {
+                                    if (index === 0) return null;
+
                                     const rawAfValue =
                                       getFormattedAlleleFrequency(
                                         individualBeacon
@@ -499,7 +928,7 @@ export default function CollapsibleTable({
                                       rawAfValue !== "N/A" ? (
                                         rawAfValue
                                       ) : (
-                                        <i>No AF</i>
+                                        <i>Not Available</i>
                                       );
                                     const clickable = rawAfValue !== "N/A";
 
@@ -508,40 +937,43 @@ export default function CollapsibleTable({
                                         key={`${individualBeacon.beaconId}_${individualBeacon.id}`}
                                       >
                                         <TableCell
+                                          colSpan={2}
                                           sx={{
-                                            width: "90px !important",
-                                          }}
-                                        />
-
-                                        <TableCell
-                                          sx={{
-                                            width: "149px !important",
+                                            width: "32.38%",
                                           }}
                                         />
                                         <TableCell
+                                          variant="lessPaddingSingle"
                                           sx={{
-                                            width: "340px !important",
+                                            width: "9.23%",
+                                            padding: 0,
+                                          }}
+                                        ></TableCell>
+                                        <TableCell
+                                          sx={{
+                                            width: "32.35%",
+                                            paddingLeft: "9%",
                                           }}
                                         >
                                           <Box>
-                                            <i>Dataset ID: </i>
                                             <b>
-                                              {individualBeacon.id
-                                                ? individualBeacon.id
-                                                : "Undefined"}
+                                              {individualBeacon?.datasetName ||
+                                                individualBeacon?.id ||
+                                                "Undefined"}
                                             </b>
                                           </Box>
                                         </TableCell>
-                                        <TableCell
+
+                                        {/* Here */}
+                                        {/* <TableCell
                                           sx={{
-                                            width: "148px !important",
+                                            width: "15%",
+                                            textAlign: "center",
                                             cursor: clickable
                                               ? "pointer"
                                               : "default",
                                             padding: "16px 16px 16px 20px",
-                                            textDecoration: clickable
-                                              ? "underline"
-                                              : "none",
+
                                             textDecorationColor: clickable
                                               ? "#077EA6"
                                               : "inherit",
@@ -577,14 +1009,94 @@ export default function CollapsibleTable({
                                                   : "#FF7C62",
                                               }}
                                             >
-                                              No AF
+                                              Not Available
+                                            </i>
+                                          )}
+                                        </TableCell> */}
+                                        <TableCell
+                                          sx={{
+                                            width: "15%",
+                                            textAlign: "center",
+                                            cursor: clickable
+                                              ? "pointer"
+                                              : "default",
+                                            padding: "16px 16px 16px 20px",
+                                            textDecorationColor: clickable
+                                              ? "#077EA6"
+                                              : "inherit",
+                                          }}
+                                          onClick={() => {
+                                            if (clickable) {
+                                              handleDialogOpen(
+                                                registry,
+                                                individualBeacon
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          {individualBeacon.results?.some(
+                                            (result) =>
+                                              result.frequencyInPopulations?.some(
+                                                (pop) =>
+                                                  pop.frequencies?.some(
+                                                    (f) =>
+                                                      f.alleleFrequency !==
+                                                      undefined
+                                                  )
+                                              )
+                                          ) ? (
+                                            <Box
+                                              sx={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                              }}
+                                            >
+                                              <b style={{ color: "#077EA6" }}>
+                                                {afValue}
+                                              </b>
+                                              <Box
+                                                sx={{
+                                                  display: "inline-flex",
+                                                  width: 24,
+                                                  height: 24,
+                                                  marginLeft: "6px",
+                                                  borderRadius: "50%",
+                                                  cursor: "pointer",
+                                                  alignItems: "center",
+                                                  color: "#077EA6",
+                                                  justifyContent: "center",
+                                                  "&:hover": {
+                                                    backgroundColor: "#DBEEFD",
+                                                  },
+                                                }}
+                                              >
+                                                <MenuOpenIcon
+                                                  // src={moreIcon}
+                                                  alt="More Info"
+                                                  style={{
+                                                    width: "16px",
+                                                    height: "16px",
+                                                  }}
+                                                />
+                                              </Box>
+                                            </Box>
+                                          ) : (
+                                            <i
+                                              style={{
+                                                color: individualBeacon.exists
+                                                  ? "#0099CD"
+                                                  : "#FF7C62",
+                                              }}
+                                            >
+                                              Not Available
                                             </i>
                                           )}
                                         </TableCell>
 
                                         <TableCell
                                           sx={{
-                                            width: "146px !important",
+                                            textAlign: "center",
                                           }}
                                         >
                                           <StatusButton
@@ -611,6 +1123,7 @@ export default function CollapsibleTable({
               {networkRows.map((row, index) => (
                 <Row
                   key={row.name}
+                  allNetworkRows={networkRows}
                   row={row}
                   isNetwork={true}
                   isFirstRow={index === 0}
@@ -633,6 +1146,7 @@ export default function CollapsibleTable({
         individualDataset={currentDataset}
         individualBeaconRegistryId={currentBeaconId}
         individualAlleleData={individualAlleleData}
+        individualDatasetName={currentDatasetName}
       />
       <BeaconDialog
         open={beaconDialogOpen}
@@ -644,6 +1158,8 @@ export default function CollapsibleTable({
         individualBeaconAPI={currentBeaconApi}
         individualBeaconURL={currentBeaconUrl}
         currentDatasets={currentDatasets}
+        currentDatasetNameMap={currentDatasetNameMap}
+        beaconMaturity={currentBeaconMaturity}
       />
     </>
   );

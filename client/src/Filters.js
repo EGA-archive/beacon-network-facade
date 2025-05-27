@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 
 export default function Filters({
   selectedFilters,
@@ -105,10 +107,10 @@ export default function Filters({
   // };
 
   const handleToggle = (event, newSelectedFilters) => {
-    console.log("👉 01 - Received:", newSelectedFilters);
+    // console.log("👉 01 - Received:", newSelectedFilters);
 
     if (!newSelectedFilters) {
-      console.log("👉 02 - No selection made, clearing all filters.");
+      // console.log("👉 02 - No selection made, clearing all filters.");
       setSelectedFilters([]);
       return;
     }
@@ -117,59 +119,59 @@ export default function Filters({
       ? newSelectedFilters
       : [newSelectedFilters];
 
-    console.log("👉 03 - Normalized (Array) filters:", updatedFilters);
+    // console.log("👉 03 - Normalized (Array) filters:", updatedFilters);
 
     if (newSelectedFilters === "Open All") {
-      console.log("👉 04 - 'Open All' clicked");
+      // console.log("👉 04 - 'Open All' clicked");
       onOpenCloseChange("open");
 
       setSelectedFilters((prevFilter) => {
-        console.log("👉 05 - Previous filters before Open All:", prevFilter);
+        // console.log("👉 05 - Previous filters before Open All:", prevFilter);
         const filtered = prevFilter.filter(
           (filterName) => filterName !== "Close All"
         );
-        console.log("👉 06 - After removing 'Close All':", filtered);
+        // console.log("👉 06 - After removing 'Close All':", filtered);
         const result = [...filtered, "Open All"];
-        console.log("👉 07 - New filters with 'Open All':", result);
+        // console.log("👉 07 - New filters with 'Open All':", result);
         return result;
       });
       return;
     }
 
     if (newSelectedFilters === "Close All") {
-      console.log("👉 08 - 'Close All' clicked");
+      // console.log("👉 08 - 'Close All' clicked");
       onOpenCloseChange("close");
 
       setSelectedFilters((prevFilter) => {
-        console.log("👉 09 - Previous filters before Close All:", prevFilter);
+        // console.log("👉 09 - Previous filters before Close All:", prevFilter);
         const filtered = prevFilter.filter(
           (filterName) => filterName !== "Open All"
         );
-        console.log("👉 10 - After removing 'Open All':", filtered);
+        // console.log("👉 10 - After removing 'Open All':", filtered);
         const result = [...filtered, "Close All"];
-        console.log("👉 11 - New filters with 'Close All':", result);
+        // console.log("👉 11 - New filters with 'Close All':", result);
         return result;
       });
       return;
     }
 
     setSelectedFilters((prevFilter) => {
-      console.log("👉 12 - Previous filters in normal toggle:", prevFilter);
+      // console.log("👉 12 - Previous filters in normal toggle:", prevFilter);
       const preservedOpenClose = prevFilter.filter(
         (filterName) => filterName === "Open All" || filterName === "Close All"
       );
-      console.log("👉 13 - Preserved Open/Close buttons:", preservedOpenClose);
+      // console.log("👉 13 - Preserved Open/Close buttons:", preservedOpenClose);
 
       const cleanedNewFilters = newSelectedFilters.filter(
         (filterName) => filterName !== "Open All" && filterName !== "Close All"
       );
-      console.log(
-        "👉 14 - New filters cleaned (no Open/Close):",
-        cleanedNewFilters
-      );
+      // console.log(
+      //   "👉 14 - New filters cleaned (no Open/Close):",
+      //   cleanedNewFilters
+      // );
 
       const result = [...cleanedNewFilters, ...preservedOpenClose];
-      console.log("👉 15 - Final updated filters:", result);
+      // console.log("👉 15 - Final updated filters:", result);
       return result;
     });
   };
@@ -184,14 +186,15 @@ export default function Filters({
     lineHeight: "20px",
     letterSpacing: "0.1px",
     textTransform: "none",
-    color: "#7D7D7D",
+    color: "#ADADAD",
     background: "white",
-    border: "1px solid #7D7D7D !important",
+    border: "1px solid #ADADAD !important",
     borderRadius: "6px !important",
     "&.Mui-selected": {
-      backgroundColor: "#EBEBEB",
+      // backgroundColor: "#EBEBEB",
+      backgroundColor: "white",
       color: "black",
-      border: "1px solid black !important",
+      border: "1px solid #0099CD !important",
     },
     "&.Mui-selected:hover": {
       backgroundColor: "#EBEBEB",
@@ -249,8 +252,14 @@ export default function Filters({
 
   return (
     <div className="filter-row">
-      {filters.map(({ label, values, exclusive }) => (
-        <div key={label} className="filter-group">
+      {filters.map(({ label, values, exclusive }, index) => (
+        <div
+          key={label}
+          className="filter-group"
+          style={{
+            marginRight: index === filters.length - 3 ? "65px" : "0px",
+          }}
+        >
           <p className="filter-label">{label}</p>
           <ToggleButtonGroup
             value={selectedFilters}
@@ -259,19 +268,38 @@ export default function Filters({
             aria-label={label}
             sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
           >
-            {values.map((value) => (
-              <ToggleButton
-                key={value}
-                value={value}
-                sx={
-                  label === "Open/Close all Beacons:"
-                    ? openCloseStyles
-                    : buttonStyles
-                }
-              >
-                {value.replace("-", " ")}
-              </ToggleButton>
-            ))}
+            {values.map((value) => {
+              const isSelected = selectedFilters.includes(value);
+              const isOpenClose = label === "Open/Close all Beacons:";
+
+              return (
+                <ToggleButton
+                  key={value}
+                  value={value}
+                  sx={isOpenClose ? openCloseStyles : buttonStyles}
+                >
+                  {!isOpenClose &&
+                    (isSelected ? (
+                      <CheckCircleIcon
+                        sx={{
+                          color: "#0099CD",
+                          fontSize: "16px",
+                          marginRight: "6px",
+                        }}
+                      />
+                    ) : (
+                      <PanoramaFishEyeIcon
+                        sx={{
+                          color: "#ADADAD",
+                          fontSize: "16px",
+                          marginRight: "6px",
+                        }}
+                      />
+                    ))}
+                  {value.replace("-", " ")}
+                </ToggleButton>
+              );
+            })}
           </ToggleButtonGroup>
         </div>
       ))}
@@ -295,11 +323,31 @@ export default function Filters({
           aria-label="Allele Frequency Filter"
           sx={{ display: "flex", marginBottom: "35px", gap: "16px" }}
         >
-          {["all", "af-only"].map((value) => (
-            <ToggleButton key={value} value={value} sx={buttonStyles}>
-              {value === "all" ? "All" : "Allele Frequency only"}
-            </ToggleButton>
-          ))}
+          {["all", "af-only"].map((value) => {
+            const isSelected = selectedFilters.includes(value);
+            return (
+              <ToggleButton key={value} value={value} sx={buttonStyles}>
+                {isSelected ? (
+                  <CheckCircleIcon
+                    sx={{
+                      color: "#0099CD",
+                      fontSize: "16px",
+                      marginRight: "6px",
+                    }}
+                  />
+                ) : (
+                  <PanoramaFishEyeIcon
+                    sx={{
+                      color: "#ADADAD",
+                      fontSize: "16px",
+                      marginRight: "6px",
+                    }}
+                  />
+                )}
+                {value === "all" ? "All" : "Allele Frequency only"}
+              </ToggleButton>
+            );
+          })}
         </ToggleButtonGroup>
       </div>
     </div>

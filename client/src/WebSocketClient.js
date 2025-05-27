@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
 import { Container, Form } from "react-bootstrap";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import NetworkMembers from "./NetworkMembers";
-import { useNavigate } from "react-router-dom";
 
 const variantQueryValidationSchema = Yup.object().shape({
   variant: Yup.string()
@@ -21,68 +21,85 @@ const variantQueryValidationSchema = Yup.object().shape({
 
 const refGenome = [{ label: "GRCh37" }, { label: "GRCh38" }];
 
-function WebSocketClient({ setRegistries, setSocket }) {
+function WebSocketClient({ setRegistries, setSocket, registries = [] }) {
   const [messages, setMessages] = useState([]);
-  const [registries, setLocalRegistries] = useState([]);
+  // const [registries, setLocalRegistries] = useState([]);
   const [connected, setConnected] = useState(false);
   const reconnectRef = useRef(null);
   const hasRequestedRegistries = useRef(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    connectWebSocket();
-  }, []);
+  // useEffect(() => {
+  //   connectWebSocket();
+  // }, []);
 
-  const connectWebSocket = () => {
-    if (reconnectRef.current) return;
-    const ws = new WebSocket("ws://localhost:5700");
-    // const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
+  // const connectWebSocket = () => {
+  //   if (reconnectRef.current) {
+  //     console.warn("🔁 WebSocket already connected.");
+  //     return;
+  //   }
 
-    ws.onopen = () => {
-      setConnected(true);
-      setSocket(ws);
+  //   console.log("🌐 Connecting to WebSocket...");
+  //   const ws = new WebSocket("ws://localhost:5700");
 
-      if (!hasRequestedRegistries.current) {
-        ws.send(JSON.stringify("/registries"));
+  //   ws.onopen = () => {
+  //     console.log("✅ WebSocket OPEN");
+  //     setConnected(true);
+  //     setSocket(ws);
+  //     window.dispatchEvent(new Event("socket-ready"));
 
-        setTimeout(() => {
-          ws.send(JSON.stringify("/registries"));
-        }, 1000);
-        hasRequestedRegistries.current = true;
-      }
-    };
+  //     if (!hasRequestedRegistries.current) {
+  //       console.log("📤 Sending /registries request");
+  //       ws.send(JSON.stringify("/registries"));
 
-    ws.onmessage = (event) => {
-      console.log("📩 WebSocket Received Message", event.data);
-      try {
-        const data = JSON.parse(event.data);
-        if (data.response?.registries) {
-          setLocalRegistries(data.response.registries);
-          setRegistries(data.response.registries);
-        } else {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            JSON.stringify(data, null, 2),
-          ]);
-        }
-      } catch (error) {
-        console.error("❌ Error parsing WebSocket response:", error);
-        setMessages((prevMessages) => [...prevMessages, event.data]);
-      }
-    };
+  //       setTimeout(() => {
+  //         console.log("📤 Re-sending /registries after 1s");
+  //         ws.send(JSON.stringify("/registries"));
+  //       }, 1000);
 
-    ws.onerror = (error) => console.error("❌ WebSocket error:", error);
+  //       hasRequestedRegistries.current = true;
+  //     }
+  //   };
 
-    ws.onclose = () => {
-      setConnected(false);
-    };
+  //   ws.onmessage = (event) => {
+  //     console.log("📩 Message received:", event.data);
+  //     try {
+  //       const data = JSON.parse(event.data);
 
-    return () => ws.close();
-  };
+  //       if (data.response?.registries) {
+  //         console.log(
+  //           "📥 Received registries:",
+  //           data.response.registries.length
+  //         );
+  //         setLocalRegistries(data.response.registries);
+  //         setRegistries(data.response.registries);
+  //       } else {
+  //         setMessages((prevMessages) => [
+  //           ...prevMessages,
+  //           JSON.stringify(data, null, 2),
+  //         ]);
+  //       }
+  //     } catch (error) {
+  //       console.error("❌ JSON parse error:", error);
+  //       setMessages((prev) => [...prev, event.data]);
+  //     }
+  //   };
+
+  //   ws.onerror = (error) => console.error("❌ WebSocket Error:", error);
+
+  //   ws.onclose = () => {
+  //     console.warn("⚠️ WebSocket closed");
+  //     setConnected(false);
+  //   };
+
+  //   return () => ws.close();
+  // };
+
   const handleSearch = (values) => {
     const { variant, genome } = values;
 
-    navigate(`/search/${variant}/${genome}`, {
+    navigate(`/search?pos=${variant}&assembly=${genome}`, {
       state: { registriesLength: registries.length },
     });
   };
@@ -98,16 +115,41 @@ function WebSocketClient({ setRegistries, setSocket }) {
           {({ handleSubmit, setFieldValue, values, errors, touched }) => {
             const handlePaste = (event) => {
               event.preventDefault();
-              const pastedData = event.clipboardData.getData("text").trim();
-              const cleanedData = pastedData.replace(/\s+/g, "-");
-              setFieldValue("variant", cleanedData);
+              const pastedData = event.clipboardData.getData("text");
+
+              const cleanedData = pastedData
+                .trim()
+                .replace(/\./g, "")
+                .replace(/\t/g, "-")
+                .replace(/\s+/g, " ")
+                .replace(/\s/g, "-")
+                .replace(/-+/g, "-");
+
+              const inputElement = event.target;
+              const start = inputElement.selectionStart;
+              const end = inputElement.selectionEnd;
+
+              if (start !== null && end !== null) {
+                const newValue =
+                  inputElement.value.substring(0, start) +
+                  cleanedData +
+                  inputElement.value.substring(end);
+
+                setFieldValue("variant", newValue);
+                setTimeout(() => {
+                  inputElement.setSelectionRange(
+                    start + cleanedData.length,
+                    start + cleanedData.length
+                  );
+                }, 0);
+              }
             };
 
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Form.Group>
-                  <Grid container spacing={2} className="search-row">
-                    <Grid size={{ xs: 12, sm: 7 }}>
+                  <Grid item container spacing={2} className="search-row">
+                    <Grid item xs={12} sm={7}>
                       <Form.Label>
                         <b className="variant-query">Variant query</b>
                         <Tooltip
@@ -149,7 +191,7 @@ function WebSocketClient({ setRegistries, setSocket }) {
                       />
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3 }}>
+                    <Grid item xs={12} sm={3}>
                       <Form.Label>
                         <b>Ref Genome</b>
                       </Form.Label>
@@ -170,7 +212,8 @@ function WebSocketClient({ setRegistries, setSocket }) {
                         )}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 2 }}>
+
+                    <Grid item xs={12} sm={2}>
                       <button
                         className="searchbutton"
                         type="submit"
@@ -183,18 +226,35 @@ function WebSocketClient({ setRegistries, setSocket }) {
                     </Grid>
                   </Grid>
                 </Form.Group>
-                <Grid container className="example-span">
-                  <Grid xs={12} sm="auto">
-                    <span>Example: </span>
+                <Grid xs={12} sm="auto" className="mt-3">
+                  <span className="mb-4">Examples:</span>
+                  <br />
+                  <span className="d-block mb-3 mt-2">
                     <a
                       type="reset"
-                      onClick={() =>
-                        setFieldValue("variant", "21-34716788-T-G")
-                      }
+                      onClick={() => {
+                        setFieldValue("variant", "12-113357192-G-A");
+                        setFieldValue("genome", "GRCh37");
+                      }}
                     >
-                      <u className="example">21-34716788-T-G</u>
+                      <u className="example">
+                        GRCh37 <b>|</b> 12-113357192-G-A
+                      </u>
                     </a>
-                  </Grid>
+                  </span>
+                  <span className="d-block">
+                    <a
+                      type="reset"
+                      onClick={() => {
+                        setFieldValue("variant", "12-112919387-G-A");
+                        setFieldValue("genome", "GRCh38");
+                      }}
+                    >
+                      <u className="example">
+                        GRCh38 <b>|</b> 12-112919387-G-A
+                      </u>
+                    </a>
+                  </span>
                 </Grid>
               </Form>
             );
