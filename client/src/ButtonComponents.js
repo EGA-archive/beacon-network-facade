@@ -5,6 +5,7 @@ const StatusButton = ({ status, isFallback = false }) => {
   const statusStyles = {
     Found: { backgroundColor: "#0099CD", color: "white" },
     "Not Found": { backgroundColor: "#FF7C62", color: "white" },
+    "No Response": { backgroundColor: "#949494", color: "white" },
   };
 
   return (
@@ -13,12 +14,14 @@ const StatusButton = ({ status, isFallback = false }) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "100px",
+        minWidth: "62px",
+        maxWidth: "100px",
         height: "28px",
         padding: "12px",
         borderRadius: "6px",
         fontWeight: "bold",
         textAlign: "center",
+        fontSize: "11px",
         fontFamily: '"Open Sans", sans-serif',
         ...statusStyles[status],
       }}
@@ -30,9 +33,9 @@ const StatusButton = ({ status, isFallback = false }) => {
 
 const MaturityButton = ({ maturity }) => {
   const maturityMap = {
-    prod: "Prod Beacon",
+    prod: "Production Beacon",
     test: "Test Beacon",
-    dev: "Dev Beacon",
+    dev: "Development Beacon",
   };
 
   const maturityStyles = {
@@ -51,8 +54,6 @@ const MaturityButton = ({ maturity }) => {
         justifyContent: "center",
         fontFamily: '"Open Sans", sans-serif',
         textAlign: "center",
-        fontStyle: "italic",
-        marginLeft: "15%",
         ...maturityStyles[displayMaturity],
       }}
     >
@@ -83,13 +84,13 @@ const BeaconTypeButton = ({ type }) => {
     <Box
       sx={{
         display: "inline-flex",
-        borderRadius: "8px",
+        minWidth: "105px",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: "6px",
-        padding: "4px 8px",
+        borderRadius: "8px",
+        padding: "2px 8px",
         fontFamily: '"Open Sans", sans-serif',
-        fontSize: "14px",
+        fontSize: "11px",
         ...styleProps,
       }}
     >

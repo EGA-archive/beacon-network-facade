@@ -9,18 +9,97 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 import yaml
 from aiohttp_client_cache import CachedSession, SQLiteBackend
+import sqlite3
 
 LOG = logging.getLogger(__name__)
 
 cache = SQLiteBackend(
     cache_name='~/.cache/aiohttp-requests.db',  # For SQLite, this will be used as the filename
-    expire_after=60*60,                         # By default, cached responses expire in an hour
+    expire_after=-1,                         # By default, cached responses expire in an hour
     allowed_codes=(200, 418),                   # Cache responses with these status codes
     allowed_methods=['GET', 'POST'],            # Cache requests with these HTTP methods
     include_headers=True,                       # Cache requests with different headers separately
     ignored_params=['auth_token'],              # Keep using the cached response even if this param changes
     timeout=0.004,                                # Connection timeout for SQLite backend
 )
+
+def cache_registry(is_v2):
+    if is_v2==True:
+        tablename='beaconv2'
+        variablename='beacons_v2'
+        keyname='v2_Beacons'
+    else:
+        tablename='beaconv1'
+        variablename='beacons_v1'
+        keyname='v1_Beacons'
+    conn = sqlite3.connect('/cache/registry.db')
+    cursor = conn.cursor()
+    try:
+        result = cursor.execute('CREATE TABLE {} ({} TEXT UNIQUE)'.format(tablename,variablename))
+    except Exception:
+        pass
+
+    # bulk insert the messages
+    with open('registry.yml', 'r') as f:
+        data = yaml.load(f, Loader=yaml.SafeLoader)
+
+    beaconsv2=[]
+
+    for beacon in data[keyname]:
+        beaconsv2.append(beacon)
+    result = cursor.executemany('INSERT OR IGNORE INTO {} ({}) VALUES (?);'.format(tablename, variablename),  zip(beaconsv2))
+    conn.commit()
+
+    result = cursor.execute("SELECT * from {}".format(tablename))
+    cached_beaconsv2 = result.fetchall()
+    # .encode('utf8') can be removed for Python 3
+
+    return list(cached_beaconsv2)
+
+def cache_registry_info(infoBeacons):
+    tablename='registries'
+    variablename='beaconId'
+    variablename2='beaconName'
+    #LOG.warning(dict_registries)
+    conn = sqlite3.connect('/cache/info.db')
+    cursor = conn.cursor()
+    try:
+        result = cursor.execute('CREATE TABLE {} ({} TEXT UNIQUE, {} TEXT UNIQUE)'.format(tablename,variablename,variablename2))
+    except Exception as e:
+        LOG.warning(e)
+        pass
+    
+    #LOG.warning(infoBeacons)
+    
+    listinfos=[]
+    try:
+        for beacon in infoBeacons:
+            try:
+                listinfos.append((beacon["response"]["id"],beacon["response"]["name"]))
+            except Exception:
+                if len(infoBeacons)==2:
+                    listinfos.append(tuple(infoBeacons))
+                    break
+                else:
+                    listinfos.append((beacon["id"],beacon["name"]))
+        #LOG.warning(listinfos)
+        result = cursor.executemany('INSERT OR IGNORE INTO {} ({},{}) VALUES (?,?);'.format(tablename, variablename,variablename2), listinfos)
+    except Exception as e:
+        LOG.warning(e)
+        pass
+    
+    conn.commit()
+
+def load_registry_info():
+    conn = sqlite3.connect('/cache/info.db')
+    tablename='registries'
+    cursor = conn.cursor()
+    result = cursor.execute("SELECT * from {}".format(tablename))
+    cached_beaconsv2 = result.fetchall()
+    # .encode('utf8') can be removed for Python 3
+    return list(cached_beaconsv2)
+
+
 
 async def dataset_request(session, url, data):
     async with session.get(url) as response:
@@ -32,8 +111,8 @@ async def datasets_requesting(websocket, burl, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=15, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )
     async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
         if is_v2 == True:
@@ -61,8 +140,8 @@ async def requesting(websocket, burl, query, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=15, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )
     query = query.replace('"', '')
     async with aiohttp.ClientSession(timeout=my_timeout) as session:
@@ -179,12 +258,12 @@ async def registry(websocket, burl, is_v2):
     data={}
     my_timeout = aiohttp.ClientTimeout(
     total=60, # total timeout (time consists connection establishment for a new connection or waiting for a free connection from a pool if pool connection limits are exceeded) default value is 5 minutes, set to `None` or `0` for unlimited timeout
-    sock_connect=10, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
-    sock_read=10 # Maximal number of seconds for reading a portion of data from a peer
+    sock_connect=15, # Maximal number of seconds for connecting to a peer for a new connection, not given from a pool. See also connect.
+    sock_read=15 # Maximal number of seconds for reading a portion of data from a peer
 )   
     if is_v2 == True:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 url = burl + '/info'
                 response_obj = await beacon_request(session, url, data)
                 end_time = perf_counter()
@@ -198,97 +277,18 @@ async def registry(websocket, burl, is_v2):
             return json.dumps({"beacon": burl})
     elif is_v2 == False:
         try:
-            async with aiohttp.ClientSession(timeout=my_timeout) as session:
+            async with CachedSession(cache=SQLiteBackend('cache/demo_cache'), timeout=my_timeout) as session:
                 default_v2_response={"meta": {}, "response": {"organization": {}}}
                 default_v2_response["meta"]["beaconId"]="beacon.network.org"
                 default_v2_response["response"]["name"]="Beacon v1 Network"
                 default_v2_response["response"]["environment"]="prod"
                 default_v2_response["response"]["alternativeUrl"]="https://www.beacon-network.org"
                 default_v2_response["response"]["organization"]["logoUrl"]="https://beacon-network.org/assets/images/beacon-network-logo-dark.svg"
-                default_v2_response["responses"]=['tsri-civic',
-                                                    'aauh-proseqs',
-                                                    'tsri-clinvars',
-                                                    'tsri-cosmics',
-                                                    'tsri-geno2mps',
-                                                    'tsri-dbsnps',
-                                                    'tsri-snpedias',
-                                                    'tsri-grasps',
-                                                    'tsri-uniprots',
-                                                    'aauh-retroseq',
-                                                    'tsri-wellderlys',
-                                                    'tsri-gnomad_exomes',
-                                                    'phenomecentrals',
-                                                    'tsri-exacs',
-                                                    'tsri-dbnsfps',
-                                                    'tsri-gnomad_genomes',
-                                                    'tsri-gwassnpss',
-                                                    'tsri-mutdb',
-                                                    'tsri-emv',
-                                                    'rdconnects',
-                                                    'cogr-queenss',
-                                                    'broads',
-                                                    'cogr-sinais',
-                                                    'bipmed',
-                                                    'tsri-docm',
-                                                    'tsri-evss',
-                                                    'myvariants',
-                                                    'ega',
-                                                    'ucscs',
-                                                    'vicc',
-                                                    'swefreqs',
-                                                    'hgmds',
-                                                    'bemgi',
-                                                    'sahgps',
-                                                    'scilifelabs',
-                                                    'curoverse',
-                                                    'nbdc-humandbss',
-                                                    'cogr-bc-cancers',
-                                                    'cytognomix',
-                                                    'scilifelab-clingens',
-                                                    'cafe-cardiokits',
-                                                    'ACpops',
-                                                    'lovd',
-                                                    'gigascience-2s',
-                                                    'wgs',
-                                                    'wtsis',
-                                                    'altruists',
-                                                    'elixir-fis',
-                                                    'cafe-central',
-                                                    'variant-matcher',
-                                                    'icgcs',
-                                                    'amplab',
-                                                    'molgenis-emx2',
-                                                    'cogr-consensus',
-                                                    'ebis',
-                                                    'tsri-cgi',
-                                                    'clinbioinfosspa',
-                                                    'cosmics',
-                                                    'tsri-cadd',
-                                                    'kaviars',
-                                                    'thousandgenomes-phase3',
-                                                    'conglomerate',
-                                                    'mssng-db6',
-                                                    'cafe-variome',
-                                                    'cell_liness',
-                                                    'ncbis',
-                                                    'cosmic-alls',
-                                                    'mygene2',
-                                                    'brca-exchanges',
-                                                    'aghas',
-                                                    'narcissome',
-                                                    'prism',
-                                                    'agha-somatic',
-                                                    'thousandgenomes',
-                                                    'bob',
-                                                    'agha-germline',
-                                                    'cmh',
-                                                    'inmegens',
-                                                    'garvans',
-                                                    'gigascience',
-                                                    'bioreference',
-                                                    'google',
-                                                    'platinum',
-                                                    'gigascience-1']
+                url='https://beacon-network.org/api/beacons'
+                response_obj = await beacon_request(session, url, data)
+                LOG.warning(response_obj)
+                default_v2_response["responses"]=[]
+                default_v2_response["responses"]=response_obj
                 end_time = perf_counter()
                 response_obj=default_v2_response
                 final_time=end_time-start_time
@@ -321,15 +321,18 @@ async def ws_server(websocket):
             tasks=[]
             LOG.warning(f"First: {firstitem}")
             LOG.warning(f"Token: {token}")
-            with open('registry.yml', 'r') as f:
-                data = yaml.load(f, Loader=yaml.SafeLoader)
-
-            for beacon in data["v2_Beacons"]:
+            data = cache_registry(True)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, registry, websocket, beacon, True)
                     tasks.append(task)
             try:
-                for beacon in data["v1_Beacons"]:
+                data = cache_registry(False)
+                for beacon in data:
+                    beacon = list(beacon)
+                    beacon=beacon[0]
                     with ThreadPoolExecutor() as pool:
                         task = await loop.run_in_executor(pool, registry, websocket, beacon, False)
                         tasks.append(task)
@@ -342,7 +345,7 @@ async def ws_server(websocket):
                 finalinforesponse={}
                 inforesponse = await task
                 inforesponse = json.loads(inforesponse)
-                LOG.warning(inforesponse)
+                #LOG.warning(inforesponse)
                 try:
                     #LOG.warning(inforesponse)
                     beaconInfoId=inforesponse["meta"]["beaconId"]
@@ -358,6 +361,10 @@ async def ws_server(websocket):
                         beaconAPI=inforesponse["api"]
                     except Exception:
                         beaconAPI="https://beacon-network.org/api"
+                    try:
+                        beaconsinfo=inforesponse["responses"]
+                    except Exception:
+                        beaconsinfo=[]
                     finalinforesponse["beaconId"]=beaconInfoId
                     finalinforesponse["beaconName"]=beaconName
                     finalinforesponse["beaconMaturity"]=beaconMaturity
@@ -365,11 +372,16 @@ async def ws_server(websocket):
                     finalinforesponse["beaconLogo"]=beaconLogo
                     finalinforesponse["beaconAPI"]=beaconAPI
                     finalinforesponse["numberOfBeacons"]=numberOfBeacons
+                    finalinforesponse["infoBeacons"]=beaconsinfo
                     list_of_beacons.append(finalinforesponse)
                     with open('/responses/registries.json') as registries_file:
                         dict_registries = json.load(registries_file)
                     dict_registries["response"]["registries"]=list_of_beacons
                     dict_registries=json.dumps(dict_registries)
+                    if beaconsinfo == []:
+                        cache_registry_info([beaconInfoId,beaconName])
+                    else:
+                        cache_registry_info(beaconsinfo)
                     #LOG.warning(dict_registries)
                 except Exception:
                     LOG.error('{} is not responding'.format(inforesponse["beacon"]))
@@ -382,15 +394,17 @@ async def ws_server(websocket):
             loop=asyncio.get_running_loop()
             tasks=[]
             dataset_tasks=[]
-            with open('registry.yml', 'r') as f:
-                data = yaml.load(f, Loader=yaml.SafeLoader)
-
-            for beacon in data["v2_Beacons"]:
+            data=cache_registry(True)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, requesting, websocket, beacon, firstitem, True)
                     tasks.append(task)
-
-            for beacon in data["v1_Beacons"]:
+            data=cache_registry(False)
+            for beacon in data:
+                beacon = list(beacon)
+                beacon=beacon[0]
                 with ThreadPoolExecutor() as pool:
                     task = await loop.run_in_executor(pool, requesting, websocket, beacon, firstitem, False)
                     tasks.append(task)
@@ -417,6 +431,8 @@ async def ws_server(websocket):
                     pass
                 dict_response["responseSummary"]["numTotalResults"]+=count
                 datasets = await datasets_requesting(websocket, burl, True)
+                infos = load_registry_info()
+                LOG.warning(infos)
                 try:
                     datasets = json.loads(datasets)
                 except Exception:
@@ -426,10 +442,27 @@ async def ws_server(websocket):
                         try:
                             if response1["beaconId"]!=beaconId:
                                 response1["beaconNetworkId"]=beaconId
-                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
+                                LOG.warning('yaaaaaaaay')
+                                LOG.warning(infos)
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
+                            elif beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network' or beaconId=='eu.gdi.beacon-network':
                                 response1["beaconNetworkId"]=beaconId
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
                             else:
                                 response1["beaconId"]=beaconId
+                                if response1["beaconId"]:
+                                    for infobeacon in infos:
+                                        listainfo=list(infobeacon)
+                                        if listainfo[0]==response1["beaconId"]:
+                                            response1["beaconName"]=listainfo[1]
                             try:
                                 if response1["id"]:
                                     collection_datasets = datasets["response"]["collections"]
@@ -441,16 +474,25 @@ async def ws_server(websocket):
                             dict_response["response"]["resultSets"].append(response1)
                         except Exception:
                             response1["beaconId"]=beaconId
+                            if response1["id"]:
+                                collection_datasets = datasets["response"]["collections"]
+                                for collection in collection_datasets:
+                                    if collection["id"] == response1["id"]:
+                                        response1["datasetName"] = collection["name"]
+                                for infobeacon in infos:
+                                    listainfo=list(infobeacon)
+                                    if listainfo[0]==response1["beaconId"]:
+                                        response1["beaconName"]=listainfo[1]
                             dict_response["response"]["resultSets"].append(response1)
                 except Exception:
-                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network':
+                    if beaconId=='es.gdi.af.beacon-network' or beaconId=='eu.elixir.beacon-network' or beaconId=='es.ega-archive.impact-beacon-network' or beaconId=='eu.gdi.beacon-network':
                         dict_response["response"]["resultSets"].append({"beaconNetworkId": beaconId, "exists": False})
                     else:
-                        dict_response["response"]["resultSets"].append({"beaconId": beaconId, "exists": False})
+                        dict_response["response"]["resultSets"].append({"beaconId": beaconId, "beaconName": infos["response"]["name"],"exists": False})
                 if dict_response["responseSummary"]["numTotalResults"] > 0 or dict_response["responseSummary"]["exists"] == True:
                     dict_response["responseSummary"]["exists"]=True
                 dict_response = json.dumps(dict_response)
-                LOG.warning(dict_response)
+                #LOG.warning(dict_response)
                 await websocket.send(f"{dict_response}")
             
  

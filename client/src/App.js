@@ -7,9 +7,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SearchResults from "./SearchResults";
 import { ThemeProvider } from "@mui/material/styles";
 import CustomTheme from "./CustomTheme";
+import WebSocketInitializer from "./WebSocketInitializer";
 
 function App() {
   const [registries, setRegistries] = useState([]);
+  const [shouldReconnect, setShouldReconnect] = useState(true);
+  const [queryCompleted, setQueryCompleted] = useState(false);
   const [socket, setSocket] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState([
     "Found",
@@ -24,6 +27,13 @@ function App() {
   return (
     <ThemeProvider theme={CustomTheme}>
       <Router>
+        <WebSocketInitializer
+          setSocket={setSocket}
+          setRegistries={setRegistries}
+          shouldReconnect={shouldReconnect}
+          queryCompleted={queryCompleted}
+        />
+
         <div className="bigparent">
           <div>
             <CustomNavbar />
@@ -32,6 +42,7 @@ function App() {
                 path="/"
                 element={
                   <WebSocketClient
+                    registries={registries}
                     setRegistries={setRegistries}
                     setSocket={setSocket}
                     selectedFilters={selectedFilters}
@@ -40,13 +51,16 @@ function App() {
                 }
               />
               <Route
-                path="/search/:variant/:genome"
+                path="/search"
                 element={
                   <SearchResults
                     registries={registries}
                     socket={socket}
                     selectedFilters={selectedFilters}
                     setSelectedFilters={setSelectedFilters}
+                    shouldReconnect={shouldReconnect}
+                    queryCompleted={queryCompleted}
+                    setQueryCompleted={setQueryCompleted}
                   />
                 }
               />
@@ -58,5 +72,4 @@ function App() {
     </ThemeProvider>
   );
 }
-
 export default App;
