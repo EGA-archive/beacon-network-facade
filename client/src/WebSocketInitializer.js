@@ -26,7 +26,7 @@ function WebSocketInitializer({
     }
 
     console.log("🌐 [Initializer] Connecting WebSocket...");
-    const ws = new WebSocket("ws://localhost:5700");
+    const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
     socketRef.current = ws;
 
     ws.onopen = () => {
