@@ -137,22 +137,22 @@ export function withTruncatedTooltip(text, maxLength = 38) {
 }
 
 export const triggerSearchFromURL = (socket) => {
-  console.log("📣 triggerSearchFromURL called");
+  // console.log("📣 triggerSearchFromURL called");
 
   const params = new URLSearchParams(window.location.search);
   const pos = params.get("pos");
   const assembly = params.get("assembly");
 
-  console.log("🔍 Parsed URL:", { pos, assembly });
+  // console.log("🔍 Parsed URL:", { pos, assembly });
 
   if (!pos || !assembly || socket.readyState !== 1) {
-    console.log("⛔️ Missing required info or socket not ready");
+    // console.log("⛔️ Missing required info or socket not ready");
     return;
   }
 
   const [referenceName, start, referenceBases, alternateBases] = pos.split("-");
   if (!referenceName || !start || !referenceBases || !alternateBases) {
-    console.log("⚠️ Invalid 'pos' format:", pos);
+    // console.log("⚠️ Invalid 'pos' format:", pos);
     return;
   }
 
@@ -166,6 +166,6 @@ export const triggerSearchFromURL = (socket) => {
     },
   };
 
-  console.log("📤 Sending WebSocket query from URL params:", message);
+  // console.log("📤 Sending WebSocket query from URL params:", message);
   socket.send(JSON.stringify(message));
 };

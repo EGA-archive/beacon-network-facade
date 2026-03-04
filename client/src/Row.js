@@ -236,7 +236,7 @@ export default function Row({
   const networkStatus = isNetwork ? getBeaconRowStatus(row.history) : null;
 
   useEffect(() => {
-    console.log("🧠 infoBeacons passed to Row:", row.infoBeacons);
+    // console.log("🧠 infoBeacons passed to Row:", row.infoBeacons);
 
     if (!row.infoBeacons) return;
 
@@ -244,7 +244,7 @@ export default function Row({
     row.infoBeacons.forEach((info, i) => {
       const beaconId = info?.meta?.beaconId;
       const logoUrl = info?.organization?.logoUrl;
-      console.log(`🔍 [${i}] beaconId: ${beaconId}, logoUrl: ${logoUrl}`);
+      // console.log(`🔍 [${i}] beaconId: ${beaconId}, logoUrl: ${logoUrl}`);
       if (beaconId) {
         initial[beaconId] = true;
       }

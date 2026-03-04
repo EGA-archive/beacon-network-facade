@@ -32,7 +32,7 @@ function BeaconQuery({
   useEffect(() => {
     if (!variant || !genome || !socket) return;
 
-    console.log("🔍 BeaconQuery initialized", { variant, genome });
+    // console.log("🔍 BeaconQuery initialized", { variant, genome });
     setLoading(true);
 
     const arr = variant.split("-");
@@ -46,7 +46,7 @@ function BeaconQuery({
 
     const sendQuery = () => {
       if (queryCompleted) {
-        console.log("🛑 Query already completed — skipping sendQuery.");
+        // console.log("🛑 Query already completed — skipping sendQuery.");
         return;
       }
       if (socket.readyState === WebSocket.CONNECTING) {
@@ -55,7 +55,7 @@ function BeaconQuery({
       } else if (socket.readyState === WebSocket.OPEN) {
         // console.log("📤 Sending query:", query);
         socket.send(JSON.stringify(query));
-        // console.log("📦 Registries:", registries);
+        console.log("📦 Registries:", registries);
       } else {
         console.warn("❌ WebSocket is closed or closing. No retry.");
       }
@@ -66,7 +66,7 @@ function BeaconQuery({
     const handleMessage = (event) => {
       try {
         const response = JSON.parse(event.data);
-        console.log("📩 Message received:", event.data);
+        // console.log("📩 Message received:", event.data);
 
         const resultSets = response?.response?.resultSets || [];
 
@@ -132,7 +132,7 @@ function BeaconQuery({
       seenSources.current.size >= registries.length &&
       aggregatedData.length > 0
     ) {
-      console.log("✅ All sources responded. Marking complete.");
+      // console.log("✅ All sources responded. Marking complete.");
       setQueryCompleted(true);
       setLoading(false);
     }

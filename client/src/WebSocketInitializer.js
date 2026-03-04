@@ -25,12 +25,14 @@ function WebSocketInitializer({
       socketRef.current.close();
     }
 
-    console.log("🌐 [Initializer] Connecting WebSocket...");
-    const ws = new WebSocket("wss://global-beacon-network-backend.ega-archive.org");
+    // console.log("🌐 [Initializer] Connecting WebSocket...");
+    const ws = new WebSocket(
+      "wss://global-beacon-network-backend.ega-archive.org"
+    );
     socketRef.current = ws;
 
     ws.onopen = () => {
-      console.log("✅ [Initializer] WebSocket OPEN");
+      // console.log("✅ [Initializer] WebSocket OPEN");
       setSocket(ws);
       window.dispatchEvent(new Event("socket-ready"));
       reconnectAttempts.current = 0;
@@ -44,7 +46,7 @@ function WebSocketInitializer({
       const pingInterval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: "ping" }));
-          console.log("📡 Sent keep-alive ping");
+          // console.log("📡 Sent keep-alive ping");
         }
       }, 25000);
 
@@ -60,12 +62,12 @@ function WebSocketInitializer({
         //   );
         // }
         if (!shouldReconnectRef.current) {
-          console.log("🛑 Reconnect skipped — reconnect flag is false.");
+          // console.log("🛑 Reconnect skipped — reconnect flag is false.");
           return;
         }
 
         if (queryCompletedRef.current) {
-          console.log("🛑 Reconnect skipped — query already completed.");
+          // console.log("🛑 Reconnect skipped — query already completed.");
           return;
         }
 
@@ -90,9 +92,9 @@ function WebSocketInitializer({
 
   const attemptReconnect = () => {
     if (!shouldReconnectRef.current || queryCompletedRef.current) {
-      console.log(
-        "🛑 Skipping reconnect (shouldReconnect false or query completed)"
-      );
+      // console.log(
+      //   "🛑 Skipping reconnect (shouldReconnect false or query completed)"
+      // );
       return;
     }
 
@@ -107,7 +109,7 @@ function WebSocketInitializer({
   useEffect(() => {
     connectWebSocket();
     return () => {
-      console.log("🧹 Cleaning up WebSocket...");
+      // console.log("🧹 Cleaning up WebSocket...");
       socketRef.current?.close();
     };
   }, [connectWebSocket]);

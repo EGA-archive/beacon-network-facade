@@ -37,7 +37,7 @@ export default function CollapsibleTable({
   setStats,
 }) {
   // console.log("5555555555555555📊 Data received:", data);
-  console.log("📊 Registries received:", registries);
+  // console.log("📊 Registries received:", registries);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [beaconDialogOpen, setBeaconDialogOpen] = useState(false);
@@ -277,7 +277,7 @@ export default function CollapsibleTable({
       }
       return true;
     });
-  console.log("networkRows", networkRows);
+  // console.log("networkRows", networkRows);
 
   // Ending here
 

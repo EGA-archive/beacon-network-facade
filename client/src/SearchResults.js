@@ -62,7 +62,7 @@ function SearchResults({
       !hasTriggeredQuery.current &&
       !queryCompleted
     ) {
-      console.log("✅ All conditions met — starting BeaconQuery via props");
+      // console.log("✅ All conditions met — starting BeaconQuery via props");
       hasTriggeredQuery.current = true;
     }
   }, [
@@ -74,7 +74,7 @@ function SearchResults({
 
   useEffect(() => {
     if (queryCompleted) {
-      console.log("🔁 Resetting hasTriggeredQuery because query is completed");
+      // console.log("🔁 Resetting hasTriggeredQuery because query is completed");
       hasTriggeredQuery.current = false;
     }
   }, [queryCompleted]);
